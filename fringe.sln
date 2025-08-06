@@ -2,7 +2,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FringeScraper", "FringeScraper\FringeScraper.csproj", "{27DCB5A3-F316-8930-6F0A-1BDD032695B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FringeScraper", "Fringe.Scraper\FringeScraper.csproj", "{C4F779EB-1856-4930-82C1-FADAF0540D38}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fringe.API", "Fringe.API\Fringe.API.csproj", "{A26656C2-8261-4D6A-8422-B9F81F7CB8D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fringe.Data", "Fringe.Data\Fringe.Data.csproj", "{73ED6A57-744E-49A5-B2C0-6FF38B69E59C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10,10 +14,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{27DCB5A3-F316-8930-6F0A-1BDD032695B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{27DCB5A3-F316-8930-6F0A-1BDD032695B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{27DCB5A3-F316-8930-6F0A-1BDD032695B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{27DCB5A3-F316-8930-6F0A-1BDD032695B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4F779EB-1856-4930-82C1-FADAF0540D38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4F779EB-1856-4930-82C1-FADAF0540D38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4F779EB-1856-4930-82C1-FADAF0540D38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4F779EB-1856-4930-82C1-FADAF0540D38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A26656C2-8261-4D6A-8422-B9F81F7CB8D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A26656C2-8261-4D6A-8422-B9F81F7CB8D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A26656C2-8261-4D6A-8422-B9F81F7CB8D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A26656C2-8261-4D6A-8422-B9F81F7CB8D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73ED6A57-744E-49A5-B2C0-6FF38B69E59C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73ED6A57-744E-49A5-B2C0-6FF38B69E59C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73ED6A57-744E-49A5-B2C0-6FF38B69E59C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73ED6A57-744E-49A5-B2C0-6FF38B69E59C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
