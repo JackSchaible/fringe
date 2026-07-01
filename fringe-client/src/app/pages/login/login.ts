@@ -52,16 +52,21 @@ export class LoginPage {
     this.error.set('');
     try {
       await this.auth.confirmOtp(this.otp());
-      const user = this.auth.currentUser();
-      if (user) {
-        await firstValueFrom(this.api.upsertMe(user.displayName, user.email));
-      }
-      await this.router.navigate(['/shows']);
     } catch {
       this.error.set('Incorrect code. Please try again.');
-    } finally {
       this.loading.set(false);
+      return;
     }
+    const user = this.auth.currentUser();
+    if (user) {
+      try {
+        await firstValueFrom(this.api.upsertMe(user.displayName, user.email));
+      } catch {
+        // upsertMe failure is non-fatal — user is authenticated, proceed to app
+      }
+    }
+    this.loading.set(false);
+    await this.router.navigate(['/shows']);
   }
 
   back() {
