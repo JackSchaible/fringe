@@ -3,6 +3,7 @@ import { TableV2 } from 'aws-cdk-lib/aws-dynamodb';
 import { Runtime, Function as LambdaFunction, Code } from 'aws-cdk-lib/aws-lambda';
 import { LambdaRestApi, DomainName, SecurityPolicy, EndpointType } from 'aws-cdk-lib/aws-apigateway';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import { FringeAuth } from './auth';
 
@@ -33,6 +34,10 @@ export class FringeApi extends Construct {
     });
 
     props.table.grantReadWriteData(fn);
+    fn.addToRolePolicy(new PolicyStatement({
+      actions: ['cognito-idp:AdminDeleteUser'],
+      resources: [props.auth.userPool.userPoolArn],
+    }));
 
     const api = new LambdaRestApi(this, 'RestApi', {
       handler: fn,

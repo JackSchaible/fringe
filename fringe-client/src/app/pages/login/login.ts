@@ -1,6 +1,6 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faPaperPlane, faArrowRightToBracket, faArrowLeft } from '@fortawesome/pro-solid-svg-icons';
@@ -22,7 +22,7 @@ interface Turnstile {
 
 @Component({
   selector: 'fg-login',
-  imports: [FormsModule, FaIconComponent],
+  imports: [FormsModule, FaIconComponent, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
@@ -39,6 +39,7 @@ export class LoginPage {
   readonly error = signal('');
   readonly loading = signal(false);
   readonly captchaToken = signal<string | null>(null);
+  readonly agreedToTerms = signal(false);
 
   private turnstileWidgetId: string | null = null;
 

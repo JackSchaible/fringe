@@ -1,3 +1,5 @@
+using Amazon.CognitoIdentityProvider;
+using Amazon.CognitoIdentityProvider.Model;
 using Fringe.Data;
 using Fringe.Data.DynamoRecords;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +10,7 @@ namespace Fringe.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class UsersController(FringeRepository repo) : ControllerBase
+public class UsersController(FringeRepository repo, IAmazonCognitoIdentityProvider cognito) : ControllerBase
 {
     [HttpGet("me")]
     public async Task<ActionResult<UserDto>> GetMe()
@@ -30,6 +32,27 @@ public class UsersController(FringeRepository repo) : ControllerBase
         user.DisplayName = req.DisplayName;
 
         await repo.UpsertUserAsync(user);
+        return NoContent();
+    }
+
+    [HttpDelete("me")]
+    public async Task<IActionResult> DeleteMe()
+    {
+        string userId = GetUserId();
+        string username = User.FindFirst("cognito:username")?.Value ?? userId;
+        string userPoolId = Environment.GetEnvironmentVariable("COGNITO_USER_POOL_ID") ?? "";
+
+        await repo.DeleteUserDataAsync(userId);
+
+        if (!string.IsNullOrEmpty(userPoolId))
+        {
+            await cognito.AdminDeleteUserAsync(new AdminDeleteUserRequest
+            {
+                UserPoolId = userPoolId,
+                Username = username,
+            });
+        }
+
         return NoContent();
     }
 

@@ -4,6 +4,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faCheck } from '@fortawesome/pro-solid-svg-icons';
 import { faUsers, faCirclePlus, faTicket, faCopy } from '@fortawesome/pro-regular-svg-icons';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import { Group } from '../../models';
 
 @Component({
@@ -14,11 +15,14 @@ import { Group } from '../../models';
 })
 export class GroupPage implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly auth = inject(AuthService);
 
   readonly loading = signal(true);
   readonly myGroup = signal<Group | null>(null);
   readonly error = signal('');
   readonly copied = signal(false);
+  readonly confirmingDelete = signal(false);
+  readonly deleting = signal(false);
 
   readonly groupName = signal('');
   readonly inviteCode = signal('');
@@ -65,6 +69,20 @@ export class GroupPage implements OnInit {
     navigator.clipboard.writeText(code).then(() => {
       this.copied.set(true);
       setTimeout(() => this.copied.set(false), 2000);
+    });
+  }
+
+  async deleteAccount() {
+    this.deleting.set(true);
+    this.api.deleteMe().subscribe({
+      next: async () => {
+        await this.auth.signOut();
+      },
+      error: () => {
+        this.deleting.set(false);
+        this.confirmingDelete.set(false);
+        this.error.set('Failed to delete account. Please try again.');
+      },
     });
   }
 }

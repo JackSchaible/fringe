@@ -1,3 +1,4 @@
+using Amazon.CognitoIdentityProvider;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Fringe.API;
@@ -10,6 +11,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
+builder.Services.AddSingleton<IAmazonCognitoIdentityProvider, AmazonCognitoIdentityProviderClient>();
 builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
 

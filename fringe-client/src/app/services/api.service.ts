@@ -47,4 +47,8 @@ export class ApiService {
   verifyCaptcha(token: string) {
     return this.http.post<void>(`${this.base}/api/captcha/verify`, { token });
   }
+
+  deleteMe() {
+    return this.http.delete<void>(`${this.base}/api/users/me`);
+  }
 }

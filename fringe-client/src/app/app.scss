@@ -69,5 +69,26 @@
 }
 
 main {
-  min-height: calc(100vh - 52px);
+  min-height: calc(100vh - 52px - 40px);
+}
+
+.site-footer {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-4);
+  border-top: 1px solid var(--border-2);
+
+  a {
+    color: var(--text-4);
+    text-decoration: none;
+    transition: color 0.15s;
+
+    &:hover { color: var(--text-2); }
+  }
+
+  .footer-sep { color: var(--text-5); }
 }

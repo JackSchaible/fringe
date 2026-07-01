@@ -82,6 +82,30 @@ public class FringeRepository(IDynamoDBContext db)
     public async Task<UserRecord?> GetUserAsync(string userId) =>
         await db.LoadAsync<UserRecord>($"USER#{userId}", "PROFILE");
 
+    public async Task DeleteUserDataAsync(string userId)
+    {
+        var user = await GetUserAsync(userId);
+
+        var deleteTasks = new List<Task>();
+
+        var votes = await GetVotesForUserAsync(userId);
+        if (votes.Count > 0)
+        {
+            var voteBatch = db.CreateBatchWrite<UserVoteRecord>();
+            foreach (var vote in votes)
+                voteBatch.AddDeleteItem(vote);
+            deleteTasks.Add(voteBatch.ExecuteAsync());
+        }
+
+        if (user?.GroupId != null)
+            deleteTasks.Add(db.DeleteAsync<GroupMemberRecord>($"GROUP#{user.GroupId}", $"MEMBER#{userId}"));
+
+        if (user != null)
+            deleteTasks.Add(db.DeleteAsync(user));
+
+        await Task.WhenAll(deleteTasks);
+    }
+
     // ── Groups ───────────────────────────────────────────────────────────────
 
     public async Task CreateGroupAsync(GroupRecord group)

@@ -77,4 +77,19 @@
       </div>
     </div>
   }
+
+  <div class="danger-zone">
+    <h2>Danger zone</h2>
+    @if (!confirmingDelete()) {
+      <button class="btn-danger" (click)="confirmingDelete.set(true)">Delete my account</button>
+    } @else {
+      <p class="delete-warning">This will permanently delete your account, votes, and group membership. This cannot be undone.</p>
+      <div class="delete-confirm-row">
+        <button class="btn-danger" (click)="deleteAccount()" [disabled]="deleting()">
+          {{ deleting() ? 'Deleting…' : 'Yes, delete my account' }}
+        </button>
+        <button class="btn-cancel" (click)="confirmingDelete.set(false)" [disabled]="deleting()">Cancel</button>
+      </div>
+    }
+  </div>
 </div>
