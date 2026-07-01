@@ -40,8 +40,8 @@ export class LoginPage {
     try {
       await this.auth.sendOtp(this.email());
       this.step.set('otp');
-    } catch (e: unknown) {
-      this.error.set(e instanceof Error ? e.message : 'Failed to send code');
+    } catch {
+      this.error.set('Failed to send code. Please try again.');
     } finally {
       this.loading.set(false);
     }
@@ -57,8 +57,8 @@ export class LoginPage {
         await firstValueFrom(this.api.upsertMe(user.displayName, user.email));
       }
       await this.router.navigate(['/shows']);
-    } catch (e: unknown) {
-      this.error.set(e instanceof Error ? e.message : 'Incorrect code');
+    } catch {
+      this.error.set('Incorrect code. Please try again.');
     } finally {
       this.loading.set(false);
     }

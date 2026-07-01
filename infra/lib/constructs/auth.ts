@@ -6,6 +6,7 @@ import {
   Code,
 } from "aws-cdk-lib/aws-lambda";
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { EmailIdentity, Identity } from "aws-cdk-lib/aws-ses";
 import { Construct } from "constructs";
 
 export class FringeAuth extends Construct {
@@ -52,6 +53,10 @@ exports.handler = async (event) => {
 
     // ── Email OTP triggers ─────────────────────────────────────────────────
     const fromEmail = "info@fringe.jackschaible.ca";
+
+    new EmailIdentity(this, "SesFromIdentity", {
+      identity: Identity.domain("fringe.jackschaible.ca"),
+    });
 
     const defineAuthChallenge = new LambdaFunction(
       this,
