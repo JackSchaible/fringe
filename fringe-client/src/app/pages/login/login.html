@@ -18,7 +18,8 @@
             autocomplete="email"
             (keyup.enter)="sendCode()"
           />
-          <button class="btn-primary" (click)="sendCode()" [disabled]="loading()">
+          <div id="turnstile-widget"></div>
+          <button class="btn-primary" (click)="sendCode()" [disabled]="loading() || !captchaToken()">
             @if (loading()) {
               Sending…
             } @else {

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -8,6 +8,17 @@ import { faEnvelope, faKey } from '@fortawesome/pro-regular-svg-icons';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 import { environment } from '../../../environments/environment';
+
+interface Turnstile {
+  render(container: HTMLElement, options: {
+    sitekey: string;
+    callback?: (token: string) => void;
+    'expired-callback'?: () => void;
+    'error-callback'?: () => void;
+  }): string;
+  reset(widgetId: string): void;
+  remove(widgetId: string): void;
+}
 
 @Component({
   selector: 'fg-login',
@@ -27,6 +38,9 @@ export class LoginPage {
   readonly devUserId = signal('user1');
   readonly error = signal('');
   readonly loading = signal(false);
+  readonly captchaToken = signal<string | null>(null);
+
+  private turnstileWidgetId: string | null = null;
 
   protected readonly faPaperPlane = faPaperPlane;
   protected readonly faArrowRightToBracket = faArrowRightToBracket;
@@ -34,14 +48,52 @@ export class LoginPage {
   protected readonly faEnvelope = faEnvelope;
   protected readonly faKey = faKey;
 
+  constructor() {
+    effect(() => {
+      if (this.step() === 'email') {
+        setTimeout(() => this.renderTurnstile(), 0);
+      } else {
+        this.captchaToken.set(null);
+        this.turnstileWidgetId = null;
+      }
+    });
+  }
+
+  private renderTurnstile(attempt = 0) {
+    if (!this.cognitoConfigured) return;
+    const turnstile = (window as Window & { turnstile?: Turnstile }).turnstile;
+    if (!turnstile) {
+      if (attempt < 20) setTimeout(() => this.renderTurnstile(attempt + 1), 100);
+      return;
+    }
+    const container = document.getElementById('turnstile-widget');
+    if (!container) return;
+    this.turnstileWidgetId = turnstile.render(container, {
+      sitekey: environment.turnstileSiteKey,
+      callback: (token) => this.captchaToken.set(token),
+      'expired-callback': () => this.captchaToken.set(null),
+      'error-callback': () => this.captchaToken.set(null),
+    });
+  }
+
+  private resetCaptcha() {
+    const turnstile = (window as Window & { turnstile?: Turnstile }).turnstile;
+    if (turnstile && this.turnstileWidgetId != null) {
+      turnstile.reset(this.turnstileWidgetId);
+    }
+    this.captchaToken.set(null);
+  }
+
   async sendCode() {
     this.loading.set(true);
     this.error.set('');
     try {
+      await firstValueFrom(this.api.verifyCaptcha(this.captchaToken()!));
       await this.auth.sendOtp(this.email());
       this.step.set('otp');
     } catch {
       this.error.set('Failed to send code. Please try again.');
+      this.resetCaptcha();
     } finally {
       this.loading.set(false);
     }

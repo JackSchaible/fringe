@@ -1,8 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
 import { TableV2 } from 'aws-cdk-lib/aws-dynamodb';
 import { Runtime, Function as LambdaFunction, Code } from 'aws-cdk-lib/aws-lambda';
-import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
-import { LambdaFunction as LambdaTarget } from 'aws-cdk-lib/aws-events-targets';
+import { CfnSchedule } from 'aws-cdk-lib/aws-scheduler';
+import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
 interface ScraperProps {
@@ -26,10 +26,20 @@ export class FringeScraper extends Construct {
 
     props.table.grantReadWriteData(fn);
 
-    new Rule(this, 'NightlyRule', {
-      schedule: Schedule.cron({ hour: '3', minute: '0' }),
-      targets: [new LambdaTarget(fn)],
-      description: 'Trigger Fringe scraper nightly at 3am UTC',
+    const schedulerRole = new Role(this, 'ScraperSchedulerRole', {
+      assumedBy: new ServicePrincipal('scheduler.amazonaws.com'),
+    });
+    fn.grantInvoke(schedulerRole);
+
+    new CfnSchedule(this, 'NightlySchedule', {
+      scheduleExpression: 'cron(0 3 * * ? *)',
+      scheduleExpressionTimezone: 'America/Edmonton',
+      flexibleTimeWindow: { mode: 'OFF' },
+      target: {
+        arn: fn.functionArn,
+        roleArn: schedulerRole.roleArn,
+      },
+      description: 'Trigger Fringe scraper nightly at 3am Mountain time',
     });
   }
 }

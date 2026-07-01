@@ -3,6 +3,7 @@ import { TableV2 } from 'aws-cdk-lib/aws-dynamodb';
 import { Runtime, Function as LambdaFunction, Code } from 'aws-cdk-lib/aws-lambda';
 import { LambdaRestApi, DomainName, SecurityPolicy, EndpointType } from 'aws-cdk-lib/aws-apigateway';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { FringeAuth } from './auth';
 
@@ -28,6 +29,7 @@ export class FringeApi extends Construct {
         DYNAMO_TABLE_NAME: props.table.tableName,
         ALLOWED_ORIGINS: 'https://fringe.jackschaible.ca;https://localhost:4200',
         COGNITO_USER_POOL_ID: props.auth.userPool.userPoolId,
+        TURNSTILE_SECRET_KEY: StringParameter.valueForSecureStringParameter(this, 'TurnstileSecretKey', '/fringe/turnstile-secret'),
       },
     });
 

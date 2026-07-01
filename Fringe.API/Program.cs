@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.DataProtection;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
 builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
 

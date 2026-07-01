@@ -90,9 +90,12 @@ jobs:
 
       - name: Build Angular frontend
         working-directory: fringe-client
+        env:
+          TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
         run: |
           sed -i "s|cognitoUserPoolId: '[^']*'|cognitoUserPoolId: '$COGNITO_POOL_ID'|" src/environments/environment.prod.ts
           sed -i "s|cognitoClientId: '[^']*'|cognitoClientId: '$COGNITO_CLIENT_ID'|" src/environments/environment.prod.ts
+          sed -i "s|turnstileSiteKey: '[^']*'|turnstileSiteKey: '$TURNSTILE_SITE_KEY'|" src/environments/environment.prod.ts
           pnpm run build
 
       - name: Install CDK dependencies
@@ -110,6 +113,8 @@ jobs:
         run: npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
 
       - name: Rebuild frontend if Cognito was just created (first deploy)
+        env:
+          TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
         run: |
           NEW_POOL_ID=$(jq -r '.FringeStack.CognitoUserPoolId' infra/cdk-outputs.json)
           NEW_CLIENT_ID=$(jq -r '.FringeStack.CognitoClientId' infra/cdk-outputs.json)
@@ -118,6 +123,7 @@ jobs:
             cd fringe-client
             sed -i "s|cognitoUserPoolId: '[^']*'|cognitoUserPoolId: '$NEW_POOL_ID'|" src/environments/environment.prod.ts
             sed -i "s|cognitoClientId: '[^']*'|cognitoClientId: '$NEW_CLIENT_ID'|" src/environments/environment.prod.ts
+            sed -i "s|turnstileSiteKey: '[^']*'|turnstileSiteKey: '$TURNSTILE_SITE_KEY'|" src/environments/environment.prod.ts
             pnpm run build
             cd ../infra
             npx cdk deploy FringeStack --require-approval never

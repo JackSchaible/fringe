@@ -43,4 +43,8 @@ export class ApiService {
   upsertMe(displayName: string, email: string) {
     return this.http.put<void>(`${this.base}/api/users/me`, { displayName, email });
   }
+
+  verifyCaptcha(token: string) {
+    return this.http.post<void>(`${this.base}/api/captcha/verify`, { token });
+  }
 }
