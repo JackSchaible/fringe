@@ -15,7 +15,16 @@ export class AuthService {
   // ── Email OTP (production) ───────────────────────────────────────────────
 
   async sendOtp(email: string): Promise<void> {
-    const { signIn } = await import('aws-amplify/auth');
+    const { signUp, signIn } = await import('aws-amplify/auth');
+    try {
+      await signUp({
+        username: email,
+        password: crypto.randomUUID(),
+        options: { userAttributes: { email } },
+      });
+    } catch (e: unknown) {
+      if ((e as { name?: string }).name !== 'UsernameExistsException') throw e;
+    }
     await signIn({ username: email, options: { authFlowType: 'CUSTOM_WITHOUT_SRP' } });
   }
 

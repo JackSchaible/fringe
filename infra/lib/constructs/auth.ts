@@ -1,8 +1,12 @@
-import * as cdk from 'aws-cdk-lib';
-import * as cognito from 'aws-cdk-lib/aws-cognito';
-import { Function as LambdaFunction, Runtime, Code } from 'aws-cdk-lib/aws-lambda';
-import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { Construct } from 'constructs';
+import * as cdk from "aws-cdk-lib";
+import * as cognito from "aws-cdk-lib/aws-cognito";
+import {
+  Function as LambdaFunction,
+  Runtime,
+  Code,
+} from "aws-cdk-lib/aws-lambda";
+import { PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { Construct } from "constructs";
 
 export class FringeAuth extends Construct {
   public readonly userPool: cognito.UserPool;
@@ -11,8 +15,8 @@ export class FringeAuth extends Construct {
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
-    this.userPool = new cognito.UserPool(this, 'UserPool', {
-      userPoolName: 'fringe-users',
+    this.userPool = new cognito.UserPool(this, "UserPool", {
+      userPoolName: "fringe-users",
       selfSignUpEnabled: true,
       signInAliases: { email: true },
       autoVerify: { email: true },
@@ -31,13 +35,31 @@ export class FringeAuth extends Construct {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
-    // ── Email OTP triggers ─────────────────────────────────────────────────
-    const fromEmail = 'info@fringe.jackschaible.ca';
-
-    const defineAuthChallenge = new LambdaFunction(this, 'DefineAuthChallenge', {
+    // ── Pre-signup: auto-confirm so signUp → signIn works without a separate
+    //    confirmation step (we verify identity via the OTP challenge instead)
+    const preSignUp = new LambdaFunction(this, "PreSignUp", {
       runtime: Runtime.NODEJS_22_X,
-      handler: 'index.handler',
+      handler: "index.handler",
       code: Code.fromInline(`
+exports.handler = async (event) => {
+  event.response.autoConfirmUser = true;
+  event.response.autoVerifyEmail = true;
+  return event;
+};
+`),
+    });
+    this.userPool.addTrigger(cognito.UserPoolOperation.PRE_SIGN_UP, preSignUp);
+
+    // ── Email OTP triggers ─────────────────────────────────────────────────
+    const fromEmail = "info@fringe.jackschaible.ca";
+
+    const defineAuthChallenge = new LambdaFunction(
+      this,
+      "DefineAuthChallenge",
+      {
+        runtime: Runtime.NODEJS_22_X,
+        handler: "index.handler",
+        code: Code.fromInline(`
 exports.handler = async (event) => {
   const { session } = event.request;
   if (session.length === 0) {
@@ -54,13 +76,17 @@ exports.handler = async (event) => {
   return event;
 };
 `),
-    });
+      },
+    );
 
-    const createAuthChallenge = new LambdaFunction(this, 'CreateAuthChallenge', {
-      runtime: Runtime.NODEJS_22_X,
-      handler: 'index.handler',
-      environment: { FROM_EMAIL: fromEmail },
-      code: Code.fromInline(`
+    const createAuthChallenge = new LambdaFunction(
+      this,
+      "CreateAuthChallenge",
+      {
+        runtime: Runtime.NODEJS_22_X,
+        handler: "index.handler",
+        environment: { FROM_EMAIL: fromEmail },
+        code: Code.fromInline(`
 const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
 exports.handler = async (event) => {
   const otp = String(Math.floor(100000 + Math.random() * 900000));
@@ -81,34 +107,50 @@ exports.handler = async (event) => {
   return event;
 };
 `),
-    });
+      },
+    );
 
-    createAuthChallenge.addToRolePolicy(new PolicyStatement({
-      actions: ['ses:SendEmail', 'ses:SendRawEmail'],
-      resources: ['*'],
-    }));
+    createAuthChallenge.addToRolePolicy(
+      new PolicyStatement({
+        actions: ["ses:SendEmail", "ses:SendRawEmail"],
+        resources: ["*"],
+      }),
+    );
 
-    const verifyAuthChallengeResponse = new LambdaFunction(this, 'VerifyAuthChallengeResponse', {
-      runtime: Runtime.NODEJS_22_X,
-      handler: 'index.handler',
-      code: Code.fromInline(`
+    const verifyAuthChallengeResponse = new LambdaFunction(
+      this,
+      "VerifyAuthChallengeResponse",
+      {
+        runtime: Runtime.NODEJS_22_X,
+        handler: "index.handler",
+        code: Code.fromInline(`
 exports.handler = async (event) => {
   event.response.answerCorrect =
     event.request.challengeAnswer === event.request.privateChallengeParameters.otp;
   return event;
 };
 `),
-    });
+      },
+    );
 
-    this.userPool.addTrigger(cognito.UserPoolOperation.DEFINE_AUTH_CHALLENGE, defineAuthChallenge);
-    this.userPool.addTrigger(cognito.UserPoolOperation.CREATE_AUTH_CHALLENGE, createAuthChallenge);
-    this.userPool.addTrigger(cognito.UserPoolOperation.VERIFY_AUTH_CHALLENGE_RESPONSE, verifyAuthChallengeResponse);
+    this.userPool.addTrigger(
+      cognito.UserPoolOperation.DEFINE_AUTH_CHALLENGE,
+      defineAuthChallenge,
+    );
+    this.userPool.addTrigger(
+      cognito.UserPoolOperation.CREATE_AUTH_CHALLENGE,
+      createAuthChallenge,
+    );
+    this.userPool.addTrigger(
+      cognito.UserPoolOperation.VERIFY_AUTH_CHALLENGE_RESPONSE,
+      verifyAuthChallengeResponse,
+    );
 
     // ── App client ──────────────────────────────────────────────────────────
 
-    this.userPoolClient = new cognito.UserPoolClient(this, 'WebClient', {
+    this.userPoolClient = new cognito.UserPoolClient(this, "WebClient", {
       userPool: this.userPool,
-      userPoolClientName: 'fringe-spa',
+      userPoolClientName: "fringe-spa",
       generateSecret: false,
       authFlows: {
         custom: true,
