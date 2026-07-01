@@ -20,6 +20,8 @@ export class FringeStack extends cdk.Stack {
       validation: CertificateValidation.fromDns(),
     });
 
+    cdk.Tags.of(this).add('project', 'fringe-app');
+
     const dynamo = new FringeDynamo(this, 'Dynamo');
     const auth = new FringeAuth(this, 'Auth');
     const frontend = new FringeFrontend(this, 'Frontend', { certificate });
