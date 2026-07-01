@@ -50,6 +50,10 @@
 .ranked-col {
   position: sticky;
   top: 68px;
+
+  @media (max-width: 768px) {
+    position: static;
+  }
 }
 
 .empty-hint {

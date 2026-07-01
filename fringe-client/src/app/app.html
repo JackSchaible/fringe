@@ -1,6 +1,6 @@
 @if (auth.currentUser()) {
   <nav class="nav">
-    <a routerLink="/shows" class="nav-brand">Fringe</a>
+    <a routerLink="/shows" class="nav-brand">Jack's Fringe Planner</a>
     <div class="nav-links">
       <a routerLink="/shows" routerLinkActive="active">
         <fa-icon [icon]="faFilm" />
@@ -26,6 +26,11 @@
 </main>
 
 <footer class="site-footer">
+  <span class="footer-copy"
+    >&copy; {{ year }} Cactus Studios. Independent project. Not affiliated with
+    Fringe Theatre Adventures.</span
+  >
+  <span class="footer-sep">·</span>
   <a routerLink="/privacy">Privacy Policy</a>
   <span class="footer-sep">·</span>
   <a routerLink="/terms">Terms of Service</a>

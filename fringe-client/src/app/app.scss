@@ -69,15 +69,17 @@
 }
 
 main {
-  min-height: calc(100vh - 52px - 40px);
+  min-height: calc(100vh - 52px);
 }
 
 .site-footer {
-  height: 40px;
+  min-height: 40px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  padding: 0.5rem 1rem;
   font-size: 0.75rem;
   color: var(--text-4);
   border-top: 1px solid var(--border-2);
@@ -91,4 +93,5 @@ main {
   }
 
   .footer-sep { color: var(--text-5); }
+  .footer-copy { color: var(--text-5); }
 }

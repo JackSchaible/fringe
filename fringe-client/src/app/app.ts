@@ -14,6 +14,7 @@ import { CookieConsentDrawer } from './components/cookie-consent-drawer/cookie-c
 })
 export class AppComponent implements OnInit {
   protected readonly auth = inject(AuthService);
+  protected readonly year = new Date().getFullYear();
   // Injected here to ensure eager instantiation — loads optional scripts if already accepted
   protected readonly cookieConsent = inject(CookieConsentService);
 
