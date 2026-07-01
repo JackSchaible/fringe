@@ -1,0 +1,78 @@
+.privacy-page {
+  display: flex;
+  justify-content: center;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.privacy-content {
+  width: 100%;
+  max-width: 48rem;
+
+  .back-link {
+    display: inline-block;
+    font-size: 0.875rem;
+    color: var(--text-3);
+    text-decoration: none;
+    margin-bottom: 2rem;
+    transition: color 0.15s;
+
+    &:hover { color: var(--text-1); }
+  }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 0 0 0.25rem;
+    background: var(--gradient-heading);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .last-updated {
+    font-size: 0.8rem;
+    color: var(--text-3);
+    margin: 0 0 2.5rem;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-1);
+    margin: 2rem 0 0.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border-2);
+  }
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-2);
+    margin: 1.25rem 0 0.35rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: var(--text-2);
+    line-height: 1.7;
+    margin: 0 0 0.75rem;
+  }
+
+  code {
+    font-size: 0.8rem;
+    background: var(--surface-raised);
+    border: 1px solid var(--border-2);
+    border-radius: 0.25rem;
+    padding: 0.1em 0.35em;
+    color: var(--text-1);
+  }
+
+  a {
+    color: var(--text-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover { color: var(--accent-lighter); }
+  }
+}

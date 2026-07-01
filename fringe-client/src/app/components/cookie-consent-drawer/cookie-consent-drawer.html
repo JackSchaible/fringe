@@ -1,0 +1,18 @@
+@if (!consent.hasDecided()) {
+  <div class="drawer-backdrop">
+    <div class="drawer-card" role="dialog" aria-label="Cookie consent">
+      <div class="drawer-text">
+        <strong>This site uses cookies</strong>
+        <p>
+          Sign-in and security cookies are always active.
+          With your consent we also load Google Fonts and Google Analytics.
+          <a routerLink="/privacy">Privacy policy</a>
+        </p>
+      </div>
+      <div class="drawer-actions">
+        <button class="btn-reject" (click)="consent.reject()">Reject all</button>
+        <button class="btn-accept" (click)="consent.accept()">Accept all</button>
+      </div>
+    </div>
+  </div>
+}

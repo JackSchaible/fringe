@@ -21,5 +21,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/group/group').then(m => m.GroupPage),
     canActivate: [authGuard],
   },
+  { path: 'privacy', loadComponent: () => import('./pages/privacy/privacy').then(m => m.PrivacyPage) },
   { path: '**', redirectTo: '/shows' },
 ];
