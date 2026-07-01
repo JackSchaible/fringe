@@ -6,9 +6,8 @@ import {
   ViewerProtocolPolicy,
   AllowedMethods,
   CachePolicy,
-  OriginAccessIdentity,
 } from "aws-cdk-lib/aws-cloudfront";
-import { S3Origin } from "aws-cdk-lib/aws-cloudfront-origins";
+import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
 import { Construct } from "constructs";
 
@@ -28,12 +27,9 @@ export class FringeFrontend extends Construct {
       autoDeleteObjects: false,
     });
 
-    const oai = new OriginAccessIdentity(this, "OAI");
-    bucket.grantRead(oai);
-
     const distribution = new Distribution(this, "Distribution", {
       defaultBehavior: {
-        origin: new S3Origin(bucket, { originAccessIdentity: oai }),
+        origin: S3BucketOrigin.withOriginAccessControl(bucket),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD,
         cachePolicy: CachePolicy.CACHING_OPTIMIZED,
