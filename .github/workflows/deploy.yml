@@ -87,24 +87,6 @@ jobs:
           ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
           npx cdk bootstrap aws://$ACCOUNT/ca-central-1 aws://$ACCOUNT/us-east-1
 
-      - name: Import existing DynamoDB table if untracked
-        working-directory: infra
-        run: |
-          # If the table exists in AWS but isn't tracked by the stack yet (e.g. retained
-          # from a previous deployment), import it so CDK doesn't try to create it again.
-          TABLE_TRACKED=$(aws cloudformation list-stack-resources \
-            --stack-name FringeStack \
-            --query "StackResourceSummaries[?PhysicalResourceId=='fringe'].PhysicalResourceId" \
-            --output text 2>/dev/null || true)
-          TABLE_EXISTS=$(aws dynamodb describe-table --table-name fringe \
-            --query "Table.TableName" --output text 2>/dev/null || true)
-          if [ -z "$TABLE_TRACKED" ] && [ -n "$TABLE_EXISTS" ]; then
-            echo "Importing existing DynamoDB table 'fringe' into FringeStack..."
-            npx cdk import FringeStack \
-              --resource-mapping-inline '{"DynamoTableA56B8056":{"TableName":"fringe"}}' \
-              --yes
-          fi
-
       - name: CDK deploy
         working-directory: infra
         run: npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json

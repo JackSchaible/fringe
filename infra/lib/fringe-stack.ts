@@ -13,7 +13,7 @@ interface FringeStackProps extends cdk.StackProps {
 
 export class FringeStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: FringeStackProps) {
-    super(scope, id, props);
+    super(scope, id, { ...props, terminationProtection: true });
 
     const { certificate } = props;
 
