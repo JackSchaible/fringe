@@ -1,5 +1,7 @@
-﻿using FringeScraper.Models;
-using FringeScraper.Services;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
+using Fringe.Data;
+using FringeScraper;
 using Microsoft.Extensions.Configuration;
 
 IConfigurationRoot config = new ConfigurationBuilder()
@@ -7,45 +9,16 @@ IConfigurationRoot config = new ConfigurationBuilder()
     .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true)
     .Build();
 
-string? connectionString = config.GetConnectionString("dbCxnString");
+string tableName = config["DynamoTableName"]
+    ?? Environment.GetEnvironmentVariable("DYNAMO_TABLE_NAME")
+    ?? "fringe";
 
-Console.WriteLine("🏹 Beginning Fringe Scraper...");
-if (string.IsNullOrWhiteSpace(connectionString))
-{
-    Console.WriteLine("❗ Connection string is not set in appSettings.json.");
-    return;
-}
+Environment.SetEnvironmentVariable("DYNAMO_TABLE_NAME", tableName);
 
-List<int> showIds = await IndexScraper.ScrapeIdsAsync();
+AmazonDynamoDBClient dynamoClient = new();
+IDynamoDBContext dynamoContext = new DynamoDBContextBuilder()
+    .WithDynamoDBClient(() => dynamoClient)
+    .Build();
+FringeRepository repository = new(dynamoContext);
 
-if (showIds.Count == 0)
-{
-    Console.WriteLine("❗ No show IDs found. Exiting.");
-    return;
-}
-
-(List<Show>, List<Venue>, List<ContentRating>) detailScrapeResults = await DetailScraper.ScrapeShowsAsync(showIds);
-
-if (detailScrapeResults.Item1.Count == 0)
-{
-    Console.WriteLine("❗ No shows found. Exiting.");
-    return;
-}
-
-List<ShowTime> allShowTimes = await ShowTimeFetcher.PullShowtimesForShowsAsync(showIds);
-if (allShowTimes.Count == 0)
-{
-    Console.WriteLine("❗ No showtimes found. Exiting.");
-    return;
-}
-
-DatabaseInserter inserter = new(connectionString);
-await inserter.InsertDataAsync(
-    detailScrapeResults.Item1, 
-    detailScrapeResults.Item2, 
-    detailScrapeResults.Item3, 
-    allShowTimes);
-
-Console.WriteLine("✅ Scraping and database insertion complete.");
-
-
+await ScraperRunner.RunAsync(repository);

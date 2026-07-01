@@ -1,6 +1,26 @@
 .idea
 **/*/appSettings.json
 
+# .NET build artifacts
 **/*/bin/
 **/*/obj/
+
+# CDK entry-point source lives in infra/bin/ — don't ignore it
+!infra/bin/
+
+# Node / frontend
+node_modules/
+dist/
+cdk.out/
+
+# .NET Lambda publish output
+**/publish/
+
+# macOS
 **/.DS_Store
+
+# IAM trust policy (contains AWS account ID)
+trust.json
+
+# pnpm is used in fringe-client; npm generated this alongside it
+fringe-client/package-lock.json

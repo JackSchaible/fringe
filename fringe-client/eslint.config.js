@@ -28,7 +28,7 @@ module.exports = tseslint.config(
         "error",
         {
           type: "attribute",
-          prefix: "ch",
+          prefix: "fg",
           style: "camelCase",
         },
       ],
@@ -36,9 +36,13 @@ module.exports = tseslint.config(
         "error",
         {
           type: "element",
-          prefix: "ch",
+          prefix: "fg",
           style: "kebab-case",
         },
+      ],
+      "@angular-eslint/component-class-suffix": [
+        "error",
+        { suffixes: ["Component", "Page"] },
       ],
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unused-vars": [

@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DYNAMO_TABLE_NAME": "fringe",
+        "DYNAMO_ENDPOINT": "http://localhost:8000",
+        "ALLOWED_ORIGINS": "https://localhost:4200"
+      }
+    }
+  }
+}

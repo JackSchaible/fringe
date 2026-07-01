@@ -83,8 +83,6 @@ public static class ShowTimeFetcher
                     PerformanceDate = dto.performanceDate,
                     PresentationFormat = dto.presentationFormat,
                     Reserved = dto.reserved,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
                 }).ToList();
             }
 

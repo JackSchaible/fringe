@@ -1,0 +1,95 @@
+<div class="shows-page">
+  @if (loading()) {
+    <div class="loader">Loading shows…</div>
+  } @else {
+    <div class="columns">
+      <!-- Ranked list -->
+      <section class="ranked-col">
+        <div class="col-header">
+          <h2><fa-icon [icon]="faListOl" /> Your Ranking</h2>
+          @if (saving()) {
+            <fa-icon [icon]="faCircleNotch" animation="spin" class="saving-icon" title="Saving…" />
+          }
+        </div>
+
+        <div
+          cdkDropList
+          [cdkDropListData]="rankedShows()"
+          (cdkDropListDropped)="onDrop($event)"
+          class="drag-list"
+        >
+          @for (show of rankedShows(); track show.showId; let i = $index) {
+            <div cdkDrag class="ranked-item">
+              <span class="rank-num">{{ i + 1 }}</span>
+              <div class="drag-handle" cdkDragHandle>
+                <fa-icon [icon]="faGripVertical" />
+              </div>
+              @if (show.imageUrl) {
+                <img [src]="show.imageUrl" [alt]="show.title" class="thumb" />
+              } @else {
+                <div class="thumb-placeholder">
+                  <fa-icon [icon]="faMasksTheater" />
+                </div>
+              }
+              <div class="show-meta">
+                <span class="show-title">{{ show.title }}</span>
+                <span class="show-tag">{{ show.tag }}</span>
+              </div>
+              <button class="remove-btn" (click)="removeFromRanked(show, $event)" title="Remove">
+                <fa-icon [icon]="faXmark" />
+              </button>
+            </div>
+          } @empty {
+            <p class="empty-hint">Click a show on the right to add it to your ranking.</p>
+          }
+        </div>
+      </section>
+
+      <!-- Browse all shows -->
+      <section class="browse-col">
+        <div class="col-header">
+          <h2>Browse Shows</h2>
+          <input
+            class="search-input"
+            type="search"
+            placeholder="Search…"
+            [value]="searchQuery()"
+            (input)="searchQuery.set($any($event.target).value)"
+          />
+        </div>
+
+        <div class="shows-grid">
+          @for (show of filteredUnranked(); track show.showId) {
+            <button class="show-card" (click)="addToRanked(show)">
+              @if (show.imageUrl) {
+                <img [src]="show.imageUrl" [alt]="show.title" class="card-img" />
+              } @else {
+                <div class="card-img card-img-placeholder">
+                  <fa-icon [icon]="faMasksTheater" />
+                </div>
+              }
+              <div class="card-body">
+                <p class="card-title">{{ show.title }}</p>
+                @if (show.tag) { <p class="card-tag">{{ show.tag }}</p> }
+                <div class="card-meta">
+                  @if (show.contentRating) {
+                    <span class="rating-badge">{{ show.contentRating.code }}</span>
+                  }
+                  <span class="price">${{ show.price }}</span>
+                </div>
+              </div>
+            </button>
+          } @empty {
+            @if (noShows()) {
+              <p class="browse-empty">No shows yet — the scraper hasn't run. Check back soon.</p>
+            } @else if (searchQuery()) {
+              <p class="browse-empty">No shows match "{{ searchQuery() }}".</p>
+            } @else {
+              <p class="browse-empty">You've ranked all the shows!</p>
+            }
+          }
+        </div>
+      </section>
+    </div>
+  }
+</div>

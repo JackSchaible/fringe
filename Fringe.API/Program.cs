@@ -1,34 +1,66 @@
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
+using Fringe.API;
+using Fringe.Data;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
-
-// Add AWS Lambda support. When application is run in Lambda Kestrel is swapped out as the web server with Amazon.Lambda.AspNetCoreServer. This
-// package will act as the webserver translating request and responses between the Lambda event source and ASP.NET Core.
+builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
+
+var dynamoEndpoint = Environment.GetEnvironmentVariable("DYNAMO_ENDPOINT");
+if (!string.IsNullOrEmpty(dynamoEndpoint))
+{
+    builder.Services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(
+        new Amazon.Runtime.BasicAWSCredentials("local", "local"),
+        new AmazonDynamoDBConfig { ServiceURL = dynamoEndpoint }
+    ));
+}
+else
+{
+    builder.Services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
+}
+builder.Services.AddSingleton<IDynamoDBContext>(sp =>
+    new DynamoDBContextBuilder()
+        .WithDynamoDBClient(() => sp.GetRequiredService<IAmazonDynamoDB>())
+        .Build());
+builder.Services.AddScoped<FringeRepository>();
+
+// Auth: Cognito JWT in production, dev stub locally (pass X-Dev-User-Id header)
+var userPoolId = Environment.GetEnvironmentVariable("COGNITO_USER_POOL_ID");
+var region = Environment.GetEnvironmentVariable("AWS_REGION") ?? "us-east-1";
+
+if (!string.IsNullOrEmpty(userPoolId))
+{
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.Authority = $"https://cognito-idp.{region}.amazonaws.com/{userPoolId}";
+            options.TokenValidationParameters.ValidateAudience = false;
+        });
+}
+else
+{
+    builder.Services.AddAuthentication("Dev")
+        .AddScheme<AuthenticationSchemeOptions, DevAuthHandler>("Dev", null);
+}
+builder.Services.AddAuthorization();
+
+string[] allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(';') ?? [];
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()));
 
 WebApplication app = builder.Build();
 
-string connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING")
-                          ?? throw new Exception("CONNECTION_STRING is not set");
-
-builder.Services.AddDbContext<FringeContext>(options =>
-    options.UseSqlServer(connectionString));
-
-string[] allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(';') ?? [];
-
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-        policy.WithOrigins(allowedOrigins)
-            .AllowAnyHeader()
-            .AllowAnyMethod());
-});
-
-app.UseHttpsRedirection();
+app.UseCors();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
-app.MapGet("/", () => "Welcome to running ASP.NET Core Minimal API on AWS Lambda");
+app.MapGet("/", () => "Fringe API");
 
 app.Run();

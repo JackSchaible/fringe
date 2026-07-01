@@ -1,3 +1,24 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './guards/auth.guard';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+  { path: '', redirectTo: '/shows', pathMatch: 'full' },
+  { path: 'login', loadComponent: () => import('./pages/login/login').then(m => m.LoginPage) },
+  { path: 'auth/callback', loadComponent: () => import('./pages/auth-callback/auth-callback').then(m => m.AuthCallbackPage) },
+  {
+    path: 'shows',
+    loadComponent: () => import('./pages/shows/shows').then(m => m.ShowsPage),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'schedule',
+    loadComponent: () => import('./pages/schedule/schedule').then(m => m.SchedulePage),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'group',
+    loadComponent: () => import('./pages/group/group').then(m => m.GroupPage),
+    canActivate: [authGuard],
+  },
+  { path: '**', redirectTo: '/shows' },
+];

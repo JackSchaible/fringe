@@ -104,8 +104,6 @@ public static partial class DetailScraper
             LengthInMinutes = length,
             Venue = venue,
             ContentRating = contentRating,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
         };
 
         return show;
@@ -188,8 +186,6 @@ public static partial class DetailScraper
             Address = address,
             PostalCode = postal,
             Phone = phone,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
         };
     }
 

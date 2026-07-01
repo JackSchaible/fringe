@@ -1,0 +1,87 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+# OIDC requires these permissions on the workflow
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ca-central-1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Assumes an IAM role via OIDC — no long-lived credentials stored in secrets.
+      # See SETUP.md (below) for how to create the role.
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ hashFiles('fringe-client/pnpm-lock.yaml') }}
+          restore-keys: pnpm-
+
+      - name: Restore .NET packages
+        run: dotnet restore fringe.sln
+
+      - name: Publish Fringe.API
+        run: dotnet publish Fringe.API -c Release -o Fringe.API/publish
+
+      - name: Publish Fringe.Scraper
+        run: dotnet publish Fringe.Scraper -c Release -o Fringe.Scraper/publish
+
+      - name: Build Angular frontend
+        working-directory: fringe-client
+        run: pnpm install && pnpm run build
+
+      - name: Install CDK dependencies
+        working-directory: infra
+        run: npm ci
+
+      - name: CDK bootstrap
+        working-directory: infra
+        run: npx cdk bootstrap
+
+      - name: CDK deploy
+        working-directory: infra
+        run: npx cdk deploy --require-approval never --outputs-file cdk-outputs.json
+
+      - name: Print stack outputs
+        if: always()
+        working-directory: infra
+        run: cat cdk-outputs.json 2>/dev/null || true

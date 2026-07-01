@@ -1,5 +1,5 @@
 {
-  "name": "client-new",
+  "name": "fringe-client",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -21,14 +21,21 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/common": "^20.1.0",
-    "@angular/compiler": "^20.1.0",
-    "@angular/core": "^20.1.0",
-    "@angular/forms": "^20.1.0",
-    "@angular/platform-browser": "^20.1.0",
-    "@angular/router": "^20.1.0",
+    "@angular/cdk": "^22.0.2",
+    "@angular/common": "^22.0.4",
+    "@angular/compiler": "^22.0.4",
+    "@angular/core": "^22.0.4",
+    "@angular/forms": "^22.0.4",
+    "@angular/platform-browser": "^22.0.4",
+    "@angular/router": "^22.0.4",
+    "@fortawesome/angular-fontawesome": "^5.0.0",
     "@fortawesome/fontawesome-free": "^7.0.0",
+    "@fortawesome/fontawesome-svg-core": "^7.3.0",
+    "@fortawesome/pro-light-svg-icons": "^7.3.0",
+    "@fortawesome/pro-regular-svg-icons": "^7.3.0",
+    "@fortawesome/pro-solid-svg-icons": "^7.3.0",
     "@tailwindcss/postcss": "^4.1.11",
+    "aws-amplify": "^6.18.0",
     "cross-env": "^10.0.0",
     "cross-var": "^1.1.0",
     "postcss": "^8.5.6",
@@ -37,14 +44,14 @@
     "tslib": "^2.3.0"
   },
   "devDependencies": {
-    "@angular/build": "^20.1.3",
-    "@angular/cli": "^20.1.3",
-    "@angular/compiler-cli": "^20.1.0",
+    "@angular/build": "^22.0.4",
+    "@angular/cli": "^22.0.4",
+    "@angular/compiler-cli": "^22.0.4",
     "@eslint/css": "^0.10.0",
     "@eslint/js": "^9.32.0",
     "@eslint/json": "^0.13.1",
     "@types/jasmine": "~5.1.0",
-    "angular-eslint": "20.1.1",
+    "angular-eslint": "22.0.0",
     "autoprefixer": "^10.4.21",
     "dotenv-cli": "^9.0.0",
     "eslint": "^9.29.0",
@@ -56,7 +63,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.8.2",
+    "typescript": "~6.0.3",
     "typescript-eslint": "8.34.1"
   }
 }

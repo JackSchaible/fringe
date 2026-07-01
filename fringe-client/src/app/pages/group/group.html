@@ -1,0 +1,80 @@
+<div class="group-page">
+  @if (loading()) {
+    <p class="status">Loading…</p>
+  } @else if (myGroup()) {
+    <div class="group-info">
+      <h1>{{ myGroup()!.name }}</h1>
+
+      <div class="invite-row">
+        <div class="invite-code">{{ myGroup()!.inviteCode }}</div>
+        <button class="copy-btn" (click)="copyCode()">
+          @if (copied()) {
+            <fa-icon [icon]="faCheck" />
+            Copied
+          } @else {
+            <fa-icon [icon]="faCopy" />
+            Copy code
+          }
+        </button>
+      </div>
+
+      <p class="invite-hint">Share this code with friends so they can join your group.</p>
+
+      <h2><fa-icon [icon]="faUsers" /> Members <span class="count">{{ myGroup()!.members.length }}</span></h2>
+      <div class="members-list">
+        @for (member of myGroup()!.members; track member.userId) {
+          <div class="member-row">
+            <div class="avatar">{{ (member.displayName || member.email || '?')[0].toUpperCase() }}</div>
+            <div class="member-info">
+              <span class="member-name">{{ member.displayName || member.email || member.userId }}</span>
+              @if (member.email && member.displayName) {
+                <span class="member-email">{{ member.email }}</span>
+              }
+            </div>
+            <span class="vote-count">{{ member.voteCount }} ranked</span>
+          </div>
+        } @empty {
+          <p class="no-members">No members yet. Go invite some friends!</p>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="join-or-create">
+      <h1>Join your group</h1>
+      <p class="subtitle">Create a group and invite friends, or enter a code to join one.</p>
+
+      @if (error()) {
+        <p class="error-msg">{{ error() }}</p>
+      }
+
+      <div class="panels">
+        <div class="panel">
+          <h2><fa-icon [icon]="faCirclePlus" /> Create a group</h2>
+          <input
+            type="text"
+            placeholder="Group name (e.g. Fringe 2026)"
+            [value]="groupName()"
+            (input)="groupName.set($any($event.target).value)"
+            (keyup.enter)="createGroup()"
+          />
+          <button class="btn-primary" (click)="createGroup()">Create</button>
+        </div>
+
+        <div class="divider">or</div>
+
+        <div class="panel">
+          <h2><fa-icon [icon]="faTicket" /> Join with a code</h2>
+          <input
+            type="text"
+            placeholder="6-letter invite code"
+            [value]="inviteCode()"
+            (input)="inviteCode.set($any($event.target).value)"
+            (keyup.enter)="joinGroup()"
+            style="text-transform: uppercase; letter-spacing: 0.15em"
+          />
+          <button class="btn-primary" (click)="joinGroup()">Join</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

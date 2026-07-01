@@ -1,0 +1,59 @@
+<div class="schedule-page">
+  <h1>Group Schedule</h1>
+
+  @if (loading()) {
+    <p class="status">Computing schedule…</p>
+  } @else if (noGroup()) {
+    <div class="empty-state">
+      <fa-icon [icon]="faUserGroup" size="3x" class="empty-icon" />
+      <p>You're not in a group yet.</p>
+      <a routerLink="/group" class="btn-primary">Create or join a group</a>
+    </div>
+  } @else if (schedule().length === 0) {
+    <div class="empty-state">
+      <fa-icon [icon]="faCalendarXmark" size="3x" class="empty-icon" />
+      <p>No schedule yet. Your group needs to rank some shows first.</p>
+      <a routerLink="/shows" class="btn-primary">Go rate shows</a>
+    </div>
+  } @else {
+    <p class="subtitle">{{ schedule().length }} shows selected from group votes</p>
+    <div class="schedule-list">
+      @for (item of schedule(); track item.show.showId) {
+        <div class="schedule-item">
+          <div class="time-col">
+            <div class="day">{{ item.showTime | date:'EEE MMM d' }}</div>
+            <div class="time">{{ item.showTime | date:'h:mm a' }}</div>
+            <div class="duration">
+              <fa-icon [icon]="faClock" />
+              {{ item.show.lengthInMinutes }} min
+            </div>
+          </div>
+
+          <div class="show-col">
+            @if (item.show.imageUrl) {
+              <img [src]="item.show.imageUrl" [alt]="item.show.title" class="show-thumb" />
+            }
+            <div class="show-info">
+              <h2>{{ item.show.title }}</h2>
+              @if (item.show.tag) { <p class="tag">{{ item.show.tag }}</p> }
+              @if (item.show.venue) {
+                <p class="venue">
+                  <fa-icon [icon]="faLocationDot" />
+                  {{ item.show.venue.name }}
+                </p>
+              }
+              @if (item.show.contentRating) {
+                <span class="rating-badge">{{ item.show.contentRating.code }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="score-col">
+            <div class="score">{{ item.groupScore }}</div>
+            <div class="score-label">pts</div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
