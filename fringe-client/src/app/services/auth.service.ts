@@ -15,7 +15,8 @@ export class AuthService {
   // ── Email OTP (production) ───────────────────────────────────────────────
 
   async sendOtp(email: string): Promise<void> {
-    const { signUp, signIn } = await import('aws-amplify/auth');
+    const { signUp, signIn, signOut } = await import('aws-amplify/auth');
+    try { await signOut(); } catch { /* ignore stale session */ }
     try {
       await signUp({
         username: email,
@@ -30,7 +31,7 @@ export class AuthService {
 
   async confirmOtp(code: string): Promise<void> {
     const { confirmSignIn } = await import('aws-amplify/auth');
-    const { isSignedIn } = await confirmSignIn({ challengeResponse: code });
+    const { isSignedIn } = await confirmSignIn({ challengeResponse: code.trim() });
     if (!isSignedIn) throw new Error('Incorrect code — please try again.');
     await this.loadUserFromCognito();
   }
