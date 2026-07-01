@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
-import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
+import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { Construct } from 'constructs';
 import { FringeDynamo } from './constructs/dynamo';
 import { FringeApi } from './constructs/api';
@@ -7,18 +7,15 @@ import { FringeAuth } from './constructs/auth';
 import { FringeScraper } from './constructs/scraper';
 import { FringeFrontend } from './constructs/frontend';
 
+interface FringeStackProps extends cdk.StackProps {
+  certificate: Certificate;
+}
+
 export class FringeStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: FringeStackProps) {
     super(scope, id, props);
 
-    // ACM certificate covering both the frontend and API subdomains.
-    // CloudFront requires certificates in us-east-1; crossRegionReferences: true
-    // on the stack allows CDK to handle the cross-region reference automatically.
-    const certificate = new Certificate(this, 'Certificate', {
-      domainName: 'fringe.jackschaible.ca',
-      subjectAlternativeNames: ['api.fringe.jackschaible.ca'],
-      validation: CertificateValidation.fromDns(),
-    });
+    const { certificate } = props;
 
     cdk.Tags.of(this).add('project', 'fringe-app');
 

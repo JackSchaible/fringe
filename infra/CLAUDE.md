@@ -33,7 +33,7 @@ npx cdk deploy
 
 ## ACM certificate
 
-The cert covers `fringe.jackschaible.ca` and `api.fringe.jackschaible.ca`. CloudFront requires ACM certs in `us-east-1`; `crossRegionReferences: true` on the stack handles the cross-region reference automatically — no separate stack needed.
+The cert covers `fringe.jackschaible.ca` and `api.fringe.jackschaible.ca`. CloudFront requires ACM certs in `us-east-1`, so the cert lives in a dedicated `FringeCertStack` pinned to `us-east-1`. `FringeStack` receives it via props. Both stacks have `crossRegionReferences: true` so CDK can wire the cross-region reference.
 
 Validation is DNS-based. After the first deploy, CDK outputs a CNAME record to add at the registrar. The deploy will wait (up to 30 min) until the cert is validated.
 
