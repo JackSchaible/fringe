@@ -1,113 +1,120 @@
-﻿namespace FringeScraper.Services;
+namespace FringeScraper.Services;
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using AngleSharp.Html.Dom;
 using Models;
 
 public static class ShowTimeFetcher
 {
-    private const string AjaxUrl = "https://tickets.fringetheatre.ca/wp-admin/admin-ajax.php";
-
-    public static async Task<List<ShowTime>> PullShowtimesForShowsAsync(List<int> showIds)
-    {
-        Console.WriteLine($"🗂️ Found {showIds.Count} show IDs to pull showtimes for.");
-        ConcurrentBag<ShowTime> allShowtimes = [];
-        List<int> failedIds = [];
-        
-        await Parallel.ForEachAsync(showIds, new ParallelOptions { MaxDegreeOfParallelism = 25 }, async (showId, ct) =>
-        {
-            try
-            {
-                List<ShowTime> showtimes = await FetchShowtimesForShowAsync(showId);
-                foreach (ShowTime showtime in showtimes)
-                {
-                    allShowtimes.Add(showtime);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Error getting showtimes for show ID {showId}: {ex.Message}");
-                failedIds.Add(showId);
-            }
-            
-            await Task.Delay(Random.Shared.Next(50, 200), ct);
-        });
-
-        if (failedIds.Count > 0)
-            Console.WriteLine($"⚠️ Failed to get {failedIds.Count} showtimes: {string.Join(", ", failedIds)}");
-        
-        Console.WriteLine($"✅ Successfully scraped {allShowtimes.Count} showtimes.");
-        
-        return allShowtimes.ToList();
-    }
-    
-    private static readonly HttpClient Http = new()
-    {
-        BaseAddress = new Uri(AjaxUrl)
-    };
+    private const string BaseUrl = "https://tickets.fringetheatre.ca";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
 
+    public static async Task<List<ShowTime>> PullShowtimesForShowsAsync(List<int> showIds)
+    {
+        Console.WriteLine($"🗂️ Fetching showtimes for {showIds.Count} shows.");
+        ConcurrentBag<ShowTime> allShowtimes = [];
+        List<int> failedIds = [];
+
+        await Parallel.ForEachAsync(showIds, new ParallelOptions { MaxDegreeOfParallelism = 10 }, async (showId, ct) =>
+        {
+            try
+            {
+                List<ShowTime> showtimes = await FetchShowtimesForShowAsync(showId);
+                foreach (ShowTime showtime in showtimes)
+                    allShowtimes.Add(showtime);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error getting showtimes for show ID {showId}: {ex.GetType().Name}: {ex.Message}");
+                failedIds.Add(showId);
+            }
+
+            await Task.Delay(Random.Shared.Next(50, 200), ct);
+        });
+
+        if (failedIds.Count > 0)
+            Console.WriteLine($"⚠️ Failed to get showtimes for {failedIds.Count} shows: {string.Join(", ", failedIds)}");
+
+        if (allShowtimes.Count == 0)
+            Console.WriteLine("❌ All shows errored out — no showtimes were scraped.");
+        else
+            Console.WriteLine($"✅ Successfully scraped {allShowtimes.Count} showtimes.");
+
+        return allShowtimes.ToList();
+    }
+
     private static async Task<List<ShowTime>> FetchShowtimesForShowAsync(int showId)
     {
-        FormUrlEncodedContent content = new([
-            new KeyValuePair<string, string>("action", "GetShowtimesForEvent"),
-            new KeyValuePair<string, string>("selectedDateFormattedForSoap", "2025-08-11T00:00:00"),
-            new KeyValuePair<string, string>("selectedDateNextDayFormattedForSoap", "2025-08-24T23:59:59"),
-            new KeyValuePair<string, string>("eventId", $"601:{showId}")
-        ]);
+        string url = $"{BaseUrl}/event/601:{showId}";
+        IHtmlDocument document = await Fetcher.LoadAsync(url);
 
-        HttpResponseMessage response = await Http.PostAsync(AjaxUrl, content);
-        if (!response.IsSuccessStatusCode)
+        var node = document.GetElementById("event-data");
+        if (node == null)
         {
-            Console.WriteLine($"❗ Failed to fetch showtimes for show ID {showId}: {response.ReasonPhrase}");
+            Console.WriteLine($"⚠️ No #event-data element found on page for show ID {showId}.");
             return [];
         }
 
-        string body = await response.Content.ReadAsStringAsync();
-
-        try
+        string json = node.GetAttribute("data-performances") ?? "";
+        if (string.IsNullOrWhiteSpace(json))
         {
-            List<ShowTimeDto>? rawShowtimes = JsonSerializer.Deserialize<List<ShowTimeDto>>(body, JsonOptions);
-            if (rawShowtimes != null && rawShowtimes.Count != 0)
-            {
-                return rawShowtimes.Select(dto => new ShowTime
-                {
-                    ShowId = showId,
-                    DateTime = DateTime.Parse(dto.datetime),
-                    PerformanceTime = TimeOnly.Parse(dto.performanceTime),
-                    PerformanceDate = dto.performanceDate,
-                    PresentationFormat = dto.presentationFormat,
-                    Reserved = dto.reserved,
-                }).ToList();
-            }
+            Console.WriteLine($"⚠️ data-performances is empty for show ID {showId}.");
+            return [];
+        }
 
+        PerformancesData? data = JsonSerializer.Deserialize<PerformancesData>(json, JsonOptions);
+        if (data?.Times == null || data.Times.Count == 0)
+        {
             Console.WriteLine($"⚠️ No showtimes found for show ID {showId}.");
             return [];
         }
-        catch (Exception ex)
+
+        List<ShowTime> showtimes = [];
+        foreach (List<PerformanceDto> performances in data.Times.Values)
         {
-            Console.WriteLine($"❗ Error parsing showtimes for show ID {showId}: {ex.Message}");
-            return [];
+            foreach (PerformanceDto p in performances)
+            {
+                showtimes.Add(new ShowTime
+                {
+                    ShowId = showId,
+                    DateTime = DateTime.Parse(p.PerformanceRealTime),
+                    PerformanceTime = TimeOnly.Parse(p.PerformanceTime),
+                    PerformanceDate = p.PerformanceDate,
+                    PresentationFormat = p.PresentationFormat,
+                    Reserved = p.Reserved,
+                });
+            }
         }
+
+        return showtimes;
     }
-    
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
-    // ReSharper disable once ClassNeverInstantiated.Local
-    private class ShowTimeDto
+
+    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
+    private class PerformancesData
     {
-#pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
-        public required string id;
-        public string? title;
-        public required string datetime;
-        public required string performanceTime;
-        public required string performanceDate;
-        public required string presentationFormat;
-        public bool reserved;
-#pragma warning restore CS0649 // Field is never assigned to, and will always have its default value
+        [JsonPropertyName("times")]
+        public Dictionary<string, List<PerformanceDto>>? Times { get; set; }
+    }
+
+    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
+    private class PerformanceDto
+    {
+        [JsonPropertyName("presentationFormat")]
+        public string PresentationFormat { get; set; } = "";
+        [JsonPropertyName("performanceTime")]
+        public string PerformanceTime { get; set; } = "";
+        [JsonPropertyName("performanceRealTime")]
+        public string PerformanceRealTime { get; set; } = "";
+        [JsonPropertyName("performanceDate")]
+        public string PerformanceDate { get; set; } = "";
+        [JsonPropertyName("reserved")]
+        public bool Reserved { get; set; }
     }
 }

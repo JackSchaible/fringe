@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faClock, faLocationDot, faUserGroup, faCalendarXmark } from '@fortawesome/pro-light-svg-icons';
+import { faArrowUpRightFromSquare } from '@fortawesome/pro-solid-svg-icons';
 import { ApiService } from '../../services/api.service';
 import { ScheduleItem } from '../../models';
 
@@ -23,6 +24,11 @@ export class SchedulePage implements OnInit {
   protected readonly faLocationDot = faLocationDot;
   protected readonly faUserGroup = faUserGroup;
   protected readonly faCalendarXmark = faCalendarXmark;
+  protected readonly faArrowUpRightFromSquare = faArrowUpRightFromSquare;
+
+  fringeUrl(showId: number): string {
+    return `https://tickets.fringetheatre.ca/event/601:${showId}`;
+  }
 
   ngOnInit(): void {
     this.api.getSchedule().subscribe({

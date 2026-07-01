@@ -1,41 +1,44 @@
-﻿namespace FringeScraper.Services;
+namespace FringeScraper.Services;
 
 using System.Text.RegularExpressions;
-using HtmlAgilityPack;
+using AngleSharp.Html.Dom;
 
 public static partial class IndexScraper
 {
     private const string FringeIndexUrl = "https://tickets.fringetheatre.ca/events/";
-    
+
     public static async Task<List<int>> ScrapeIdsAsync()
     {
-        HtmlWeb web = new();
-        HtmlDocument document = await web.LoadFromWebAsync(FringeIndexUrl);
-        HtmlNodeCollection cards = document.DocumentNode.SelectNodes("//div[contains(@class, 'card') and contains(@class, 'text-left')]");
+        IHtmlDocument document = await Fetcher.LoadAsync(FringeIndexUrl);
+        var cards = document.QuerySelectorAll("div.card.text-left");
 
-        if (cards == null)
+        if (!cards.Any())
             throw new Exception("🫠 No cards found on the page.");
 
         List<int> ids = [];
-        foreach (HtmlNode card in cards)
+        foreach (var card in cards)
         {
-            string href = card.SelectSingleNode(".//div[contains(@class, 'card-footer')]//a").Attributes["href"].Value;
-            Match showIdMatch = ShowIdRegex().Match(href);
-            int showId = showIdMatch.Success ? int.Parse(showIdMatch.Groups[1].Value) : 0;
-            if (string.IsNullOrWhiteSpace(href))
+            var anchor = card.QuerySelector(".card-footer a");
+            if (anchor == null)
             {
-                Console.WriteLine("⚠️ No href found in card.");
+                Console.WriteLine("⚠️ No anchor found in card-footer.");
                 continue;
             }
-            
-            ids.Add(showId);
+            string href = anchor.GetAttribute("href") ?? "";
+            Match showIdMatch = ShowIdRegex().Match(href);
+            if (showIdMatch.Success)
+                ids.Add(int.Parse(showIdMatch.Groups[1].Value));
         }
-        
+
         if (ids.Count == 0)
             throw new Exception("🫠 No show IDs found on the page.");
-        
-        Console.WriteLine($"🗂️ Found {ids.Count} show IDs on the page.");
-        return ids;
+
+        List<int> unique = ids.Distinct().ToList();
+        if (unique.Count < ids.Count)
+            Console.WriteLine($"⚠️ Deduplicated {ids.Count - unique.Count} duplicate show IDs (page renders cards twice).");
+
+        Console.WriteLine($"🗂️ Found {unique.Count} show IDs on the page.");
+        return unique;
     }
 
     [GeneratedRegex(@"601:(\d+)")]

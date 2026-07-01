@@ -22,7 +22,14 @@ public class LambdaHandler
 
     public async Task FunctionHandler(ILambdaContext context)
     {
-        context.Logger.LogInformation("Fringe Scraper Lambda invoked.");
+        string? tableName = Environment.GetEnvironmentVariable("DYNAMO_TABLE_NAME");
+        if (string.IsNullOrWhiteSpace(tableName))
+        {
+            context.Logger.LogError("❌ DYNAMO_TABLE_NAME is not set. Set it in the Lambda environment configuration.");
+            return;
+        }
+
+        context.Logger.LogInformation($"Fringe Scraper Lambda invoked. Table: {tableName}");
         await ScraperRunner.RunAsync(_repository);
     }
 }

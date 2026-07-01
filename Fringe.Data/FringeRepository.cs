@@ -12,7 +12,7 @@ public class FringeRepository(IDynamoDBContext db)
     public async Task SaveShowsAsync(IEnumerable<Show> shows)
     {
         var batch = db.CreateBatchWrite<ShowRecord>();
-        foreach (Show show in shows)
+        foreach (Show show in shows.DistinctBy(s => s.Id))
             batch.AddPutItem(ToShowRecord(show));
         await batch.ExecuteAsync();
     }
@@ -20,17 +20,24 @@ public class FringeRepository(IDynamoDBContext db)
     public async Task SaveShowTimesAsync(IEnumerable<ShowTime> showTimes)
     {
         var batch = db.CreateBatchWrite<ShowTimeRecord>();
-        foreach (ShowTime st in showTimes)
+        foreach (ShowTime st in showTimes.DistinctBy(st => (st.ShowId, st.DateTime)))
             batch.AddPutItem(ToShowTimeRecord(st));
         await batch.ExecuteAsync();
     }
 
     public Task<List<ShowRecord>> GetAllShowsAsync() =>
-        db.QueryAsync<ShowRecord>("SHOW", new QueryConfig { IndexName = "entity-type-index" })
-          .GetRemainingAsync();
+        db.FromQueryAsync<ShowRecord>(new QueryOperationConfig
+        {
+            IndexName = "entity-type-index",
+            KeyExpression = new Expression
+            {
+                ExpressionStatement = "entityType = :et",
+                ExpressionAttributeValues = { [":et"] = new Primitive("SHOW") }
+            }
+        }).GetRemainingAsync();
 
-    public Task<ShowRecord?> GetShowAsync(int showId) =>
-        db.LoadAsync<ShowRecord>($"SHOW#{showId}", "METADATA");
+    public async Task<ShowRecord?> GetShowAsync(int showId) =>
+        await db.LoadAsync<ShowRecord>($"SHOW#{showId}", "METADATA");
 
     public Task<List<ShowTimeRecord>> GetShowTimesForShowAsync(int showId) =>
         db.QueryAsync<ShowTimeRecord>(
@@ -72,8 +79,8 @@ public class FringeRepository(IDynamoDBContext db)
     public async Task UpsertUserAsync(UserRecord user) =>
         await db.SaveAsync(user);
 
-    public Task<UserRecord?> GetUserAsync(string userId) =>
-        db.LoadAsync<UserRecord>($"USER#{userId}", "PROFILE");
+    public async Task<UserRecord?> GetUserAsync(string userId) =>
+        await db.LoadAsync<UserRecord>($"USER#{userId}", "PROFILE");
 
     // ── Groups ───────────────────────────────────────────────────────────────
 
@@ -87,8 +94,8 @@ public class FringeRepository(IDynamoDBContext db)
         });
     }
 
-    public Task<GroupRecord?> GetGroupAsync(string groupId) =>
-        db.LoadAsync<GroupRecord>($"GROUP#{groupId}", "METADATA");
+    public async Task<GroupRecord?> GetGroupAsync(string groupId) =>
+        await db.LoadAsync<GroupRecord>($"GROUP#{groupId}", "METADATA");
 
     public async Task<GroupRecord?> GetGroupByInviteCodeAsync(string inviteCode)
     {

@@ -42,9 +42,16 @@
                   {{ item.show.venue.name }}
                 </p>
               }
-              @if (item.show.contentRating) {
-                <span class="rating-badge">{{ item.show.contentRating.code }}</span>
-              }
+              <div class="show-badges">
+                @if (item.show.contentRating) {
+                  <span class="rating-badge">{{ item.show.contentRating.code }}</span>
+                }
+                <a class="ticket-link" [href]="fringeUrl(item.show.showId)" target="_blank"
+                   rel="noopener noreferrer">
+                  <fa-icon [icon]="faArrowUpRightFromSquare" />
+                  {{ +item.show.price === 0 ? 'Free' : '$' + item.show.price }}
+                </a>
+              </div>
             </div>
           </div>
 

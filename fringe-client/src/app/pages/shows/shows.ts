@@ -2,9 +2,9 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faGripVertical, faXmark, faCircleNotch } from '@fortawesome/pro-solid-svg-icons';
+import { faGripVertical, faXmark, faCircleNotch, faCircleInfo, faArrowUpRightFromSquare } from '@fortawesome/pro-solid-svg-icons';
 import { faListOl } from '@fortawesome/pro-regular-svg-icons';
-import { faMasksTheater } from '@fortawesome/pro-light-svg-icons';
+import { faMasksTheater, faClock, faLocationDot } from '@fortawesome/pro-light-svg-icons';
 import { ApiService } from '../../services/api.service';
 import { Show, Vote } from '../../models';
 
@@ -38,11 +38,17 @@ export class ShowsPage implements OnInit {
       );
   });
 
+  readonly selectedShow = signal<Show | null>(null);
+
   protected readonly faGripVertical = faGripVertical;
   protected readonly faXmark = faXmark;
   protected readonly faCircleNotch = faCircleNotch;
+  protected readonly faCircleInfo = faCircleInfo;
+  protected readonly faArrowUpRightFromSquare = faArrowUpRightFromSquare;
   protected readonly faListOl = faListOl;
   protected readonly faMasksTheater = faMasksTheater;
+  protected readonly faClock = faClock;
+  protected readonly faLocationDot = faLocationDot;
 
   ngOnInit(): void {
     void this.load();
@@ -72,6 +78,15 @@ export class ShowsPage implements OnInit {
     moveItemInArray(arr, event.previousIndex, event.currentIndex);
     this.rankedShows.set(arr);
     this.saveVotes();
+  }
+
+  selectShow(show: Show, event: Event): void {
+    event.stopPropagation();
+    this.selectedShow.set(show);
+  }
+
+  fringeUrl(showId: number): string {
+    return `https://tickets.fringetheatre.ca/event/601:${showId}`;
   }
 
   addToRanked(show: Show) {

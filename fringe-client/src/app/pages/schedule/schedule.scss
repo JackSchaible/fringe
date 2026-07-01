@@ -152,8 +152,16 @@
     gap: 0.3rem;
     font-size: 0.7rem;
     color: var(--text-5);
-    margin: 0 0 0.35rem;
+    margin: 0;
   }
+}
+
+.show-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
 }
 
 .rating-badge {
@@ -164,6 +172,19 @@
   padding: 0.1rem 0.4rem;
   border-radius: 0.25rem;
   letter-spacing: 0.03em;
+}
+
+.ticket-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-accent);
+  text-decoration: none;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.75; }
 }
 
 .score-col {

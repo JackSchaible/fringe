@@ -22,5 +22,8 @@ cdk.out/
 # IAM trust policy (contains AWS account ID)
 trust.json
 
+# Local scraper config (contains DynamoDB endpoint + festival dates)
+Fringe.Scraper/.env
+
 # pnpm is used in fringe-client; npm generated this alongside it
 fringe-client/package-lock.json

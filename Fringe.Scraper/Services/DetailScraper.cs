@@ -1,19 +1,21 @@
-﻿namespace FringeScraper.Services;
+namespace FringeScraper.Services;
 
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Text.RegularExpressions;
-using HtmlAgilityPack;
+using AngleSharp.Dom;
+using AngleSharp.Html.Dom;
 using Models;
 
 public static partial class DetailScraper
 {
     private const string BaseUrl = "https://tickets.fringetheatre.ca";
-    
+
     public static async Task<(List<Show>, List<Venue>, List<ContentRating>)> ScrapeShowsAsync(List<int> showIds)
     {
         ConcurrentBag<Show> shows = [];
         List<int> failedIds = [];
-        
+
         await Parallel.ForEachAsync(showIds, new ParallelOptions { MaxDegreeOfParallelism = 25 }, async (showId, ct) =>
         {
             try
@@ -26,33 +28,34 @@ public static partial class DetailScraper
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error scraping show ID {showId}: {ex.Message}");
+                Console.WriteLine($"❌ Error scraping show ID {showId}: {ex.GetType().Name}: {ex.Message}");
+                Console.WriteLine($"   at {ex.StackTrace?.Split('\n').FirstOrDefault()?.Trim()}");
                 failedIds.Add(showId);
             }
-            
+
             await Task.Delay(Random.Shared.Next(50, 200), ct);
         });
 
         if (failedIds.Count > 0)
             Console.WriteLine($"⚠️ Failed to scrape {failedIds.Count} shows: {string.Join(", ", failedIds)}");
-        
+
         Console.WriteLine($"✅ Successfully scraped {shows.Count} shows.");
-        
+
         List<Venue> dedupedVenues = shows
             .Select(s => s.Venue)
             .GroupBy(v => v.VenueNumber)
             .Select(g => g.First())
             .ToList();
-        
+
         List<ContentRating> dedupedRatings = shows
             .Select(s => s.ContentRating)
             .GroupBy(r => r.Code)
             .Select(g => g.First())
             .ToList();
-        
+
         Dictionary<int, Venue> venueDict = dedupedVenues.ToDictionary(v => v.VenueNumber);
         Dictionary<string, ContentRating> ratingDict = dedupedRatings.ToDictionary(r => r.Code);
-        
+
         foreach (Show show in shows)
         {
             if (venueDict.TryGetValue(show.Venue.VenueNumber, out Venue? venue))
@@ -65,21 +68,21 @@ public static partial class DetailScraper
             else
                 Console.WriteLine($"⚠️ Rating {show.ContentRating.Code} not found for show {show.Id}. Using default.");
         }
-        
+
         return (shows.ToList(), dedupedVenues, dedupedRatings);
     }
 
     private static async Task<Show?> ScrapeShowDetailsAsync(int showId)
     {
         string url = $"{BaseUrl}/event/601:{showId}";
-        HtmlWeb web = new();
-        HtmlDocument document = await web.LoadFromWebAsync(url);
-        
-        string? title = document.DocumentNode.SelectSingleNode("//div[contains(@class, 'content')]//h2")?.InnerText.Trim() ?? "";
-        HtmlNodeCollection? descriptionHtml = document.DocumentNode.SelectNodes("//div[contains(@class, 'content')]//p");
-        string plainTextDescription = string.Join("\n\n", descriptionHtml.Select(p => HtmlEntity.DeEntitize(p.InnerText.Trim())));
+        IHtmlDocument document = await Fetcher.LoadAsync(url);
 
-        string? tag = document.DocumentNode.SelectSingleNode("//ul[contains(@class, 'schedule')]/li[1]").InnerText.Trim() ?? "";
+        string title = document.QuerySelector(".content h2")?.TextContent.Trim() ?? "";
+        var descParagraphs = document.QuerySelectorAll(".content p");
+        string plainTextDescription = string.Join("\n\n",
+            descParagraphs.Select(p => p.TextContent.Trim()).Where(t => !string.IsNullOrWhiteSpace(t)));
+
+        string tag = document.QuerySelector("ul.schedule li:first-of-type")?.TextContent.Trim() ?? "";
 
         (decimal price, decimal fee) = ExtractPriceAndFee(document);
         DateOnly firstShowDate = ExtractFirstShowDate(document);
@@ -88,16 +91,16 @@ public static partial class DetailScraper
         ContentRating contentRating = ExtractContentRating(document);
         string description = ExtractOriginalDescription(document);
 
-        string? img = document.DocumentNode.SelectSingleNode("//img[contains(@class, 'event-image-square')]").GetAttributeValue("src", "");
-        
-        Show show = new Show
+        string img = document.QuerySelector("img.event-image-square")?.GetAttribute("src") ?? "";
+
+        return new Show
         {
             Id = showId,
-            Title = HtmlEntity.DeEntitize(title),
+            Title = title,
             PlainTextDescription = plainTextDescription,
             Description = description,
-            Tag = HtmlEntity.DeEntitize(tag),
-            ImageUrl = img ?? "",
+            Tag = tag,
+            ImageUrl = img,
             Price = price,
             Fee = fee,
             FirstShowDate = firstShowDate,
@@ -105,79 +108,75 @@ public static partial class DetailScraper
             Venue = venue,
             ContentRating = contentRating,
         };
-
-        return show;
     }
-    
-     private static (decimal Price, decimal Fee) ExtractPriceAndFee(HtmlDocument doc)
-    {
-        HtmlNode? priceNode = doc.DocumentNode.SelectSingleNode("//ul[contains(@class, 'schedule')]/li[contains(text(),'inc')]");
-        string text = priceNode?.InnerText ?? "";
-        Match match = PriceRegex().Match(text);
 
+    private static IEnumerable<string> ScheduleItemTexts(IHtmlDocument doc) =>
+        doc.QuerySelectorAll("ul.schedule li").Select(li => li.TextContent.Trim());
+
+    private static (decimal Price, decimal Fee) ExtractPriceAndFee(IHtmlDocument doc)
+    {
+        string text = ScheduleItemTexts(doc).FirstOrDefault(t => t.Contains("inc")) ?? "";
+        Match match = PriceRegex().Match(text);
         if (!match.Success) return (0, 0);
-        
+
         decimal total = decimal.Parse(match.Groups[1].Value);
         decimal fee = decimal.Parse(match.Groups[2].Value);
         return (total - fee, fee);
     }
 
-    private static DateOnly ExtractFirstShowDate(HtmlDocument doc)
+    private static DateOnly ExtractFirstShowDate(IHtmlDocument doc)
     {
-        string? dateText = doc.DocumentNode
-            .SelectSingleNode("//ul[contains(@class, 'schedule')]/li[contains(text(),'August')]")
-            ?.InnerText.Trim();
+        string? dateText = ScheduleItemTexts(doc).FirstOrDefault(t => DateRegex().IsMatch(t));
+        if (dateText == null) return DateOnly.MinValue;
 
-        if (dateText == null)
+        // Format: "9-July 12, 2026" → start day, month name, year
+        Match match = DateRegex().Match(dateText);
+        if (!match.Success) return DateOnly.MinValue;
+
+        if (!int.TryParse(match.Groups["day"].Value, out int day)) return DateOnly.MinValue;
+        if (!int.TryParse(match.Groups["year"].Value, out int year)) return DateOnly.MinValue;
+        if (!DateTime.TryParseExact(match.Groups["month"].Value, "MMMM",
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime monthDate))
             return DateOnly.MinValue;
 
-        // Example: "14-August 24, 2025" → we take 14th
-        Match match = DateRegex().Match(dateText);
-        if (match.Success &&
-            int.TryParse(match.Groups[1].Value, out int day) &&
-            int.TryParse(match.Groups[2].Value, out int year))
-        {
-            return new DateOnly(year, 8, day); // August is month 8
-        }
-
-        return DateOnly.MinValue;
+        return new DateOnly(year, monthDate.Month, day);
     }
 
-    private static int ExtractDuration(HtmlDocument doc)
+    private static int ExtractDuration(IHtmlDocument doc)
     {
-        string? durText = doc.DocumentNode
-            .SelectSingleNode("//ul[contains(@class, 'schedule')]/li[contains(text(),'minute')]")
-            ?.InnerText.Trim();
-
+        string? durText = ScheduleItemTexts(doc).FirstOrDefault(t => t.Contains("minute"));
         Match match = DurationRegex().Match(durText ?? "");
         return match.Success ? int.Parse(match.Groups[1].Value) : 0;
     }
 
-    private static Venue ExtractVenue(HtmlDocument doc)
+    private static Venue ExtractVenue(IHtmlDocument doc)
     {
-        HtmlNode? venueSection = doc.DocumentNode.SelectSingleNode("//section[contains(@class, 'venu-main')]");
-
-        // Grab the <h3> with the "##: Venue Name" format
-        HtmlNode? numberLine = venueSection?.SelectNodes(".//h3")?.FirstOrDefault(h =>
-            VenueIdAndNameRegex().IsMatch(h.InnerText.Trim()));
+        var venueSection = doc.QuerySelector("section.venu-main");
 
         int venueNumber = -1;
         string venueName = "Unknown";
 
-        if (numberLine != null)
+        if (venueSection != null)
         {
-            Match match = VenueIdRegex().Match(numberLine.InnerText.Trim());
-            if (match.Success)
+            var h3 = venueSection.QuerySelectorAll("h3")
+                .FirstOrDefault(h => VenueIdAndNameRegex().IsMatch(h.TextContent.Trim()));
+
+            if (h3 != null)
             {
-                venueNumber = int.Parse(match.Groups["num"].Value);
-                venueName = HtmlEntity.DeEntitize(match.Groups["name"].Value.Trim());
+                Match match = VenueIdRegex().Match(h3.TextContent.Trim());
+                if (match.Success)
+                {
+                    venueNumber = int.Parse(match.Groups["num"].Value);
+                    venueName = match.Groups["name"].Value.Trim();
+                }
             }
         }
 
-        // Address = first <p>
-        string address = venueSection?.SelectSingleNode(".//p[1]")?.InnerText.Trim() ?? "";
-        string postal = venueSection?.SelectSingleNode(".//p[2]")?.InnerText.Trim().Replace(" ", "") ?? "";
-        string phone = venueSection?.SelectSingleNode(".//span")?.InnerText.Trim().Replace("-", "").Replace(" ", "") ?? "";
+        var paras = venueSection?.QuerySelectorAll("p").ToList() ?? [];
+        string address = paras.Count > 0 ? paras[0].TextContent.Trim() : "";
+        string postal = paras.Count > 1 ? paras[1].TextContent.Trim().Replace(" ", "") : "";
+        string phone = venueSection?.QuerySelector("span")?.TextContent.Trim()
+            .Replace("-", "").Replace(" ", "") ?? "";
 
         return new Venue
         {
@@ -189,57 +188,47 @@ public static partial class DetailScraper
         };
     }
 
-    private static ContentRating ExtractContentRating(HtmlDocument doc)
+    private static ContentRating ExtractContentRating(IHtmlDocument doc)
     {
-        string? ratingText = doc.DocumentNode
-            .SelectSingleNode("//ul[contains(@class, 'schedule')]/li[contains(text(),'(')]")
-            ?.InnerText.Trim();
+        string? ratingText = ScheduleItemTexts(doc).FirstOrDefault(t => t.Contains("("));
 
         Match match = RatingRegex().Match(ratingText ?? "");
         if (match.Success)
         {
             return new ContentRating
             {
-                Name = HtmlEntity.DeEntitize(match.Groups[1].Value.Trim()),
+                Name = match.Groups[1].Value.Trim(),
                 Code = match.Groups[2].Value.Trim(),
                 Description = ""
             };
         }
 
-        return new ContentRating
-        {
-            Name = "Unrated",
-            Code = "UR",
-            Description = ""
-        };
+        return new ContentRating { Name = "Unrated", Code = "UR", Description = "" };
     }
-    
-    private static string ExtractOriginalDescription(HtmlDocument doc)
+
+    private static string ExtractOriginalDescription(IHtmlDocument doc)
     {
-        HtmlNode h2 = doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'content')]//h2");
+        var h2 = doc.QuerySelector(".content h2");
+        if (h2?.ParentElement == null) return "";
 
-        // Grab all <p> siblings after the title <h2>, but before <ul class="schedule">
-        HtmlNode contentNode = h2.ParentNode;
         List<string> paragraphs = [];
-
-        foreach (HtmlNode node in contentNode.ChildNodes)
+        foreach (INode node in h2.ParentElement.ChildNodes)
         {
-            if (node.Name == "ul" && node.GetAttributeValue("class", "").Contains("schedule"))
-                break;
+            if (node is not IElement el) continue;
+            if (el.LocalName == "ul" && el.ClassList.Contains("schedule")) break;
+            if (el.LocalName != "p") continue;
 
-            if (node.Name != "p") continue;
-            
-            string text = HtmlEntity.DeEntitize(node.InnerText.Trim());
+            string text = el.TextContent.Trim();
             if (!string.IsNullOrWhiteSpace(text))
                 paragraphs.Add(text);
         }
-        
+
         return string.Join("\n\n", paragraphs);
     }
 
     [GeneratedRegex(@"\$(\d+(?:\.\d+)?)\s+inc\s+\$(\d+(?:\.\d+)?)")]
     private static partial Regex PriceRegex();
-    [GeneratedRegex(@"(\d{1,2})-(?:\w+)\s+\d{1,2},\s*(\d{4})")]
+    [GeneratedRegex(@"(?<day>\d{1,2})-(?<month>[A-Za-z]+)\s+\d{1,2},\s*(?<year>\d{4})")]
     private static partial Regex DateRegex();
     [GeneratedRegex(@"(\d+)")]
     private static partial Regex DurationRegex();
