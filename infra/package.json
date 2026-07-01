@@ -8,6 +8,7 @@
     "cdk": "cdk"
   },
   "devDependencies": {
+    "@aws-sdk/client-ses": "^3.1077.0",
     "@types/aws-lambda": "^8.10.0",
     "@types/node": "22.x",
     "aws-cdk": "2.x",

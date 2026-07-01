@@ -110,6 +110,8 @@ jobs:
 
       - name: CDK deploy
         working-directory: infra
+        env:
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
         run: npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
 
       - name: Rebuild frontend if Cognito was just created (first deploy)
