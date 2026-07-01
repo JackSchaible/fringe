@@ -73,9 +73,27 @@ jobs:
       - name: Publish Fringe.Scraper
         run: dotnet publish Fringe.Scraper -c Release -o Fringe.Scraper/publish
 
+      - name: Install frontend dependencies
+        working-directory: fringe-client
+        run: pnpm install
+
+      - name: Fetch Cognito config from existing stack
+        run: |
+          POOL_ID=$(aws cloudformation describe-stacks --stack-name FringeStack \
+            --query "Stacks[0].Outputs[?OutputKey=='CognitoUserPoolId'].OutputValue" \
+            --output text 2>/dev/null || true)
+          CLIENT_ID=$(aws cloudformation describe-stacks --stack-name FringeStack \
+            --query "Stacks[0].Outputs[?OutputKey=='CognitoClientId'].OutputValue" \
+            --output text 2>/dev/null || true)
+          echo "COGNITO_POOL_ID=$POOL_ID" >> $GITHUB_ENV
+          echo "COGNITO_CLIENT_ID=$CLIENT_ID" >> $GITHUB_ENV
+
       - name: Build Angular frontend
         working-directory: fringe-client
-        run: pnpm install && pnpm run build
+        run: |
+          sed -i "s|cognitoUserPoolId: '[^']*'|cognitoUserPoolId: '$COGNITO_POOL_ID'|" src/environments/environment.prod.ts
+          sed -i "s|cognitoClientId: '[^']*'|cognitoClientId: '$COGNITO_CLIENT_ID'|" src/environments/environment.prod.ts
+          pnpm run build
 
       - name: Install CDK dependencies
         working-directory: infra
@@ -90,6 +108,20 @@ jobs:
       - name: CDK deploy
         working-directory: infra
         run: npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
+
+      - name: Rebuild frontend if Cognito was just created (first deploy)
+        run: |
+          NEW_POOL_ID=$(jq -r '.FringeStack.CognitoUserPoolId' infra/cdk-outputs.json)
+          NEW_CLIENT_ID=$(jq -r '.FringeStack.CognitoClientId' infra/cdk-outputs.json)
+          if [ "$NEW_POOL_ID" != "$COGNITO_POOL_ID" ] || [ "$NEW_CLIENT_ID" != "$COGNITO_CLIENT_ID" ]; then
+            echo "Cognito IDs changed (first deploy) — rebuilding frontend and redeploying..."
+            cd fringe-client
+            sed -i "s|cognitoUserPoolId: '[^']*'|cognitoUserPoolId: '$NEW_POOL_ID'|" src/environments/environment.prod.ts
+            sed -i "s|cognitoClientId: '[^']*'|cognitoClientId: '$NEW_CLIENT_ID'|" src/environments/environment.prod.ts
+            pnpm run build
+            cd ../infra
+            npx cdk deploy FringeStack --require-approval never
+          fi
 
       - name: Print stack outputs
         if: always()
