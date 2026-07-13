@@ -1,5 +1,20 @@
 namespace Fringe.API;
 
+public record AvailabilityWindowDto(string Start, string End);
+
+public record UserAvailabilityDto(List<AvailabilityWindowDto> Windows);
+
+public record ScheduleResponseDto(
+    List<ScheduleItemDto> Items,
+    List<AlternateProposalDto> AlternateProposals
+);
+
+public record AlternateProposalDto(
+    string Description,
+    string ExcludedMemberName,
+    List<ScheduleItemDto> Items
+);
+
 public record ShowDto(
     int ShowId,
     string Title,

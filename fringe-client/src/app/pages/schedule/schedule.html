@@ -16,9 +16,17 @@
       <a routerLink="/shows" class="btn-primary">Go rate shows</a>
     </div>
   } @else {
-    <p class="subtitle">{{ schedule().length }} shows selected from group votes</p>
+    @if (activeProposalIndex() !== null) {
+      <div class="active-banner">
+        <fa-icon [icon]="faCheck" />
+        Viewing alternate: {{ proposals()[activeProposalIndex()!].excludedMemberName }}'s constraints relaxed
+        <button class="btn-reset" (click)="resetToMain()">Back to main schedule</button>
+      </div>
+    }
+
+    <p class="subtitle">{{ activeSchedule().length }} shows selected from group votes</p>
     <div class="schedule-list">
-      @for (item of schedule(); track item.show.showId) {
+      @for (item of activeSchedule(); track item.show.showId) {
         <div class="schedule-item">
           <div class="time-col">
             <div class="day">{{ item.showTime | date:'EEE MMM d' }}</div>
@@ -62,5 +70,40 @@
         </div>
       }
     </div>
+
+    @if (proposals().length > 0 && activeProposalIndex() === null) {
+      <section class="proposals-section">
+        <h3 class="proposals-heading">Alternate Proposals</h3>
+        <p class="proposals-subtitle">These scenarios could fit more shows by relaxing one member's availability.</p>
+        @for (proposal of proposals(); track $index; let i = $index) {
+          <div class="proposal-card">
+            <div class="proposal-header" (click)="toggleProposal(i)">
+              <div class="proposal-text">{{ proposal.description }}</div>
+              <fa-icon [icon]="expandedProposal() === i ? faChevronUp : faChevronDown" class="proposal-chevron" />
+            </div>
+
+            @if (expandedProposal() === i) {
+              <div class="proposal-body">
+                <div class="proposal-schedule">
+                  @for (item of proposal.items; track item.show.showId) {
+                    <div class="proposal-item">
+                      <div class="proposal-time">
+                        <span class="proposal-day">{{ item.showTime | date:'EEE d' }}</span>
+                        <span class="proposal-clock">{{ item.showTime | date:'h:mm a' }}</span>
+                      </div>
+                      <div class="proposal-title">{{ item.show.title }}</div>
+                    </div>
+                  }
+                </div>
+                <button class="btn-accept" (click)="acceptProposal(i)">
+                  <fa-icon [icon]="faCheck" />
+                  Accept this scenario
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </section>
+    }
   }
 </div>

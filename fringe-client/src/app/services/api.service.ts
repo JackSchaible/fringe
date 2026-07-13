@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Group, ScheduleItem, Show, User, Vote } from '../models';
+import { Group, ScheduleResponse, Show, User, UserAvailability, Vote } from '../models';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -33,7 +33,15 @@ export class ApiService {
   }
 
   getSchedule() {
-    return this.http.get<ScheduleItem[]>(`${this.base}/api/schedule`);
+    return this.http.get<ScheduleResponse>(`${this.base}/api/schedule`);
+  }
+
+  getAvailability() {
+    return this.http.get<UserAvailability>(`${this.base}/api/availability`);
+  }
+
+  saveAvailability(availability: UserAvailability) {
+    return this.http.put<void>(`${this.base}/api/availability`, availability);
   }
 
   getMe() {

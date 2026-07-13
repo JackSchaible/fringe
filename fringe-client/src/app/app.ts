@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faFilm, faCalendarDays, faUsers, faArrowRightFromBracket } from '@fortawesome/pro-solid-svg-icons';
+import { faFilm, faCalendarDays, faUsers, faArrowRightFromBracket, faClock } from '@fortawesome/pro-solid-svg-icons';
 import { AuthService } from './services/auth.service';
 import { CookieConsentService } from './services/cookie-consent.service';
 import { CookieConsentDrawer } from './components/cookie-consent-drawer/cookie-consent-drawer';
@@ -22,6 +22,7 @@ export class AppComponent implements OnInit {
   protected readonly faCalendarDays = faCalendarDays;
   protected readonly faUsers = faUsers;
   protected readonly faArrowRightFromBracket = faArrowRightFromBracket;
+  protected readonly faClock = faClock;
 
   ngOnInit(): void {
     if (this.auth.devMode) {

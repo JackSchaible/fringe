@@ -1,0 +1,65 @@
+<div class="availability-page">
+  <h1>My Availability</h1>
+  <p class="subtitle">Mark the times you're free to attend shows. Only times where everyone is available will be scheduled.</p>
+
+  @if (loading()) {
+    <p class="status">Loading…</p>
+  } @else {
+    <div class="days-list">
+      @for (day of days(); track day.date) {
+        <div class="day-row">
+          <div class="day-label">
+            <span class="day-name">{{ day.label }}</span>
+          </div>
+
+          <div class="windows-col">
+            @for (win of day.windows; track $index; let i = $index) {
+              <div class="window-row">
+                <input
+                  type="time"
+                  [ngModel]="win.start"
+                  (ngModelChange)="updateWindow(day, i, 'start', $event)"
+                  class="time-input"
+                />
+                <span class="to-label">to</span>
+                <input
+                  type="time"
+                  [ngModel]="win.end"
+                  (ngModelChange)="updateWindow(day, i, 'end', $event)"
+                  class="time-input"
+                />
+                <button class="btn-icon btn-remove" (click)="removeWindow(day, i)" title="Remove window">
+                  <fa-icon [icon]="faTrash" />
+                </button>
+              </div>
+            }
+
+            <button class="btn-add-window" (click)="addWindow(day)">
+              <fa-icon [icon]="faPlus" />
+              Add window
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" (click)="save()" [disabled]="saving()">
+        @if (saving()) {
+          Saving…
+        } @else if (saved()) {
+          <fa-icon [icon]="faCheck" /> Saved
+        } @else {
+          Save Availability
+        }
+      </button>
+      <button class="btn-ghost" (click)="clearAll()">Clear all</button>
+    </div>
+
+    <p class="hint">
+      <fa-icon [icon]="faCalendarClock" />
+      Days with no windows are treated as unavailable once you've saved at least one window.
+      Members who haven't set availability are treated as always available.
+    </p>
+  }
+</div>

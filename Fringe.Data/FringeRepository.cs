@@ -158,6 +158,19 @@ public class FringeRepository(IDynamoDBContext db)
         await db.SaveAsync(user);
     }
 
+    // ── Availability ──────────────────────────────────────────────────────────
+
+    public async Task<UserAvailabilityRecord?> GetAvailabilityAsync(string userId) =>
+        await db.LoadAsync<UserAvailabilityRecord>($"USER#{userId}", "AVAILABILITY");
+
+    public async Task SaveAvailabilityAsync(string userId, List<AvailabilityWindowData> windows) =>
+        await db.SaveAsync(new UserAvailabilityRecord
+        {
+            Pk = $"USER#{userId}",
+            Sk = "AVAILABILITY",
+            Windows = windows
+        });
+
     // ── Mapping helpers ───────────────────────────────────────────────────────
 
     private static ShowRecord ToShowRecord(Show show) => new()

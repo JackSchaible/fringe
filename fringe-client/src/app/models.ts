@@ -56,3 +56,23 @@ export interface User {
   displayName: string;
   groupId?: string;
 }
+
+export interface AvailabilityWindow {
+  start: string; // ISO 8601 UTC
+  end: string;   // ISO 8601 UTC
+}
+
+export interface UserAvailability {
+  windows: AvailabilityWindow[];
+}
+
+export interface AlternateProposal {
+  description: string;
+  excludedMemberName: string;
+  items: ScheduleItem[];
+}
+
+export interface ScheduleResponse {
+  items: ScheduleItem[];
+  alternateProposals: AlternateProposal[];
+}

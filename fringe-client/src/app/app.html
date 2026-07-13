@@ -14,6 +14,10 @@
         <fa-icon [icon]="faUsers" />
         Group
       </a>
+      <a routerLink="/availability" routerLinkActive="active">
+        <fa-icon [icon]="faClock" />
+        Availability
+      </a>
     </div>
     <button class="nav-signout" (click)="auth.signOut()" title="Sign out">
       <fa-icon [icon]="faArrowRightFromBracket" />
