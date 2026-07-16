@@ -3,12 +3,16 @@ import {
   Certificate,
   CertificateValidation,
 } from "aws-cdk-lib/aws-certificatemanager";
-import { Construct } from "constructs";
+import type { Construct } from "constructs";
 
 export class CertStack extends cdk.Stack {
   public readonly certificate: Certificate;
 
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  public constructor(
+    scope: Readonly<Construct>,
+    id: string,
+    props?: Readonly<cdk.StackProps>,
+  ) {
     super(scope, id, props);
 
     this.certificate = new Certificate(this, "Certificate", {

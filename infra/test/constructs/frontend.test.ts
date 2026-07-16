@@ -1,9 +1,9 @@
 import { App, Stack } from "aws-cdk-lib";
-import { Template, Match } from "aws-cdk-lib/assertions";
 import {
   Certificate,
   CertificateValidation,
 } from "aws-cdk-lib/aws-certificatemanager";
+import { Match, Template } from "aws-cdk-lib/assertions";
 import { FringeFrontend } from "../../lib/constructs/frontend";
 
 describe("FringeFrontend", () => {

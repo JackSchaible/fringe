@@ -1,12 +1,12 @@
 import { App, Stack } from "aws-cdk-lib";
-import { Template, Match } from "aws-cdk-lib/assertions";
 import {
   Certificate,
   CertificateValidation,
 } from "aws-cdk-lib/aws-certificatemanager";
+import { Match, Template } from "aws-cdk-lib/assertions";
 import { FringeApi } from "../../lib/constructs/api";
-import { FringeDynamo } from "../../lib/constructs/dynamo";
 import { FringeAuth } from "../../lib/constructs/auth";
+import { FringeDynamo } from "../../lib/constructs/dynamo";
 
 describe("FringeApi", () => {
   let template: Template;

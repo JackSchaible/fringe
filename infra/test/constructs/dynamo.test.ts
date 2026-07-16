@@ -1,5 +1,5 @@
 import { App, Stack } from "aws-cdk-lib";
-import { Template, Match } from "aws-cdk-lib/assertions";
+import { Match, Template } from "aws-cdk-lib/assertions";
 import { FringeDynamo } from "../../lib/constructs/dynamo";
 
 describe("FringeDynamo", () => {

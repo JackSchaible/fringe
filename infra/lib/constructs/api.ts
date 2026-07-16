@@ -1,20 +1,20 @@
 import * as cdk from "aws-cdk-lib";
-import { TableV2 } from "aws-cdk-lib/aws-dynamodb";
 import {
-  Runtime,
-  Function as LambdaFunction,
   Code,
+  Function as LambdaFunction,
+  Runtime,
 } from "aws-cdk-lib/aws-lambda";
 import {
-  LambdaRestApi,
   DomainName,
-  SecurityPolicy,
   EndpointType,
+  LambdaRestApi,
+  SecurityPolicy,
 } from "aws-cdk-lib/aws-apigateway";
-import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
-import { PolicyStatement } from "aws-cdk-lib/aws-iam";
+import type { Certificate } from "aws-cdk-lib/aws-certificatemanager";
 import { Construct } from "constructs";
-import { FringeAuth } from "./auth";
+import type { FringeAuth } from "./auth";
+import { PolicyStatement } from "aws-cdk-lib/aws-iam";
+import type { TableV2 } from "aws-cdk-lib/aws-dynamodb";
 
 interface ApiProps {
   table: TableV2;
@@ -22,24 +22,30 @@ interface ApiProps {
   auth: FringeAuth;
 }
 
+const API_TIMEOUT_SECONDS = 30;
+
 export class FringeApi extends Construct {
   public readonly apiDomainTarget: string;
 
-  constructor(scope: Construct, id: string, props: ApiProps) {
+  public constructor(
+    scope: Readonly<Construct>,
+    id: string,
+    props: Readonly<ApiProps>,
+  ) {
     super(scope, id);
 
     const fn = new LambdaFunction(this, "ApiFunction", {
       runtime: Runtime.DOTNET_10,
       handler: "Fringe.API",
       code: Code.fromAsset("../Fringe.API/publish"),
-      timeout: cdk.Duration.seconds(30),
+      timeout: cdk.Duration.seconds(API_TIMEOUT_SECONDS),
       memorySize: 512,
       environment: {
         DYNAMO_TABLE_NAME: props.table.tableName,
         ALLOWED_ORIGINS:
           "https://fringe.jackschaible.ca;https://localhost:4200",
         COGNITO_USER_POOL_ID: props.auth.userPool.userPoolId,
-        TURNSTILE_SECRET_KEY: process.env["TURNSTILE_SECRET_KEY"] ?? "",
+        TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY ?? "",
       },
     });
 

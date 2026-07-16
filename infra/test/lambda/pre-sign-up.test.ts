@@ -1,8 +1,8 @@
+import type { Context, PreSignUpTriggerEvent } from "aws-lambda";
 import { handler } from "../../lambda/auth/pre-sign-up";
-import type { PreSignUpTriggerEvent, Context } from "aws-lambda";
 
-function makeEvent(): PreSignUpTriggerEvent {
-  return {
+const makeEvent = (): PreSignUpTriggerEvent =>
+  ({
     version: "1",
     region: "ca-central-1",
     userPoolId: "ca-central-1_abc123",
@@ -11,34 +11,68 @@ function makeEvent(): PreSignUpTriggerEvent {
     triggerSource: "PreSignUp_SignUp",
     request: {
       userAttributes: { email: "test@example.com" },
-      validationData: null as unknown as Record<string, string>,
+      validationData: { empty: "" },
     },
     response: {
       autoConfirmUser: false,
       autoVerifyEmail: false,
       autoVerifyPhone: false,
     },
-  } as unknown as PreSignUpTriggerEvent;
-}
+  }) satisfies PreSignUpTriggerEvent;
 
-const fakeContext = {} as Context;
+const noopCallback = (): void => {
+  // No-op
+};
+
+const TIME_IN_MS = 30000;
+const fakeContext: Context = {
+  awsRequestId: "12345678-1234-1234-1234-123456789012",
+  callbackWaitsForEmptyEventLoop: false,
+  done: () => {
+    // No-op
+  },
+  fail: () => {
+    // No-op
+  },
+  functionName: "test",
+  functionVersion: "1",
+  getRemainingTimeInMillis: () => TIME_IN_MS,
+  invokedFunctionArn: "arn:aws:lambda:ca-central-1:123456789012:function:test",
+  logGroupName: "/aws/lambda/test",
+  logStreamName: "2023/01/01/[$LATEST]abcdef123456abcdef123456abcdef12",
+  memoryLimitInMB: "128",
+  succeed: () => {
+    // No-op
+  },
+};
+
+// Handler's return type includes Lambda's unused legacy `void` callback branch — narrow it away here once.
+const invokeHandler = async (
+  event: Readonly<PreSignUpTriggerEvent>,
+): Promise<PreSignUpTriggerEvent> => {
+  const result = await handler(event, fakeContext, noopCallback);
+
+  if (typeof result !== "object") {
+    throw new Error("handler unexpectedly returned void");
+  }
+
+  return result;
+};
 
 describe("pre-sign-up handler", () => {
   it("sets autoConfirmUser to true", async () => {
-    const event = makeEvent();
-    const result = await handler(event, fakeContext, () => {});
-    expect(result!.response.autoConfirmUser).toBe(true);
+    const result = await invokeHandler(makeEvent());
+    expect(result.response.autoConfirmUser).toBe(true);
   });
 
   it("sets autoVerifyEmail to true", async () => {
-    const event = makeEvent();
-    const result = await handler(event, fakeContext, () => {});
-    expect(result!.response.autoVerifyEmail).toBe(true);
+    const result = await invokeHandler(makeEvent());
+    expect(result.response.autoVerifyEmail).toBe(true);
   });
 
   it("returns the event object", async () => {
     const event = makeEvent();
-    const result = await handler(event, fakeContext, () => {});
+    const result = await handler(event, fakeContext, noopCallback);
     expect(result).toBe(event);
   });
 
@@ -48,6 +82,6 @@ describe("pre-sign-up handler", () => {
       email: "another@example.com",
       name: "Test User",
     };
-    await expect(handler(event, fakeContext, () => {})).resolves.not.toThrow();
+    await expect(handler(event, fakeContext, noopCallback)).resolves.not.toThrow();
   });
 });

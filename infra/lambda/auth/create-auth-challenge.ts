@@ -1,17 +1,20 @@
+import type {
+  CreateAuthChallengeTriggerEvent,
+  CreateAuthChallengeTriggerHandler,
+  Handler,
+} from "aws-lambda";
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
-import type { CreateAuthChallengeTriggerHandler } from "aws-lambda";
 
 const ses = new SESClient({});
 
-export const handler: CreateAuthChallengeTriggerHandler = async (event) => {
-  const otp = String(Math.floor(100000 + Math.random() * 900000));
-  const toAddress = event.request.userAttributes["email"];
-  console.log("CreateAuthChallenge: sending OTP to", toAddress);
+const OTP_LOWER_BOUND = 100_000;
+const OTP_RANGE = 900_000;
 
+const sendOtpEmail = async (toAddress: string, otp: string): Promise<void> => {
   try {
     await ses.send(
       new SendEmailCommand({
-        Source: process.env["FROM_EMAIL"],
+        Source: process.env.FROM_EMAIL,
         Destination: { ToAddresses: [toAddress] },
         Message: {
           Subject: { Data: "Your Fringe sign-in code" },
@@ -28,9 +31,22 @@ export const handler: CreateAuthChallengeTriggerHandler = async (event) => {
     console.error("CreateAuthChallenge: SES send failed:", err);
     throw err;
   }
+};
+
+export const handler: Handler<
+  CreateAuthChallengeTriggerEvent,
+  CreateAuthChallengeTriggerEvent
+> = (async (
+  event: Readonly<CreateAuthChallengeTriggerEvent>,
+): Promise<CreateAuthChallengeTriggerEvent> => {
+  const otp = String(Math.floor(OTP_LOWER_BOUND + Math.random() * OTP_RANGE));
+  const toAddress = event.request.userAttributes.email;
+  console.log("CreateAuthChallenge: sending OTP to", toAddress);
+
+  await sendOtpEmail(toAddress, otp);
 
   event.response.publicChallengeParameters = { email: toAddress };
   event.response.privateChallengeParameters = { otp };
   event.response.challengeMetadata = "OTP";
   return event;
-};
+}) satisfies CreateAuthChallengeTriggerHandler;

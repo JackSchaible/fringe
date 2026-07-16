@@ -1,9 +1,9 @@
 import { App, Stack } from "aws-cdk-lib";
-import { Template, Match } from "aws-cdk-lib/assertions";
 import {
   Certificate,
   CertificateValidation,
 } from "aws-cdk-lib/aws-certificatemanager";
+import { Match, Template } from "aws-cdk-lib/assertions";
 import { FringeStack } from "../lib/fringe-stack";
 
 describe("FringeStack", () => {
@@ -62,9 +62,12 @@ describe("FringeStack", () => {
     });
 
     it("applies project=fringe-app tag to stack resources", () => {
-      // CDK stack-level tags propagate to taggable resources such as Lambda functions
-      // DynamoDB GlobalTable is not always taggable via CFN tag propagation;
-      // verify the tag is present on an IAM Role, which reliably receives it.
+      /*
+       * CDK stack-level tags propagate to taggable resources such as Lambda
+       * functions. DynamoDB GlobalTable is not always taggable via CFN tag
+       * propagation; verify the tag is present on an IAM Role, which
+       * reliably receives it.
+       */
       template.hasResourceProperties("AWS::IAM::Role", {
         Tags: Match.arrayWith([
           Match.objectLike({ Key: "project", Value: "fringe-app" }),

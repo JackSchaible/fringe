@@ -5,7 +5,7 @@ import { Construct } from "constructs";
 export class FringeDynamo extends Construct {
   public readonly table: TableV2;
 
-  constructor(scope: Construct, id: string) {
+  public constructor(scope: Readonly<Construct>, id: string) {
     super(scope, id);
 
     this.table = new TableV2(this, "Table", {

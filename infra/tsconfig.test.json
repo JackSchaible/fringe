@@ -1,6 +1,15 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "types": ["node", "jest"]
-  }
+    "types": ["node", "jest"],
+    "composite": true
+  },
+  "include": [
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "test/**/*.ts",
+    "tests/**/*.ts",
+    "lambda/**/*",
+    "lib/**/*"
+  ]
 }

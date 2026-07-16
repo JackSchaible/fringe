@@ -1,30 +1,59 @@
-import type { DefineAuthChallengeTriggerHandler } from "aws-lambda";
+import type {
+  DefineAuthChallengeTriggerEvent,
+  DefineAuthChallengeTriggerHandler,
+  Handler,
+} from "aws-lambda";
 
-export const handler: DefineAuthChallengeTriggerHandler = async (event) => {
+const NO_PRIOR_ATTEMPTS = 0;
+const SINGLE_ATTEMPT = 1;
+const FIRST_ATTEMPT_INDEX = 0;
+
+type ChallengeAttempt = DefineAuthChallengeTriggerEvent["request"]["session"][number];
+
+const resolveChallengeOutcome = (
+  session: ReadonlyArray<ChallengeAttempt>,
+): Pick<
+  DefineAuthChallengeTriggerEvent["response"],
+  "challengeName" | "failAuthentication" | "issueTokens"
+> => {
+  if (session.length === NO_PRIOR_ATTEMPTS) {
+    return {
+      issueTokens: false,
+      failAuthentication: false,
+      challengeName: "CUSTOM_CHALLENGE",
+    };
+  }
+
+  if (
+    session.length === SINGLE_ATTEMPT &&
+    session[FIRST_ATTEMPT_INDEX].challengeResult
+  ) {
+    return { issueTokens: true, failAuthentication: false };
+  }
+
+  return { issueTokens: false, failAuthentication: true };
+};
+
+export const handler: Handler<
+  DefineAuthChallengeTriggerEvent,
+  DefineAuthChallengeTriggerEvent
+> = (async (
+  event: Readonly<DefineAuthChallengeTriggerEvent>,
+): Promise<DefineAuthChallengeTriggerEvent> => {
   const { session } = event.request;
   console.log(
     "DefineAuthChallenge session length:",
     session.length,
     JSON.stringify(
-      session.map((s) => ({
-        name: s.challengeName,
-        result: s.challengeResult,
+      session.map((attempt) => ({
+        name: attempt.challengeName,
+        result: attempt.challengeResult,
       })),
     ),
   );
 
-  if (session.length === 0) {
-    event.response.issueTokens = false;
-    event.response.failAuthentication = false;
-    event.response.challengeName = "CUSTOM_CHALLENGE";
-  } else if (session.length === 1 && session[0].challengeResult === true) {
-    event.response.issueTokens = true;
-    event.response.failAuthentication = false;
-  } else {
-    event.response.issueTokens = false;
-    event.response.failAuthentication = true;
-  }
+  Object.assign(event.response, resolveChallengeOutcome(session));
 
   console.log("DefineAuthChallenge response:", JSON.stringify(event.response));
   return event;
-};
+}) satisfies DefineAuthChallengeTriggerHandler;

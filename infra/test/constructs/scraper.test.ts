@@ -1,7 +1,7 @@
 import { App, Stack } from "aws-cdk-lib";
-import { Template, Match } from "aws-cdk-lib/assertions";
-import { FringeScraper } from "../../lib/constructs/scraper";
+import { Match, Template } from "aws-cdk-lib/assertions";
 import { FringeDynamo } from "../../lib/constructs/dynamo";
+import { FringeScraper } from "../../lib/constructs/scraper";
 
 describe("FringeScraper", () => {
   let template: Template;

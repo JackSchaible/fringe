@@ -1,5 +1,5 @@
+import { Match, Template } from "aws-cdk-lib/assertions";
 import { App } from "aws-cdk-lib";
-import { Template, Match } from "aws-cdk-lib/assertions";
 import { CertStack } from "../lib/cert-stack";
 
 describe("CertStack", () => {
