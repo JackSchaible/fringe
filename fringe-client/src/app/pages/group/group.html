@@ -1,13 +1,22 @@
 <div class="group-page">
   @if (loading()) {
-    <p class="status">Loading…</p>
+    <p i18n="@@pages.group.group.03" class="status">Loading…</p>
   } @else if (myGroup()) {
     <div class="group-info">
-      <h1>{{ myGroup()!.name }}</h1>
+      <h1 i18n="@@pages.group.group-name-error">
+        {{ myGroup()?.name ?? "Error: Group Name Unavailable" }}
+      </h1>
 
       <div class="invite-row">
-        <div class="invite-code">{{ myGroup()!.inviteCode }}</div>
-        <button class="copy-btn" (click)="copyCode()">
+        <div class="invite-code" i18n="@@pages.group.invite-code-error">
+          {{ myGroup()?.inviteCode ?? "Error: Invite Code Unavailable" }}
+        </div>
+        <button
+          type="button"
+          i18n="@@pages.group.group.04"
+          class="copy-btn"
+          (click)="copyCode()"
+        >
           @if (copied()) {
             <fa-icon [icon]="faCheck" />
             Copied
@@ -18,30 +27,24 @@
         </button>
       </div>
 
-      <p class="invite-hint">Share this code with friends so they can join your group.</p>
+      <p i18n="@@pages.group.group.05" class="invite-hint">
+        Share this code with friends so they can join your group.
+      </p>
 
-      <h2><fa-icon [icon]="faUsers" /> Members <span class="count">{{ myGroup()!.members.length }}</span></h2>
-      <div class="members-list">
-        @for (member of myGroup()!.members; track member.userId) {
-          <div class="member-row">
-            <div class="avatar">{{ (member.displayName || member.email || '?')[0].toUpperCase() }}</div>
-            <div class="member-info">
-              <span class="member-name">{{ member.displayName || member.email || member.userId }}</span>
-              @if (member.email && member.displayName) {
-                <span class="member-email">{{ member.email }}</span>
-              }
-            </div>
-            <span class="vote-count">{{ member.voteCount }} ranked</span>
-          </div>
-        } @empty {
-          <p class="no-members">No members yet. Go invite some friends!</p>
-        }
-      </div>
+      <h2 i18n="@@group.members-heading">
+        <fa-icon [icon]="faUsers" /> Members
+        <span class="count">{{
+          myGroup()?.members?.length ?? "Error: Member Count Unavailable"
+        }}</span>
+      </h2>
+      <fg-group-members-list [members]="myGroup()?.members ?? []" />
     </div>
   } @else {
     <div class="join-or-create">
-      <h1>Join your group</h1>
-      <p class="subtitle">Create a group and invite friends, or enter a code to join one.</p>
+      <h1 i18n="@@pages.group.group.08">Join your group</h1>
+      <p i18n="@@pages.group.group.09" class="subtitle">
+        Create a group and invite friends, or enter a code to join one.
+      </p>
 
       @if (error()) {
         <p class="error-msg">{{ error() }}</p>
@@ -49,46 +52,122 @@
 
       <div class="panels">
         <div class="panel">
-          <h2><fa-icon [icon]="faCirclePlus" /> Create a group</h2>
+          <h2 i18n="@@group.create-heading">
+            <fa-icon [icon]="faCirclePlus" /> Create a group
+          </h2>
           <input
             type="text"
             placeholder="Group name (e.g. Fringe 2026)"
-            [value]="groupName()"
-            (input)="groupName.set($any($event.target).value)"
+            i18n-placeholder="@@pages.group.group.01.placeholder"
+            [ngModel]="groupName()"
+            (ngModelChange)="groupName.set($event)"
             (keyup.enter)="createGroup()"
           />
-          <button class="btn-primary" (click)="createGroup()">Create</button>
+          <button
+            type="button"
+            i18n="@@pages.group.group.10"
+            class="btn-primary"
+            (click)="createGroup()"
+          >
+            Create
+          </button>
         </div>
 
-        <div class="divider">or</div>
+        <div i18n="@@pages.group.group.11" class="divider">or</div>
 
         <div class="panel">
-          <h2><fa-icon [icon]="faTicket" /> Join with a code</h2>
+          <h2 i18n="@@group.join-heading">
+            <fa-icon [icon]="faTicket" /> Join with a code
+          </h2>
           <input
             type="text"
             placeholder="6-letter invite code"
-            [value]="inviteCode()"
-            (input)="inviteCode.set($any($event.target).value)"
+            class="invite-code-input"
+            [ngModel]="inviteCode()"
+            (ngModelChange)="inviteCode.set($event)"
             (keyup.enter)="joinGroup()"
-            style="text-transform: uppercase; letter-spacing: 0.15em"
           />
-          <button class="btn-primary" (click)="joinGroup()">Join</button>
+          <button
+            type="button"
+            i18n="@@pages.group.group.12"
+            class="btn-primary"
+            (click)="joinGroup()"
+          >
+            Join
+          </button>
         </div>
       </div>
     </div>
   }
 
+  <div class="settings-section">
+    <h2 i18n="@@group.display-name-heading">
+      <fa-icon [icon]="faUser" /> Display name
+    </h2>
+    <p i18n="@@pages.group.group.13" class="settings-hint">
+      This is how your name appears to group members and in the schedule.
+    </p>
+    <div class="settings-row">
+      <input
+        type="text"
+        placeholder="Your display name"
+        i18n-placeholder="@@pages.group.group.02.placeholder"
+        [ngModel]="username()"
+        (ngModelChange)="username.set($event)"
+        (keyup.enter)="saveUsername()"
+      />
+      <button
+        type="button"
+        i18n="@@pages.group.group.14"
+        class="btn-save"
+        [disabled]="savingUsername() || !username().trim()"
+        (click)="saveUsername()"
+      >
+        @if (usernameSaved()) {
+          <fa-icon [icon]="faCheck" /> Saved
+        } @else if (savingUsername()) {
+          Saving…
+        } @else {
+          Save
+        }
+      </button>
+    </div>
+  </div>
+
   <div class="danger-zone">
-    <h2>Danger zone</h2>
+    <h2 i18n="@@pages.group.group.15">Danger zone</h2>
     @if (!confirmingDelete()) {
-      <button class="btn-danger" (click)="confirmingDelete.set(true)">Delete my account</button>
+      <button
+        type="button"
+        i18n="@@pages.group.group.16"
+        class="btn-danger"
+        (click)="confirmingDelete.set(true)"
+      >
+        Delete my account
+      </button>
     } @else {
-      <p class="delete-warning">This will permanently delete your account, votes, and group membership. This cannot be undone.</p>
+      <p i18n="@@pages.group.group.17" class="delete-warning">
+        This will permanently delete your account, votes, and group membership.
+        This cannot be undone.
+      </p>
       <div class="delete-confirm-row">
-        <button class="btn-danger" (click)="deleteAccount()" [disabled]="deleting()">
-          {{ deleting() ? 'Deleting…' : 'Yes, delete my account' }}
+        <button
+          type="button"
+          class="btn-danger"
+          [disabled]="deleting()"
+          (click)="deleteAccount()"
+        >
+          {{ deleting() ? "Deleting…" : "Yes, delete my account" }}
         </button>
-        <button class="btn-cancel" (click)="confirmingDelete.set(false)" [disabled]="deleting()">Cancel</button>
+        <button
+          type="button"
+          i18n="@@pages.group.group.18"
+          class="btn-cancel"
+          [disabled]="deleting()"
+          (click)="confirmingDelete.set(false)"
+        >
+          Cancel
+        </button>
       </div>
     }
   </div>

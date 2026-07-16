@@ -1,39 +1,49 @@
 using Fringe.Data;
-using FringeScraper.Models;
+using Fringe.Data.Models;
 using FringeScraper.Services;
 
 namespace FringeScraper;
 
-public static class ScraperRunner
+/// <summary>Orchestrates the full scrape-and-insert pipeline.</summary>
+internal static class ScraperRunner
 {
-    public static async Task RunAsync(FringeRepository repository)
+    /// <summary>Runs the pipeline using the default HTTP fetcher.</summary>
+    public static Task RunAsync(FringeRepository repository)
     {
-        Console.WriteLine("Beginning Fringe Scraper...");
+        return RunAsync(repository, new Fetcher());
+    }
 
-        List<int> showIds = await IndexScraper.ScrapeIdsAsync();
+    /// <summary>Runs the pipeline using the provided fetcher.</summary>
+    public static async Task RunAsync(FringeRepository repository, IFetcher fetcher)
+    {
+        ScraperLogger.Log("Beginning Fringe Scraper...");
+
+        List<int> showIds = await IndexScraper.ScrapeIdsAsync(fetcher).ConfigureAwait(false);
         if (showIds.Count == 0)
         {
-            Console.WriteLine("No show IDs found. Exiting.");
+            ScraperLogger.Log("No show IDs found. Exiting.");
             return;
         }
 
-        (List<Show> shows, List<Venue> _, List<ContentRating> _) = await DetailScraper.ScrapeShowsAsync(showIds);
+        (List<Show> shows, List<Venue> _, List<ContentRating> _) =
+            await DetailScraper.ScrapeShowsAsync(showIds, fetcher).ConfigureAwait(false);
         if (shows.Count == 0)
         {
-            Console.WriteLine("No shows found. Exiting.");
+            ScraperLogger.Log("No shows found. Exiting.");
             return;
         }
 
-        List<ShowTime> allShowTimes = await ShowTimeFetcher.PullShowtimesForShowsAsync(showIds);
+        List<ShowTime> allShowTimes =
+            await ShowTimeFetcher.PullShowtimesForShowsAsync(showIds, fetcher).ConfigureAwait(false);
         if (allShowTimes.Count == 0)
         {
-            Console.WriteLine("No showtimes found. Exiting.");
+            ScraperLogger.Log("No showtimes found. Exiting.");
             return;
         }
 
         DatabaseInserter inserter = new(repository);
-        await inserter.InsertDataAsync(shows, allShowTimes);
+        await inserter.InsertDataAsync(shows, allShowTimes).ConfigureAwait(false);
 
-        Console.WriteLine("Scraping and insertion complete.");
+        ScraperLogger.Log("Scraping and insertion complete.");
     }
 }

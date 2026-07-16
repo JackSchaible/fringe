@@ -23,13 +23,13 @@ npx cdk deploy
 
 ## Construct layout
 
-| File | What it creates |
-|---|---|
-| `constructs/dynamo.ts` | DynamoDB `TableV2` (on-demand) + `entity-type-index` GSI |
-| `constructs/api.ts` | Lambda (Fringe.API) + REST API Gateway + custom domain |
-| `constructs/scraper.ts` | Lambda (Fringe.Scraper) + nightly EventBridge rule |
+| File                     | What it creates                                                         |
+| ------------------------ | ----------------------------------------------------------------------- |
+| `constructs/dynamo.ts`   | DynamoDB `TableV2` (on-demand) + `entity-type-index` GSI                |
+| `constructs/api.ts`      | Lambda (Fringe.API) + REST API Gateway + custom domain                  |
+| `constructs/scraper.ts`  | Lambda (Fringe.Scraper) + nightly EventBridge rule                      |
 | `constructs/frontend.ts` | S3 bucket + CloudFront OAC distribution + ACM cert + `BucketDeployment` |
-| `lib/fringe-stack.ts` | Root stack — wires constructs, provisions cert, outputs DNS values |
+| `lib/fringe-stack.ts`    | Root stack — wires constructs, provisions cert, outputs DNS values      |
 
 ## ACM certificate
 
@@ -67,19 +67,21 @@ aws iam create-open-id-connect-provider \
 ```json
 {
   "Version": "2012-10-17",
-  "Statement": [{
-    "Effect": "Allow",
-    "Principal": {
-      "Federated": "arn:aws:iam::<ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com"
-    },
-    "Action": "sts:AssumeRoleWithWebIdentity",
-    "Condition": {
-      "StringEquals": {
-        "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-        "token.actions.githubusercontent.com:sub": "repo:JackSchaible/fringe:ref:refs/heads/main"
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::<ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+          "token.actions.githubusercontent.com:sub": "repo:JackSchaible/fringe:ref:refs/heads/main"
+        }
       }
     }
-  }]
+  ]
 }
 ```
 

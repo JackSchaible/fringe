@@ -1,0 +1,57 @@
+@if (proposals().length > 0) {
+  <section class="proposals-section">
+    <h3 i18n="@@pages.schedule.schedule.16" class="proposals-heading">
+      Alternate Proposals
+    </h3>
+    <p class="proposals-subtitle">{{ subtitle() }}</p>
+    @for (proposal of proposals(); track $index; let i = $index) {
+      <div class="proposal-card">
+        <div
+          class="proposal-header"
+          role="button"
+          tabindex="0"
+          (click)="toggleProposal(i)"
+          (keydown.enter)="toggleProposal(i)"
+        >
+          <div class="proposal-text">{{ proposal.description }}</div>
+          <fa-icon
+            class="proposal-chevron"
+            [icon]="expandedProposal() === i ? faChevronUp : faChevronDown"
+          />
+        </div>
+        @if (expandedProposal() === i) {
+          @let newShows = blockedShows(proposal);
+          <div class="proposal-body">
+            <fg-needs-change
+              [newShows]="newShows"
+              [excludedMemberName]="proposal.excludedMemberName"
+            />
+            <p
+              i18n="@@pages.schedule.schedule.17"
+              class="proposal-schedule-label"
+            >
+              Full alternate schedule:
+            </p>
+            <div class="proposal-schedule">
+              @for (item of proposal.items; track item.show.showId) {
+                <fg-proposal-schedule-item
+                  [item]="item"
+                  [isNew]="isNewInProposal(item)"
+                />
+              }
+            </div>
+            <button
+              type="button"
+              i18n="@@schedule.accept-btn"
+              class="btn-accept"
+              (click)="onAccept(i)"
+            >
+              <fa-icon [icon]="faCheck" />
+              Accept this scenario
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </section>
+}

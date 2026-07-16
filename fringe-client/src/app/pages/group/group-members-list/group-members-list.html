@@ -1,0 +1,24 @@
+<div class="members-list">
+  @for (member of members(); track member.userId) {
+    <div class="member-row">
+      <div class="avatar">
+        {{ (member.displayName || member.email || "?")[0] | uppercase }}
+      </div>
+      <div class="member-info">
+        <span class="member-name">{{
+          member.displayName || member.email || member.userId
+        }}</span>
+        @if (member.email && member.displayName) {
+          <span class="member-email">{{ member.email }}</span>
+        }
+      </div>
+      <span i18n="@@pages.group.group.06" class="vote-count"
+        >{{ member.voteCount }} ranked</span
+      >
+    </div>
+  } @empty {
+    <p i18n="@@pages.group.group.07" class="no-members">
+      No members yet. Go invite some friends!
+    </p>
+  }
+</div>

@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'fg-terms',
   imports: [RouterLink],
-  templateUrl: './terms.html',
+  selector: 'fg-terms',
   styleUrl: './terms.scss',
+  templateUrl: './terms.html',
 })
 export class TermsPage {}

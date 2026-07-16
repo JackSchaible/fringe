@@ -1,0 +1,29 @@
+:host {
+  display: contents;
+}
+
+.detail-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-3);
+
+  fa-icon {
+    color: var(--text-4);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+}
+
+.detail-address {
+  font-size: 0.75rem;
+  color: var(--text-4);
+  margin: -0.4rem 0 0 1.35rem;
+}

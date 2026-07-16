@@ -6,27 +6,34 @@ using Fringe.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Mvc.Controllers;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApplicationPartManager(static apm =>
+    {
+        for (int i = apm.FeatureProviders.Count - 1; i >= 0; i--)
+        {
+            if (apm.FeatureProviders[i] is ControllerFeatureProvider)
+            {
+                apm.FeatureProviders.RemoveAt(i);
+            }
+        }
+        apm.FeatureProviders.Add(new InternalControllerFeatureProvider());
+    });
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IAmazonCognitoIdentityProvider, AmazonCognitoIdentityProviderClient>();
 builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.RestApi);
 
-var dynamoEndpoint = Environment.GetEnvironmentVariable("DYNAMO_ENDPOINT");
-if (!string.IsNullOrEmpty(dynamoEndpoint))
-{
-    builder.Services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(
+string? dynamoEndpoint = Environment.GetEnvironmentVariable("DYNAMO_ENDPOINT");
+_ = !string.IsNullOrEmpty(dynamoEndpoint)
+    ? builder.Services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(
         new Amazon.Runtime.BasicAWSCredentials("local", "local"),
         new AmazonDynamoDBConfig { ServiceURL = dynamoEndpoint }
-    ));
-}
-else
-{
-    builder.Services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
-}
+    ))
+    : builder.Services.AddSingleton<IAmazonDynamoDB, AmazonDynamoDBClient>();
 builder.Services.AddSingleton<IDynamoDBContext>(sp =>
     new DynamoDBContextBuilder()
         .WithDynamoDBClient(() => sp.GetRequiredService<IAmazonDynamoDB>())
@@ -34,21 +41,25 @@ builder.Services.AddSingleton<IDynamoDBContext>(sp =>
 builder.Services.AddScoped<FringeRepository>();
 
 // Auth: Cognito JWT in production, dev stub locally (pass X-Dev-User-Id header)
-var userPoolId = Environment.GetEnvironmentVariable("COGNITO_USER_POOL_ID");
-var region = Environment.GetEnvironmentVariable("AWS_REGION") ?? "us-east-1";
+string? userPoolId = Environment.GetEnvironmentVariable("COGNITO_USER_POOL_ID");
+string region = Environment.GetEnvironmentVariable("AWS_REGION") ?? "us-east-1";
 
 if (!string.IsNullOrEmpty(userPoolId))
 {
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    string? cognitoClientId = Environment.GetEnvironmentVariable("COGNITO_CLIENT_ID");
+    _ = builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
             options.Authority = $"https://cognito-idp.{region}.amazonaws.com/{userPoolId}";
-            options.TokenValidationParameters.ValidateAudience = false;
+            if (!string.IsNullOrEmpty(cognitoClientId))
+            {
+                options.Audience = cognitoClientId;
+            }
         });
 }
 else
 {
-    builder.Services.AddAuthentication("Dev")
+    _ = builder.Services.AddAuthentication("Dev")
         .AddScheme<AuthenticationSchemeOptions, DevAuthHandler>("Dev", null);
 }
 builder.Services.AddAuthorization();

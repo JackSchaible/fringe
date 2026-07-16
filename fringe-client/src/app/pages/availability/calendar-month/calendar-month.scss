@@ -1,0 +1,87 @@
+.month {
+  user-select: none;
+}
+
+.month-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-4);
+  margin-bottom: 0.5rem;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 36px);
+  gap: 3px;
+}
+
+.cal-dow {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--text-5);
+  text-align: center;
+  padding-bottom: 0.25rem;
+  letter-spacing: 0.04em;
+}
+
+.cal-day {
+  width: 36px;
+  height: 36px;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  position: relative;
+
+  &.empty {
+    background: transparent;
+  }
+
+  &.other {
+    color: var(--text-5);
+    background: transparent;
+  }
+
+  // Festival days — dark, clickable
+  &.festival {
+    background: var(--surface-raised);
+    border: 1px solid var(--border-2);
+    color: var(--text-2);
+    cursor: pointer;
+    font-family: inherit;
+    transition:
+      background 0.12s,
+      border-color 0.12s,
+      color 0.12s;
+    flex-direction: column;
+    gap: 1px;
+
+    &:hover {
+      background: var(--surface-accent);
+      border-color: rgba(167, 139, 250, 0.4);
+      color: var(--text-1);
+    }
+
+    &.selected {
+      background: rgba(124, 58, 237, 0.2);
+      border-color: rgba(167, 139, 250, 0.6);
+      color: var(--accent-light);
+    }
+
+    &.has-windows {
+      color: var(--text-1);
+    }
+  }
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  display: block;
+}

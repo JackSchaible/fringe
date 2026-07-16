@@ -1,0 +1,54 @@
+@let current = show();
+<div
+  class="show-card"
+  role="button"
+  tabindex="0"
+  (click)="add.emit(current)"
+  (keydown.enter)="add.emit(current)"
+>
+  @if (current.imageUrl) {
+    <img
+      class="card-img"
+      [width]="cardImageWidth"
+      [height]="cardImageHeight"
+      [ngSrc]="current.imageUrl"
+      [alt]="current.title"
+    />
+  } @else {
+    <div class="card-img card-img-placeholder">
+      <fa-icon [icon]="faMasksTheater" />
+    </div>
+  }
+  <div class="card-body">
+    <p class="card-title">{{ current.title }}</p>
+    @if (current.tag) {
+      <p class="card-tag">{{ current.tag }}</p>
+    }
+    <div class="card-meta">
+      @if (current.contentRating) {
+        <span class="rating-badge">{{ current.contentRating.code }}</span>
+      }
+      <a
+        class="price"
+        target="_blank"
+        rel="noopener noreferrer"
+        i18n-rel="@@pages.shows.shows.08.rel"
+        title="Buy tickets"
+        i18n-title="@@pages.shows.shows.09.title"
+        [href]="fringeUrl(current.showId)"
+        (click)="$event.stopPropagation()"
+      >
+        {{ +current.price === emptyPrice ? "Free" : `$${current.price}` }}
+      </a>
+      <button
+        type="button"
+        class="card-action-btn"
+        title="Show details"
+        i18n-title="@@pages.shows.shows.10.title"
+        (click)="onSelectClick($event)"
+      >
+        <fa-icon [icon]="faCircleInfo" />
+      </button>
+    </div>
+  </div>
+</div>

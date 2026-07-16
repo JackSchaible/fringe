@@ -1,0 +1,30 @@
+<div class="month">
+  <div class="month-label">{{ month().label }}</div>
+  <div class="cal-grid">
+    @for (name of dayNames(); track name) {
+      <div class="cal-dow">{{ name }}</div>
+    }
+    @for (week of month().weeks; track $index) {
+      @for (cell of week; track $index) {
+        @if (cell.isFestival && cell.festivalDay) {
+          <button
+            type="button"
+            class="cal-day festival"
+            [class.selected]="selectedDate() === cell.date"
+            [class.has-windows]="cell.festivalDay.hasWindows"
+            (click)="daySelect.emit(cell)"
+          >
+            {{ cell.dayNumber }}
+            @if (cell.festivalDay.hasWindows) {
+              <span class="dot"></span>
+            }
+          </button>
+        } @else if (cell.dayNumber) {
+          <div class="cal-day other">{{ cell.dayNumber }}</div>
+        } @else {
+          <div class="cal-day empty"></div>
+        }
+      }
+    }
+  </div>
+</div>

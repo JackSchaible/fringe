@@ -51,18 +51,26 @@ export class FringeAuth extends Construct {
       identity: Identity.domain("fringe.jackschaible.ca"),
     });
 
-    const defineAuthChallenge = new NodejsFunction(this, "DefineAuthChallenge", {
-      runtime: Runtime.NODEJS_22_X,
-      entry: path.join(lambdaDir, "define-auth-challenge.ts"),
-      bundling,
-    });
+    const defineAuthChallenge = new NodejsFunction(
+      this,
+      "DefineAuthChallenge",
+      {
+        runtime: Runtime.NODEJS_22_X,
+        entry: path.join(lambdaDir, "define-auth-challenge.ts"),
+        bundling,
+      },
+    );
 
-    const createAuthChallenge = new NodejsFunction(this, "CreateAuthChallenge", {
-      runtime: Runtime.NODEJS_22_X,
-      entry: path.join(lambdaDir, "create-auth-challenge.ts"),
-      environment: { FROM_EMAIL: fromEmail },
-      bundling,
-    });
+    const createAuthChallenge = new NodejsFunction(
+      this,
+      "CreateAuthChallenge",
+      {
+        runtime: Runtime.NODEJS_22_X,
+        entry: path.join(lambdaDir, "create-auth-challenge.ts"),
+        environment: { FROM_EMAIL: fromEmail },
+        bundling,
+      },
+    );
 
     createAuthChallenge.addToRolePolicy(
       new PolicyStatement({

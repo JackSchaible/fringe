@@ -7,6 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:coverage": "ng test --watch=false --browsers=ChromeHeadless --code-coverage",
     "lint": "ng lint"
   },
   "prettier": {
@@ -34,6 +35,10 @@
     "@fortawesome/pro-light-svg-icons": "^7.3.0",
     "@fortawesome/pro-regular-svg-icons": "^7.3.0",
     "@fortawesome/pro-solid-svg-icons": "^7.3.0",
+    "@fullcalendar/angular": "^6.1.21",
+    "@fullcalendar/core": "^6.1.21",
+    "@fullcalendar/interaction": "^6.1.21",
+    "@fullcalendar/timegrid": "^6.1.21",
     "@tailwindcss/postcss": "^4.1.11",
     "aws-amplify": "^6.18.0",
     "cross-env": "^10.0.0",
@@ -47,6 +52,7 @@
     "@angular/build": "^22.0.4",
     "@angular/cli": "^22.0.4",
     "@angular/compiler-cli": "^22.0.4",
+    "@angular/localize": "^22.0.6",
     "@eslint/css": "^0.10.0",
     "@eslint/js": "^9.32.0",
     "@eslint/json": "^0.13.1",
@@ -63,6 +69,9 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "stylelint": "^17.14.0",
+    "stylelint-config-recess-order": "^7.7.0",
+    "stylelint-config-standard-scss": "^17.0.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "8.34.1"
   }

@@ -1,69 +1,78 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faClock, faLocationDot, faUserGroup, faCalendarXmark, faChevronDown, faChevronUp } from '@fortawesome/pro-light-svg-icons';
-import { faArrowUpRightFromSquare, faCheck } from '@fortawesome/pro-solid-svg-icons';
+import type { AlternateProposal, MissedShow, ScheduleItem } from '../../models';
+import { Component, type OnInit, inject, signal } from '@angular/core';
+import {
+  faCalendarClock,
+  faCalendarXmark,
+  faUserGroup,
+} from '@fortawesome/pro-light-svg-icons';
+import { AlternateProposalsComponent } from './alternate-proposals/alternate-proposals';
 import { ApiService } from '../../services/api.service';
-import { AlternateProposal, ScheduleItem } from '../../models';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import type { HttpErrorResponse } from '@angular/common/http';
+import { MissedShowsListComponent } from './missed-shows-list/missed-shows-list';
+import { RouterLink } from '@angular/router';
+import { ScheduleItemRowComponent } from './schedule-item-row/schedule-item-row';
+import { faCheck } from '@fortawesome/pro-solid-svg-icons';
+
+const HTTP_BAD_REQUEST = 400;
 
 @Component({
+  imports: [
+    RouterLink,
+    FaIconComponent,
+    ScheduleItemRowComponent,
+    MissedShowsListComponent,
+    AlternateProposalsComponent,
+  ],
   selector: 'fg-schedule',
-  imports: [DatePipe, RouterLink, FaIconComponent],
-  templateUrl: './schedule.html',
   styleUrl: './schedule.scss',
+  templateUrl: './schedule.html',
 })
 export class SchedulePage implements OnInit {
-  private readonly api = inject(ApiService);
+  public readonly loading = signal(true);
+  public readonly noGroup = signal(false);
+  public readonly hasVotes = signal(false);
+  public readonly schedule = signal<Array<ScheduleItem>>([]);
+  public readonly proposals = signal<Array<AlternateProposal>>([]);
+  public readonly missedShows = signal<Array<MissedShow>>([]);
+  public readonly activeProposalIndex = signal<number | null>(null);
 
-  readonly loading = signal(true);
-  readonly noGroup = signal(false);
-  readonly schedule = signal<ScheduleItem[]>([]);
-  readonly proposals = signal<AlternateProposal[]>([]);
-  readonly expandedProposal = signal<number | null>(null);
-  readonly activeProposalIndex = signal<number | null>(null);
-
-  protected readonly faClock = faClock;
-  protected readonly faLocationDot = faLocationDot;
   protected readonly faUserGroup = faUserGroup;
   protected readonly faCalendarXmark = faCalendarXmark;
-  protected readonly faArrowUpRightFromSquare = faArrowUpRightFromSquare;
-  protected readonly faChevronDown = faChevronDown;
-  protected readonly faChevronUp = faChevronUp;
+  protected readonly faCalendarClock = faCalendarClock;
   protected readonly faCheck = faCheck;
 
-  fringeUrl(showId: number): string {
-    return `https://tickets.fringetheatre.ca/event/601:${showId}`;
-  }
+  private readonly api = inject(ApiService);
 
-  activeSchedule(): ScheduleItem[] {
+  public activeSchedule(): Array<ScheduleItem> {
     const idx = this.activeProposalIndex();
-    if (idx !== null) return this.proposals()[idx]?.items ?? this.schedule();
+    if (idx !== null) {
+      return this.proposals()[idx]?.items ?? this.schedule();
+    }
     return this.schedule();
   }
 
-  toggleProposal(index: number): void {
-    this.expandedProposal.update(cur => cur === index ? null : index);
-  }
-
-  acceptProposal(index: number): void {
+  public acceptProposal(index: number): void {
     this.activeProposalIndex.set(index);
-    this.expandedProposal.set(null);
   }
 
-  resetToMain(): void {
+  public resetToMain(): void {
     this.activeProposalIndex.set(null);
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.api.getSchedule().subscribe({
-      next: response => {
-        this.schedule.set(response.items);
-        this.proposals.set(response.alternateProposals);
+      error: (err: HttpErrorResponse) => {
+        if (err.status === HTTP_BAD_REQUEST) {
+          this.noGroup.set(true);
+        }
         this.loading.set(false);
       },
-      error: (err) => {
-        if (err.status === 400) this.noGroup.set(true);
+      next: (response) => {
+        this.hasVotes.set(response.hasVotes);
+        this.schedule.set(response.items);
+        this.proposals.set(response.alternateProposals);
+        this.missedShows.set(response.missedShows);
         this.loading.set(false);
       },
     });

@@ -1,50 +1,66 @@
 <div class="availability-page">
-  <h1>My Availability</h1>
-  <p class="subtitle">Mark the times you're free to attend shows. Only times where everyone is available will be scheduled.</p>
+  <div class="page-header">
+    <h1 i18n="@@pages.availability.availability.01">My Availability</h1>
+    <p i18n="@@pages.availability.availability.02" class="subtitle">
+      Click a festival day, then drag to mark the hours you're free.
+    </p>
+  </div>
 
   @if (loading()) {
-    <p class="status">Loading…</p>
+    <p i18n="@@pages.availability.availability.03" class="status">Loading…</p>
   } @else {
-    <div class="days-list">
-      @for (day of days(); track day.date) {
-        <div class="day-row">
-          <div class="day-label">
-            <span class="day-name">{{ day.label }}</span>
-          </div>
+    <div class="layout">
+      <!-- Month calendar grid(s) -->
+      <div class="calendars">
+        @for (month of calendarMonths(); track month.label) {
+          <fg-calendar-month
+            [month]="month"
+            [dayNames]="dayNames"
+            [selectedDate]="selectedDate()"
+            (daySelect)="selectDay($event)"
+          />
+        }
+      </div>
 
-          <div class="windows-col">
-            @for (win of day.windows; track $index; let i = $index) {
-              <div class="window-row">
-                <input
-                  type="time"
-                  [ngModel]="win.start"
-                  (ngModelChange)="updateWindow(day, i, 'start', $event)"
-                  class="time-input"
-                />
-                <span class="to-label">to</span>
-                <input
-                  type="time"
-                  [ngModel]="win.end"
-                  (ngModelChange)="updateWindow(day, i, 'end', $event)"
-                  class="time-input"
-                />
-                <button class="btn-icon btn-remove" (click)="removeWindow(day, i)" title="Remove window">
-                  <fa-icon [icon]="faTrash" />
-                </button>
-              </div>
-            }
-
-            <button class="btn-add-window" (click)="addWindow(day)">
-              <fa-icon [icon]="faPlus" />
-              Add window
+      <!-- Time picker -->
+      <div class="time-picker-col">
+        <div
+          i18n="@@pages.availability.availability.04"
+          class="no-day-selected"
+          [hidden]="selectedDate()"
+        >
+          ← Select a festival day
+        </div>
+        <div class="time-picker" [hidden]="!selectedDate()">
+          <div class="time-picker-header">
+            <span class="time-picker-date">{{ selectedDayLabel() }}</span>
+            <span
+              i18n="@@pages.availability.availability.05"
+              class="time-picker-hint"
+              >Drag to add · click to remove</span
+            >
+            <button
+              type="button"
+              i18n="@@pages.availability.availability.06"
+              class="btn-clear"
+              (click)="clearDay()"
+            >
+              Clear
             </button>
           </div>
+          <full-calendar #calendar [options]="calendarOptions" />
         </div>
-      }
+      </div>
     </div>
 
     <div class="actions">
-      <button class="btn-primary" (click)="save()" [disabled]="saving()">
+      <button
+        type="button"
+        i18n="@@pages.availability.availability.07"
+        class="btn-primary"
+        [disabled]="saving()"
+        (click)="save()"
+      >
         @if (saving()) {
           Saving…
         } @else if (saved()) {
@@ -53,13 +69,11 @@
           Save Availability
         }
       </button>
-      <button class="btn-ghost" (click)="clearAll()">Clear all</button>
     </div>
 
-    <p class="hint">
-      <fa-icon [icon]="faCalendarClock" />
-      Days with no windows are treated as unavailable once you've saved at least one window.
-      Members who haven't set availability are treated as always available.
+    <p i18n="@@pages.availability.availability.08" class="hint">
+      Members with no availability set are treated as always free. Once you
+      save, only your marked windows will be used for scheduling.
     </p>
   }
 </div>

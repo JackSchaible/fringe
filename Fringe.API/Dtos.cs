@@ -1,51 +1,81 @@
 namespace Fringe.API;
 
-public record AvailabilityWindowDto(string Start, string End);
+/// <summary>Represents a single availability window.</summary>
+internal record AvailabilityWindowDto(string Start, string End);
 
-public record UserAvailabilityDto(List<AvailabilityWindowDto> Windows);
+/// <summary>DTO for a user's availability windows.</summary>
+internal record UserAvailabilityDto(IReadOnlyList<AvailabilityWindowDto> Windows);
 
-public record ScheduleResponseDto(
-    List<ScheduleItemDto> Items,
-    List<AlternateProposalDto> AlternateProposals
+/// <summary>DTO for the computed group schedule response.</summary>
+internal record ScheduleResponseDto(
+    IReadOnlyList<ScheduleItemDto> Items,
+    IReadOnlyList<AlternateProposalDto> AlternateProposals,
+    IReadOnlyList<MissedShowDto> MissedShows,
+    bool HasVotes
 );
 
-public record AlternateProposalDto(
+/// <summary>DTO for a show that could not be scheduled.</summary>
+internal record MissedShowDto(
+    ShowDto Show,
+    bool ConflictsWithScheduled,
+    IReadOnlyList<string> BlockedByMembers
+);
+
+/// <summary>DTO for an alternate schedule proposal that excludes one member's constraints.</summary>
+internal record AlternateProposalDto(
     string Description,
     string ExcludedMemberName,
-    List<ScheduleItemDto> Items
+    IReadOnlyList<ScheduleItemDto> Items
 );
 
-public record ShowDto(
+/// <summary>DTO for a show returned from the API.</summary>
+internal record ShowDto(
     int ShowId,
     string Title,
     string? Description,
     string? PlainTextDescription,
-    string? ImageUrl,
+    Uri? ImageUrl,
     string? Tag,
     string Price,
     string Fee,
     int LengthInMinutes,
     VenueDto? Venue,
     ContentRatingDto? ContentRating,
-    List<string> ShowTimes
+    IReadOnlyList<string> ShowTimes
 );
 
-public record VenueDto(string Name, string Address, string Phone);
+/// <summary>DTO for a venue.</summary>
+internal record VenueDto(string Name, string Address, string Phone);
 
-public record ContentRatingDto(string Name, string Code, string? Description);
+/// <summary>DTO for a content rating.</summary>
+internal record ContentRatingDto(string Name, string Code, string? Description);
 
-public record VoteDto(int ShowId, int Rank);
+/// <summary>DTO for a user's vote on a show.</summary>
+internal record VoteDto(int ShowId, int Rank);
 
-public record GroupDto(string GroupId, string Name, string InviteCode, List<GroupMemberDto> Members);
+/// <summary>DTO for a group.</summary>
+internal record GroupDto(string GroupId, string Name, string InviteCode, IReadOnlyList<GroupMemberDto> Members);
 
-public record GroupMemberDto(string UserId, string? DisplayName, string? Email, int VoteCount);
+/// <summary>DTO for a group member.</summary>
+internal record GroupMemberDto(string UserId, string? DisplayName, string? Email, int VoteCount);
 
-public record ScheduleItemDto(ShowDto Show, string ShowTime, int GroupScore);
+/// <summary>DTO for a scheduled show item.</summary>
+internal record ScheduleItemDto(ShowDto Show, string ShowTime, int GroupScore);
 
-public record UserDto(string UserId, string Email, string DisplayName, string? GroupId);
+/// <summary>DTO for a user profile.</summary>
+internal record UserDto(string UserId, string? Email, string? DisplayName, string? GroupId);
 
-public record CreateGroupRequest(string Name);
+/// <summary>Request to create a group.</summary>
+internal record CreateGroupRequest(string Name);
 
-public record JoinGroupRequest(string InviteCode);
+/// <summary>Request to join a group by invite code.</summary>
+internal record JoinGroupRequest(string InviteCode);
 
-public record UpsertUserRequest(string Email, string DisplayName);
+/// <summary>Request to upsert the current user's profile.</summary>
+internal record UpsertUserRequest(string Email, string DisplayName);
+
+/// <summary>Request to update the current user's display name.</summary>
+internal record UpdateDisplayNameRequest(string DisplayName);
+
+/// <summary>Request body for captcha verification.</summary>
+internal record VerifyRequest(string Token);

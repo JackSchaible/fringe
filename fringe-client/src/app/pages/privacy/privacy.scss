@@ -16,7 +16,9 @@
     margin-bottom: 2rem;
     transition: color 0.15s;
 
-    &:hover { color: var(--text-1); }
+    &:hover {
+      color: var(--text-1);
+    }
   }
 
   h1 {
@@ -73,6 +75,8 @@
     text-decoration: underline;
     text-underline-offset: 2px;
 
-    &:hover { color: var(--accent-lighter); }
+    &:hover {
+      color: var(--accent-lighter);
+    }
   }
 }

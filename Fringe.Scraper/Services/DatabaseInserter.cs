@@ -1,16 +1,18 @@
 using Fringe.Data;
-using FringeScraper.Models;
+using Fringe.Data.Models;
 
 namespace FringeScraper.Services;
 
-public class DatabaseInserter(FringeRepository repository)
+/// <summary>Inserts scraped show data into DynamoDB via <see cref="FringeRepository"/>.</summary>
+internal sealed class DatabaseInserter(FringeRepository repository)
 {
-    public async Task InsertDataAsync(List<Show> shows, List<ShowTime> showTimes)
+    /// <summary>Saves shows and their showtimes to DynamoDB.</summary>
+    public async Task InsertDataAsync(IEnumerable<Show> shows, IEnumerable<ShowTime> showTimes)
     {
-        Console.WriteLine("Inserting shows into DynamoDB...");
-        await repository.SaveShowsAsync(shows);
+        ScraperLogger.Log("Inserting shows into DynamoDB...");
+        await repository.SaveShowsAsync(shows).ConfigureAwait(false);
 
-        Console.WriteLine("Inserting showtimes into DynamoDB...");
-        await repository.SaveShowTimesAsync(showTimes);
+        ScraperLogger.Log("Inserting showtimes into DynamoDB...");
+        await repository.SaveShowTimesAsync(showTimes).ConfigureAwait(false);
     }
 }

@@ -5,17 +5,19 @@ using System.Text.Encodings.Web;
 
 namespace Fringe.API;
 
-public class DevAuthHandler(
+/// <summary>Development-only authentication handler that reads the user ID from a request header.</summary>
+internal sealed class DevAuthHandler(
     IOptionsMonitor<AuthenticationSchemeOptions> options,
     ILoggerFactory logger,
     UrlEncoder encoder) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
+    /// <inheritdoc/>
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var userId = Request.Headers["X-Dev-User-Id"].FirstOrDefault() ?? "dev-user";
-        var claims = new[] { new Claim("sub", userId), new Claim(ClaimTypes.Name, userId) };
-        var identity = new ClaimsIdentity(claims, Scheme.Name);
-        var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme.Name);
+        string userId = Request.Headers["X-Dev-User-Id"].FirstOrDefault() ?? "dev-user";
+        Claim[] claims = [new Claim("sub", userId), new Claim(ClaimTypes.Name, userId)];
+        ClaimsIdentity identity = new(claims, Scheme.Name);
+        AuthenticationTicket ticket = new(new ClaimsPrincipal(identity), Scheme.Name);
         return Task.FromResult(AuthenticateResult.Success(ticket));
     }
 }

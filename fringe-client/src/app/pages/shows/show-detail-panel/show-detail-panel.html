@@ -1,0 +1,65 @@
+@let current = show();
+<div class="detail-backdrop" aria-hidden="true" (click)="dismiss.emit()"></div>
+<aside class="detail-panel">
+  <div class="detail-header">
+    <span class="detail-header-title">{{ current.title }}</span>
+    <button
+      type="button"
+      class="close-btn"
+      title="Close"
+      i18n-title="@@pages.shows.shows.11.title"
+      (click)="dismiss.emit()"
+    >
+      <fa-icon [icon]="faXmark" />
+    </button>
+  </div>
+
+  @if (current.imageUrl) {
+    <img
+      class="detail-img"
+      [width]="detailImageWidth"
+      [height]="detailImageHeight"
+      [ngSrc]="current.imageUrl"
+      [alt]="current.title"
+    />
+  }
+
+  <div class="detail-body">
+    <h3 class="detail-title">{{ current.title }}</h3>
+
+    <div class="detail-chips">
+      @if (current.tag) {
+        <span class="chip">{{ current.tag }}</span>
+      }
+      @if (current.contentRating) {
+        <span class="chip chip-rating">{{ current.contentRating.name }}</span>
+      }
+      <span
+        i18n="@@pages.shows.shows.19.showprice__0__free__show"
+        class="chip chip-price"
+        >{{
+          +current.price === emptyPrice ? "Free" : `$${current.price}`
+        }}</span
+      >
+    </div>
+
+    <fg-show-detail-stats [show]="current" />
+
+    @if (current.plainTextDescription || current.description) {
+      <p class="detail-desc">
+        {{ current.plainTextDescription || current.description }}
+      </p>
+    }
+
+    <a
+      class="book-btn"
+      target="_blank"
+      rel="noopener noreferrer"
+      i18n-rel="@@pages.shows.shows.12.rel"
+      [href]="fringeUrl(current.showId)"
+    >
+      <fa-icon [icon]="faArrowUpRightFromSquare" />
+      <span i18n="@@shows.book-tickets">Book tickets</span>
+    </a>
+  </div>
+</aside>

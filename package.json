@@ -1,0 +1,14 @@
+{
+  "name": "fringe",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "lint": "pnpm run lint:server && pnpm run lint:client",
+    "lint:server": "dotnet format fringe.sln --verify-no-changes",
+    "lint:client": "pnpm --dir fringe-client run lint",
+    "test": "pnpm run test:server && pnpm run test:client && pnpm run test:infra",
+    "test:server": "dotnet test fringe.sln --collect:\"XPlat Code Coverage\" --results-directory coverage/dotnet --logger trx",
+    "test:client": "pnpm --dir fringe-client run test:coverage",
+    "test:infra": "pnpm --prefix infra run test:coverage"
+  }
+}

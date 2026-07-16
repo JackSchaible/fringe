@@ -1,41 +1,59 @@
-namespace FringeScraper.Services;
-
+using System.Globalization;
 using System.Text.RegularExpressions;
+using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 
-public static partial class IndexScraper
+namespace FringeScraper.Services;
+
+/// <summary>Scrapes the Fringe index page to extract show IDs.</summary>
+internal static partial class IndexScraper
 {
-    private const string FringeIndexUrl = "https://tickets.fringetheatre.ca/events/";
+    private const string fringeIndexUrl = "https://tickets.fringetheatre.ca/events/";
 
-    public static async Task<List<int>> ScrapeIdsAsync()
+    /// <summary>Scrapes all show IDs from the Fringe index page using the default fetcher.</summary>
+    public static Task<List<int>> ScrapeIdsAsync()
     {
-        IHtmlDocument document = await Fetcher.LoadAsync(FringeIndexUrl);
-        var cards = document.QuerySelectorAll("div.card.text-left");
+        return ScrapeIdsAsync(new Fetcher());
+    }
 
-        if (!cards.Any())
-            throw new Exception("🫠 No cards found on the page.");
+    /// <summary>Scrapes all show IDs from the Fringe index page using the provided fetcher.</summary>
+    public static async Task<List<int>> ScrapeIdsAsync(IFetcher fetcher)
+    {
+        IHtmlDocument document = await fetcher.LoadAsync(new Uri(fringeIndexUrl)).ConfigureAwait(false);
+        IHtmlCollection<IElement> cards = document.QuerySelectorAll("div.card.text-left");
+
+        if (cards.Length == 0)
+        {
+            throw new InvalidOperationException(ScraperLogger.AsString("🫠 No cards found on the page."));
+        }
 
         List<int> ids = [];
-        foreach (var card in cards)
+        foreach (IElement card in cards)
         {
-            var anchor = card.QuerySelector(".card-footer a");
+            IElement? anchor = card.QuerySelector(".card-footer a");
             if (anchor == null)
             {
-                Console.WriteLine("⚠️ No anchor found in card-footer.");
+                ScraperLogger.Log("⚠️ No anchor found in card-footer.");
                 continue;
             }
             string href = anchor.GetAttribute("href") ?? "";
             Match showIdMatch = ShowIdRegex().Match(href);
             if (showIdMatch.Success)
-                ids.Add(int.Parse(showIdMatch.Groups[1].Value));
+            {
+                ids.Add(int.Parse(showIdMatch.Groups[1].Value, CultureInfo.InvariantCulture));
+            }
         }
 
         if (ids.Count == 0)
-            throw new Exception("🫠 No show IDs found on the page.");
+        {
+            throw new InvalidOperationException(ScraperLogger.AsString("🫠 No show IDs found on the page."));
+        }
 
-        List<int> unique = ids.Distinct().ToList();
+        List<int> unique = [.. ids.Distinct()];
         if (unique.Count < ids.Count)
+        {
             Console.WriteLine($"⚠️ Deduplicated {ids.Count - unique.Count} duplicate show IDs (page renders cards twice).");
+        }
 
         Console.WriteLine($"🗂️ Found {unique.Count} show IDs on the page.");
         return unique;

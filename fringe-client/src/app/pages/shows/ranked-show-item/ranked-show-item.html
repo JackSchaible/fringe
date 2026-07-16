@@ -1,0 +1,52 @@
+<div cdkDrag class="ranked-item">
+  <span class="rank-num">{{ rank() }}</span>
+  <div class="drag-handle" cdkDragHandle>
+    <fa-icon [icon]="faGripVertical" />
+  </div>
+  @if (show().imageUrl !== undefined) {
+    <img
+      class="thumb"
+      [width]="thumbSize"
+      [height]="thumbSize"
+      [ngSrc]="show().imageUrl ?? ''"
+      [alt]="show().title"
+    />
+  } @else {
+    <div class="thumb-placeholder">
+      <fa-icon [icon]="faMasksTheater" />
+    </div>
+  }
+  <div class="show-meta">
+    <span class="show-title">{{ show().title }}</span>
+    <span class="show-tag">{{ show().tag }}</span>
+  </div>
+  <a
+    class="ranked-action-btn"
+    target="_blank"
+    rel="noopener noreferrer"
+    i18n-rel="@@pages.shows.shows.03.rel"
+    title="Buy tickets"
+    i18n-title="@@pages.shows.shows.04.title"
+    [href]="fringeUrl(show().showId)"
+  >
+    <fa-icon [icon]="faArrowUpRightFromSquare" />
+  </a>
+  <button
+    type="button"
+    class="ranked-action-btn"
+    title="Show details"
+    i18n-title="@@pages.shows.shows.05.title"
+    (click)="viewDetails.emit(show())"
+  >
+    <fa-icon [icon]="faCircleInfo" />
+  </button>
+  <button
+    type="button"
+    class="remove-btn"
+    title="Remove"
+    i18n-title="@@pages.shows.shows.06.title"
+    (click)="onRemoveClick($event)"
+  >
+    <fa-icon [icon]="faXmark" />
+  </button>
+</div>

@@ -24,7 +24,7 @@ Add controllers to `Controllers/`. The `FringeRepository` is available for injec
 
 ## Environment variables
 
-| Variable | Purpose |
-|---|---|
+| Variable            | Purpose                            |
+| ------------------- | ---------------------------------- |
 | `DYNAMO_TABLE_NAME` | DynamoDB table (default: `fringe`) |
-| `ALLOWED_ORIGINS` | Semicolon-separated CORS origins |
+| `ALLOWED_ORIGINS`   | Semicolon-separated CORS origins   |

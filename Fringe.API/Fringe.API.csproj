@@ -17,4 +17,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Fringe.Data\Fringe.Data.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>Fringe.API.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

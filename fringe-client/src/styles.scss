@@ -4,22 +4,26 @@
 
 :root {
   // Accent (same in both themes)
-  --accent:         #7c3aed;
-  --accent-dark:    #6d28d9;
-  --accent-light:   #a78bfa;
+  --accent: #7c3aed;
+  --accent-dark: #6d28d9;
+  --accent-light: #a78bfa;
   --accent-lighter: #c4b5fd;
-  --accent-pink:    #e879f9;
-  --accent-red:     #f87171;
+  --accent-pink: #e879f9;
+  --accent-red: #f87171;
 
   // Surfaces
-  --bg:             #080812;
-  --bg-gradient:    radial-gradient(ellipse 90% 50% at 50% -5%, rgba(109, 40, 217, 0.22) 0%, transparent 100%);
-  --surface-nav:    rgba(8, 8, 18, 0.8);
-  --surface-card:   rgba(18, 18, 30, 0.8);
+  --bg: #080812;
+  --bg-gradient: radial-gradient(
+    ellipse 90% 50% at 50% -5%,
+    rgba(109, 40, 217, 0.22) 0%,
+    transparent 100%
+  );
+  --surface-nav: rgba(8, 8, 18, 0.8);
+  --surface-card: rgba(18, 18, 30, 0.8);
   --surface-raised: rgba(26, 26, 42, 0.8);
-  --surface-input:  rgba(0, 0, 0, 0.25);
-  --surface-hover:  rgba(255, 255, 255, 0.05);
-  --surface-badge:  rgba(255, 255, 255, 0.05);
+  --surface-input: rgba(0, 0, 0, 0.25);
+  --surface-hover: rgba(255, 255, 255, 0.05);
+  --surface-badge: rgba(255, 255, 255, 0.05);
   --surface-accent: rgba(109, 40, 217, 0.06);
 
   // Text
@@ -30,18 +34,19 @@
   --text-5: #334155;
 
   // Borders
-  --border-1:      rgba(255, 255, 255, 0.05);
-  --border-2:      rgba(255, 255, 255, 0.06);
-  --border-3:      rgba(255, 255, 255, 0.08);
-  --border-4:      rgba(255, 255, 255, 0.1);
-  --border-5:      rgba(255, 255, 255, 0.2);
+  --border-1: rgba(255, 255, 255, 0.05);
+  --border-2: rgba(255, 255, 255, 0.06);
+  --border-3: rgba(255, 255, 255, 0.08);
+  --border-4: rgba(255, 255, 255, 0.1);
+  --border-5: rgba(255, 255, 255, 0.2);
   --border-accent: rgba(167, 139, 250, 0.15);
 
   // Shadows
-  --shadow-sm:   0 4px 12px rgba(0, 0, 0, 0.3);
-  --shadow-md:   0 8px 30px rgba(0, 0, 0, 0.4);
-  --shadow-lg:   0 20px 60px rgba(0, 0, 0, 0.5);
-  --shadow-drag: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(167, 139, 250, 0.4);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --shadow-drag:
+    0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(167, 139, 250, 0.4);
 
   // Accent text — readable purple on current bg
   --text-accent: #c4b5fd;
@@ -50,20 +55,24 @@
   --gradient-heading: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
 
   // Scrollbar
-  --scrollbar-thumb:       #2d2d4a;
+  --scrollbar-thumb: #2d2d4a;
   --scrollbar-thumb-hover: #4c4c7a;
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    --bg:             #f5f3ff;
-    --bg-gradient:    radial-gradient(ellipse 90% 50% at 50% -5%, rgba(109, 40, 217, 0.07) 0%, transparent 100%);
-    --surface-nav:    rgba(255, 255, 255, 0.85);
-    --surface-card:   rgba(255, 255, 255, 0.9);
+    --bg: #f5f3ff;
+    --bg-gradient: radial-gradient(
+      ellipse 90% 50% at 50% -5%,
+      rgba(109, 40, 217, 0.07) 0%,
+      transparent 100%
+    );
+    --surface-nav: rgba(255, 255, 255, 0.85);
+    --surface-card: rgba(255, 255, 255, 0.9);
     --surface-raised: rgba(249, 247, 255, 0.95);
-    --surface-input:  rgba(0, 0, 0, 0.04);
-    --surface-hover:  rgba(0, 0, 0, 0.04);
-    --surface-badge:  rgba(0, 0, 0, 0.05);
+    --surface-input: rgba(0, 0, 0, 0.04);
+    --surface-hover: rgba(0, 0, 0, 0.04);
+    --surface-badge: rgba(0, 0, 0, 0.05);
     --surface-accent: rgba(109, 40, 217, 0.04);
 
     --text-1: #1e1b4b;
@@ -72,23 +81,24 @@
     --text-4: #6b7280;
     --text-5: #9ca3af;
 
-    --border-1:      rgba(0, 0, 0, 0.05);
-    --border-2:      rgba(0, 0, 0, 0.07);
-    --border-3:      rgba(0, 0, 0, 0.09);
-    --border-4:      rgba(0, 0, 0, 0.12);
-    --border-5:      rgba(0, 0, 0, 0.18);
+    --border-1: rgba(0, 0, 0, 0.05);
+    --border-2: rgba(0, 0, 0, 0.07);
+    --border-3: rgba(0, 0, 0, 0.09);
+    --border-4: rgba(0, 0, 0, 0.12);
+    --border-5: rgba(0, 0, 0, 0.18);
     --border-accent: rgba(109, 40, 217, 0.15);
 
-    --shadow-sm:   0 4px 12px rgba(0, 0, 0, 0.07);
-    --shadow-md:   0 8px 30px rgba(0, 0, 0, 0.1);
-    --shadow-lg:   0 20px 60px rgba(0, 0, 0, 0.1);
-    --shadow-drag: 0 12px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(109, 40, 217, 0.3);
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.07);
+    --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.1);
+    --shadow-drag:
+      0 12px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(109, 40, 217, 0.3);
 
     --text-accent: #6d28d9;
 
     --gradient-heading: linear-gradient(135deg, #1e1b4b 0%, #5b21b6 100%);
 
-    --scrollbar-thumb:       #c4b5fd;
+    --scrollbar-thumb: #c4b5fd;
     --scrollbar-thumb-hover: #a78bfa;
   }
 }
@@ -103,7 +113,12 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   background-color: var(--bg);
   background-image: var(--bg-gradient);
   background-attachment: fixed;
@@ -128,7 +143,108 @@ textarea {
   font-family: inherit;
 }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+// ── FullCalendar global overrides ─────────────────────────────────────────
+
+// ── Schedule page layout (global so encapsulation doesn't block it) ──────────
+
+.schedule-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.75rem;
+
+  @media (max-width: 720px) {
+    flex-direction: column;
+  }
+}
+
+.schedule-main {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.schedule-sidebar {
+  flex: 0 0 280px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  @media (max-width: 720px) {
+    flex: none;
+    width: 100%;
+  }
+}
+
+// ── FullCalendar overrides ────────────────────────────────────────────────────
+
+.fc {
+  // Suppress the redundant day-name column header (we show it in the picker header)
+  .fc-col-header {
+    display: none !important;
+  }
+
+  // Slot row height
+  .fc-timegrid-slot {
+    height: 1.75rem !important;
+    border-color: var(--border-1) !important;
+  }
+  .fc-timegrid-slot-minor {
+    border-top-style: dotted !important;
+  }
+
+  // Time labels on the left
+  .fc-timegrid-slot-label {
+    font-size: 0.65rem !important;
+    color: var(--text-5) !important;
+    vertical-align: middle !important;
+    border-color: var(--border-1) !important;
+  }
+
+  // Availability event blocks
+  .fc-timegrid-event {
+    border-radius: 0.375rem !important;
+    cursor: pointer !important;
+    border: none !important;
+
+    .fc-event-main {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.15rem 0.35rem;
+    }
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  // Selection highlight while dragging
+  .fc-highlight {
+    background: rgba(124, 58, 237, 0.25) !important;
+    border-radius: 0.25rem !important;
+  }
+
+  // Grid chrome
+  .fc-scrollgrid {
+    border: none !important;
+  }
+  .fc-scrollgrid td,
+  .fc-scrollgrid th {
+    border-color: var(--border-1) !important;
+  }
+  .fc-timegrid-col {
+    background: var(--surface-input) !important;
+  }
+}

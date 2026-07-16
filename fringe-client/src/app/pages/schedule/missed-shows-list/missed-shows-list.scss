@@ -1,0 +1,56 @@
+.missed-section {
+  padding-top: 0;
+}
+
+.missed-heading {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-4);
+  margin: 0 0 0.625rem;
+}
+
+.missed-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border-1);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.missed-title {
+  font-size: 0.875rem;
+  color: var(--text-3);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.missed-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.missed-tag {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.25rem;
+  letter-spacing: 0.02em;
+
+  &.conflict {
+    background: rgba(234, 179, 8, 0.12);
+    color: #a16207;
+  }
+
+  &.blocked {
+    background: rgba(239, 68, 68, 0.1);
+    color: #b91c1c;
+  }
+}
