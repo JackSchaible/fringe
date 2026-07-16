@@ -104,11 +104,11 @@ const makeCalendarApiMock = (): CalendarApiMock => {
     // AvailabilityPage's ViewChild ref is private and typed to the real FullCalendarComponent.
     // There's no public, typed seam to inject a test stand-in, so this reaches past the type system deliberately.
     (
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
       component as unknown as {
         calendarRef: () => { getApi: () => CalendarApiMock };
       }
-    ) // eslint-disable-line @typescript-eslint/no-unsafe-type-assertion
-    .calendarRef = (): { getApi: () => CalendarApiMock } => ({
+    ).calendarRef = (): { getApi: () => CalendarApiMock } => ({
       getApi: (): CalendarApiMock => calApi,
     });
 

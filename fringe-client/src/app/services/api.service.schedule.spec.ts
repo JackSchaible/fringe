@@ -149,6 +149,13 @@ describe('ApiService getSchedule filtering', () => {
     });
   });
 
+});
+
+describe('ApiService getSchedule filtering alternateProposals and missedShows', () => {
+  afterEach(() => {
+    TestBed.inject(HttpTestingController).verify();
+  });
+
   it('filters out invalid alternateProposals', () => {
     const { httpMock, service } = setup();
     service.getSchedule().subscribe((result) => {

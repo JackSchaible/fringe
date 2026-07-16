@@ -33,9 +33,7 @@ export class FringeStack extends cdk.Stack {
     this.createOutputs(constructs);
   }
 
-  private createConstructs(
-    certificate: Readonly<Certificate>,
-  ): StackConstructs {
+  private createConstructs(certificate: Certificate): StackConstructs {
     const dynamo = new FringeDynamo(this, "Dynamo");
     const auth = new FringeAuth(this, "Auth");
     const frontend = new FringeFrontend(this, "Frontend", { certificate });

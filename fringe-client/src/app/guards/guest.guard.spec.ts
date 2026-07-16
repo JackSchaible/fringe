@@ -35,8 +35,8 @@ describe('guestGuard', () => {
     // ActivatedRouteSnapshot/RouterStateSnapshot have no public constructor
     // (their base Tree/TreeNode classes aren't exported), and guestGuard
     // Ignores both params, so a real instance isn't obtainable for this fake.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     TestBed.runInInjectionContext(async () =>
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
       guestGuard({} as never, {} as never),
     );
 

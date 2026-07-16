@@ -98,23 +98,6 @@ describe('unauthorizedInterceptor non-401 errors', () => {
       .flush('Forbidden', { status: 403, statusText: 'Forbidden' });
   });
 
-  it('still propagates the error to the subscriber after handling 401', (done) => {
-    let receivedError = false;
-    setup();
-    TestBed.inject(HttpClient)
-      .get('/api/test')
-      .subscribe({
-        error: () => {
-          receivedError = true;
-          done();
-        },
-      });
-    TestBed.inject(HttpTestingController)
-      .expectOne('/api/test')
-      .flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
-    expect(receivedError).toBeTrue();
-  });
-
   it('propagates 500 errors without clearing session', (done) => {
     const { authService } = setup();
     TestBed.inject(HttpClient)
@@ -132,5 +115,28 @@ describe('unauthorizedInterceptor non-401 errors', () => {
         status: 500,
         statusText: 'Internal Server Error',
       });
+  });
+});
+
+describe('unauthorizedInterceptor error propagation', () => {
+  afterEach(() => {
+    TestBed.inject(HttpTestingController).verify();
+  });
+
+  it('still propagates the error to the subscriber after handling 401', (done) => {
+    let receivedError = false;
+    setup();
+    TestBed.inject(HttpClient)
+      .get('/api/test')
+      .subscribe({
+        error: () => {
+          receivedError = true;
+          done();
+        },
+      });
+    TestBed.inject(HttpTestingController)
+      .expectOne('/api/test')
+      .flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
+    expect(receivedError).toBeTrue();
   });
 });

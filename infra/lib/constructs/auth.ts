@@ -10,7 +10,7 @@ import { Runtime } from "aws-cdk-lib/aws-lambda";
 const FROM_EMAIL = "info@fringe.jackschaible.ca";
 
 interface Bundling {
-  externalModules: ReadonlyArray<string>;
+  externalModules: string[];
 }
 
 interface TriggerContext {

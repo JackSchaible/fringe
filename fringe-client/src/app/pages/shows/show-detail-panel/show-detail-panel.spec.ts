@@ -60,7 +60,9 @@ describe('ShowDetailPanelComponent', () => {
       getNativeElement(fixture).querySelector('.chip-rating')?.textContent,
     ).toContain('Parental Guidance');
   });
+});
 
+describe('ShowDetailPanelComponent pricing', () => {
   it('renders the price chip', async () => {
     const fixture = await build(show1);
     expect(
