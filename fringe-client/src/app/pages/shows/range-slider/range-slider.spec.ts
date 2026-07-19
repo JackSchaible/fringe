@@ -54,10 +54,9 @@ describe('RangeSliderComponent input events', () => {
     fixture.componentInstance.valueChange.subscribe((value) => {
       emitted.push(value);
     });
-    const [minInput] =
-      getNativeElement(fixture).querySelectorAll<HTMLInputElement>(
-        '.range-slider-input',
-      );
+    const [minInput] = getNativeElement(
+      fixture,
+    ).querySelectorAll<HTMLInputElement>('.range-slider-input');
     minInput.value = `${NARROWED_MIN}`;
     minInput.dispatchEvent(new Event('input'));
     expect(emitted).toEqual([[NARROWED_MIN, NARROWED_MAX]]);
@@ -69,10 +68,9 @@ describe('RangeSliderComponent input events', () => {
     fixture.componentInstance.valueChange.subscribe((value) => {
       emitted.push(value);
     });
-    const [minInput] =
-      getNativeElement(fixture).querySelectorAll<HTMLInputElement>(
-        '.range-slider-input',
-      );
+    const [minInput] = getNativeElement(
+      fixture,
+    ).querySelectorAll<HTMLInputElement>('.range-slider-input');
     minInput.value = `${NARROWED_MAX}`;
     minInput.dispatchEvent(new Event('input'));
     expect(emitted).toEqual([[NARROWED_MIN, NARROWED_MIN]]);
@@ -84,10 +82,9 @@ describe('RangeSliderComponent input events', () => {
     fixture.componentInstance.valueChange.subscribe((value) => {
       emitted.push(value);
     });
-    const [, maxInput] =
-      getNativeElement(fixture).querySelectorAll<HTMLInputElement>(
-        '.range-slider-input',
-      );
+    const [, maxInput] = getNativeElement(
+      fixture,
+    ).querySelectorAll<HTMLInputElement>('.range-slider-input');
     maxInput.value = `${NARROWED_MAX}`;
     maxInput.dispatchEvent(new Event('input'));
     expect(emitted).toEqual([[NARROWED_MIN, NARROWED_MAX]]);

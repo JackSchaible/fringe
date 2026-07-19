@@ -104,9 +104,7 @@ describe('ShowsFiltersComponent collapse behavior', () => {
 
   it('is collapsed by default, hiding the pill groups', async () => {
     const fixture = await buildCollapsed();
-    expect(
-      getNativeElement(fixture).querySelector('fg-pill-group'),
-    ).toBeNull();
+    expect(getNativeElement(fixture).querySelector('fg-pill-group')).toBeNull();
   });
 
   it('expands to show the pill groups when the header is clicked', async () => {
@@ -123,16 +121,12 @@ describe('ShowsFiltersComponent collapse behavior', () => {
   it('collapses again when the header is clicked twice', async () => {
     const fixture = await buildCollapsed(),
       header =
-        getNativeElement(fixture).querySelector<HTMLElement>(
-          '.filters-header',
-        );
+        getNativeElement(fixture).querySelector<HTMLElement>('.filters-header');
     header?.click();
     fixture.detectChanges();
     header?.click();
     fixture.detectChanges();
-    expect(
-      getNativeElement(fixture).querySelector('fg-pill-group'),
-    ).toBeNull();
+    expect(getNativeElement(fixture).querySelector('fg-pill-group')).toBeNull();
   });
 });
 

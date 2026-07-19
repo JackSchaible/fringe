@@ -39,17 +39,13 @@ describe('PillGroupComponent rendering', () => {
     fixture.componentRef.setInput('options', []);
     fixture.componentRef.setInput('selected', new Set());
     fixture.detectChanges();
-    expect(
-      getNativeElement(fixture).querySelector('.filter-group'),
-    ).toBeNull();
+    expect(getNativeElement(fixture).querySelector('.filter-group')).toBeNull();
   });
 
   it('marks a selected option as active', async () => {
     const fixture = await build(new Set(['Comedy'])),
       [firstPill] =
-        getNativeElement(fixture).querySelectorAll<HTMLButtonElement>(
-          '.pill',
-        );
+        getNativeElement(fixture).querySelectorAll<HTMLButtonElement>('.pill');
     expect(firstPill.className).toContain('active');
   });
 });

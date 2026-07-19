@@ -48,23 +48,21 @@ export class ShowsFiltersComponent {
       .map((tag) => ({ label: tag, value: tag }));
   });
 
-  protected readonly ratingOptions = computed<ReadonlyArray<PillOption>>(
-    () => {
-      const byCode = new Map<string, PillOption>();
-      for (const show of this.shows()) {
-        if (show.contentRating) {
-          byCode.set(show.contentRating.code, {
-            label: show.contentRating.code,
-            title: show.contentRating.name,
-            value: show.contentRating.code,
-          });
-        }
+  protected readonly ratingOptions = computed<ReadonlyArray<PillOption>>(() => {
+    const byCode = new Map<string, PillOption>();
+    for (const show of this.shows()) {
+      if (show.contentRating) {
+        byCode.set(show.contentRating.code, {
+          label: show.contentRating.code,
+          title: show.contentRating.name,
+          value: show.contentRating.code,
+        });
       }
-      return [...byCode.values()].sort((first, second) =>
-        byLocaleCompare(first.value, second.value),
-      );
-    },
-  );
+    }
+    return [...byCode.values()].sort((first, second) =>
+      byLocaleCompare(first.value, second.value),
+    );
+  });
 
   protected readonly locationOptions = computed<ReadonlyArray<PillOption>>(
     () => {
