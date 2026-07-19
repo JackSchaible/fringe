@@ -71,6 +71,7 @@ export class AvailabilityPage implements OnInit {
       api.unselect();
       this.syncWindowsFromCalendar();
     },
+    selectLongPressDelay: 0,
     selectMirror: true,
     selectable: true,
     slotDuration: '00:30:00',
