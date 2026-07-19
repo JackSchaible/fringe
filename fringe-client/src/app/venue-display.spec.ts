@@ -38,4 +38,14 @@ describe('venueDisplayName', () => {
       '',
     );
   });
+
+  it('falls back to an empty string when the name is "Unknown" and the address is null', () => {
+    expect(
+      venueDisplayName(makeVenue({ address: null, name: 'Unknown' })),
+    ).toBe('');
+  });
+
+  it('falls back to the address when the name itself is null', () => {
+    expect(venueDisplayName(makeVenue({ name: null }))).toBe('10330 84 Ave NW');
+  });
 });
