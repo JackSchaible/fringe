@@ -67,6 +67,20 @@
   margin: 0;
 }
 
+.empty-hint-touch {
+  display: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .empty-hint-mouse {
+    display: none;
+  }
+
+  .empty-hint-touch {
+    display: block;
+  }
+}
+
 .drag-list {
   display: flex;
   flex-direction: column;

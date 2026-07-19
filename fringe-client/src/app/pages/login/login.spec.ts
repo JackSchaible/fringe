@@ -4,6 +4,7 @@ import { of, throwError } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { LoginPage } from './login';
+import type { User } from '../../models';
 import { provideZonelessChangeDetection } from '@angular/core';
 
 const build = async (
@@ -33,21 +34,25 @@ const build = async (
   makeApiSpy = (): jasmine.SpyObj<ApiService> => {
     const spy = jasmine.createSpyObj<ApiService>('ApiService', [
       'verifyCaptcha',
+      'getMe',
       'upsertMe',
       'updateDisplayName',
     ]);
     spy.verifyCaptcha.and.returnValue(of(undefined));
+    spy.getMe.and.returnValue(throwError(() => new Error('Not found')));
     spy.upsertMe.and.returnValue(of(undefined));
     spy.updateDisplayName.and.returnValue(of(undefined));
     return spy;
   },
-  makeAuthSpy = (): jasmine.SpyObj<AuthService> => {
+  makeAuthSpy = (user: User | null = null): jasmine.SpyObj<AuthService> => {
     const spy = jasmine.createSpyObj<AuthService>('AuthService', [
       'confirmOtp',
       'signInDev',
     ]);
     spy.confirmOtp.and.returnValue(Promise.resolve());
-    Object.defineProperty(spy, 'currentUser', { get: () => (): null => null });
+    Object.defineProperty(spy, 'currentUser', {
+      get: () => (): User | null => user,
+    });
     Object.defineProperty(spy, 'devMode', { get: () => true });
     return spy;
   };
@@ -158,6 +163,29 @@ describe('LoginPage verifyCode', () => {
     component.step.set('otp');
     await component.verifyCode();
     expect(component.loading()).toBeFalse();
+  });
+});
+
+describe('LoginPage verifyCode returning user', () => {
+  const RETURNING_USER: User = {
+    displayName: 'Alice',
+    email: 'a@b.com',
+    groupId: null,
+    userId: '1',
+  };
+
+  it('goes straight to /shows without re-prompting or overwriting the name', async () => {
+    const apiSpy = makeApiSpy();
+    apiSpy.getMe.and.returnValue(of(RETURNING_USER));
+    const { component, router } = await build(
+      apiSpy,
+      makeAuthSpy(RETURNING_USER),
+    );
+    component.step.set('otp');
+    await component.verifyCode();
+    expect(router.navigate).toHaveBeenCalledWith(['/shows']);
+    expect(component.step()).toBe('otp');
+    expect(apiSpy.upsertMe).not.toHaveBeenCalled();
   });
 });
 

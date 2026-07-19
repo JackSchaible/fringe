@@ -86,16 +86,12 @@ export class LoginPage {
   public async verifyCode(): Promise<void> {
     this.loading.set(true);
     this.error.set('');
-    try {
-      await this.auth.confirmOtp(this.otp());
-    } catch {
-      this.error.set('Incorrect code. Please try again.');
+    const confirmed = await this.tryConfirmOtp();
+    if (!confirmed) {
       this.loading.set(false);
       return;
     }
-    await this.upsertUserProfile();
-    this.loading.set(false);
-    this.step.set('username');
+    await this.proceedPastOtp();
   }
 
   public async saveUsername(): Promise<void> {
@@ -143,16 +139,44 @@ export class LoginPage {
     }
   }
 
-  private async upsertUserProfile(): Promise<void> {
+  private async proceedPastOtp(): Promise<void> {
+    const isReturningUser = await this.upsertUserProfile();
+    this.loading.set(false);
+    if (isReturningUser) {
+      await this.router.navigate(['/shows']);
+      return;
+    }
+    this.step.set('username');
+  }
+
+  private async tryConfirmOtp(): Promise<boolean> {
+    try {
+      await this.auth.confirmOtp(this.otp());
+      return true;
+    } catch {
+      this.error.set('Incorrect code. Please try again.');
+      return false;
+    }
+  }
+
+  /** Returns true if a profile already existed (returning user) — leaves it untouched. */
+  private async upsertUserProfile(): Promise<boolean> {
     const user = this.auth.currentUser();
     if (!user) {
-      return;
+      return false;
+    }
+    try {
+      await firstValueFrom(this.api.getMe());
+      return true;
+    } catch {
+      // No profile yet — this is a first-time login.
     }
     try {
       await firstValueFrom(this.api.upsertMe(user.displayName, user.email));
     } catch {
       // Non-fatal
     }
+    return false;
   }
 
   private renderTurnstile(attempt = INITIAL_ATTEMPT): void {
