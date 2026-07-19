@@ -88,8 +88,12 @@ export class AuthService {
       await this.router.navigate(['/login']);
       return;
     }
-    const { signOut } = await import('aws-amplify/auth');
-    await signOut();
+    try {
+      const { signOut } = await import('aws-amplify/auth');
+      await signOut();
+    } catch {
+      // Ignore — still clear the local session and navigate away below.
+    }
     this.currentUser.set(null);
     await this.router.navigate(['/login']);
   }

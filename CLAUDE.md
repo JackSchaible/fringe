@@ -11,6 +11,7 @@ Group Fringe-festival schedule planner. Friends log in, vote on shows, and the a
 | `Fringe.Data/`    | Shared .NET 10 library — DynamoDB models + `FringeRepository`     |
 | `Fringe.Scraper/` | .NET 10 Lambda — nightly scraper (also runnable as a console app) |
 | `infra/`          | AWS CDK TypeScript — all infrastructure                           |
+| `e2e/`            | Playwright — post-deploy smoke test against the live site         |
 
 All .NET projects target **net10.0**. Lambda runtime is `DOTNET_10`.
 
