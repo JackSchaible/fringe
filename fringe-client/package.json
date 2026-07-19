@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "dotenv cross-var -- ng serve --ssl true --ssl-cert %SSL_CERT_PATH% --ssl-key %SSL_KEY_PATH%",
+    "start": "dotenv node scripts/expand-env.cjs -- ng serve --ssl true --ssl-cert %SSL_CERT_PATH% --ssl-key %SSL_KEY_PATH%",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
@@ -42,7 +42,6 @@
     "@tailwindcss/postcss": "^4.1.11",
     "aws-amplify": "^6.18.0",
     "cross-env": "^10.0.0",
-    "cross-var": "^1.1.0",
     "postcss": "^8.5.6",
     "rxjs": "~7.8.0",
     "tailwindcss": "^4.1.11",
