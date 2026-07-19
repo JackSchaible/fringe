@@ -53,6 +53,14 @@ if (!string.IsNullOrEmpty(userPoolId))
         {
             options.Authority = $"https://cognito-idp.{region}.amazonaws.com/{userPoolId}";
 
+            // JwtBearerOptions.MapInboundClaims defaults to true, which renames
+            // short JWT claim names to legacy XML-SOAP claim type URIs (e.g.
+            // "sub" becomes ClaimTypes.NameIdentifier). GetUserId() below reads
+            // User.FindFirst("sub") directly, so without this every request
+            // resolved to an empty user id — every real user silently shared
+            // one backend identity. https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.authentication.jwtbearer.jwtbeareroptions.mapinboundclaims
+            options.MapInboundClaims = false;
+
             // Cognito access tokens (what the frontend sends) carry the app
             // client in a `client_id` claim, not the standard `aud` claim that
             // options.Audience checks against — so validate that claim directly

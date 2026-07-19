@@ -1,0 +1,48 @@
+:host {
+  display: block;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.filter-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.pill {
+  background: var(--surface-badge);
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  color: var(--text-3);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25rem 0.7rem;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+
+  &:hover {
+    border-color: rgba(167, 139, 250, 0.4);
+  }
+
+  &.active {
+    background: var(--surface-accent);
+    border-color: rgba(167, 139, 250, 0.4);
+    color: var(--text-accent);
+  }
+}
