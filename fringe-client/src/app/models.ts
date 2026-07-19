@@ -14,9 +14,10 @@ export interface Show {
 }
 
 export interface Venue {
-  readonly name: string;
-  readonly address: string;
-  readonly phone: string;
+  // The scraper doesn't always capture every field (e.g. an address without a parsed name, or vice versa) — DynamoDB has no schema to enforce these as required, so a missing attribute deserializes to a genuine null here.
+  readonly name: string | null;
+  readonly address: string | null;
+  readonly phone: string | null;
 }
 
 export interface ContentRating {
