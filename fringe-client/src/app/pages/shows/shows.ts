@@ -1,5 +1,4 @@
 import {
-  CdkDrag,
   type CdkDragDrop,
   CdkDropList,
   moveItemInArray,
@@ -29,7 +28,6 @@ const EMPTY_COUNT = 0,
   imports: [
     FormsModule,
     CdkDropList,
-    CdkDrag,
     FaIconComponent,
     RankedShowItemComponent,
     BrowseShowCardComponent,

@@ -1,0 +1,30 @@
+name: Audit
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Audit frontend dependencies
+        working-directory: fringe-client
+        run: pnpm audit --audit-level=critical
+
+      - name: Audit infra dependencies
+        working-directory: infra
+        run: pnpm audit --audit-level=critical

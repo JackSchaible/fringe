@@ -87,11 +87,11 @@ jobs:
 
       - name: Install CDK dependencies
         working-directory: infra
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run CDK tests
         working-directory: infra
-        run: npm test
+        run: pnpm test
 
   deploy:
     needs: test
@@ -156,7 +156,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: fringe-client
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Fetch Cognito config from existing stack
         run: |
@@ -181,19 +181,19 @@ jobs:
 
       - name: Install CDK dependencies
         working-directory: infra
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: CDK bootstrap
         working-directory: infra
         run: |
           ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-          npx cdk bootstrap aws://$ACCOUNT/ca-central-1 aws://$ACCOUNT/us-east-1
+          pnpm exec cdk bootstrap aws://$ACCOUNT/ca-central-1 aws://$ACCOUNT/us-east-1
 
       - name: CDK deploy
         working-directory: infra
         env:
           TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
-        run: npx cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
+        run: pnpm exec cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
 
       - name: Rebuild frontend if Cognito was just created (first deploy)
         env:
@@ -209,7 +209,7 @@ jobs:
             sed -i "s|turnstileSiteKey: '[^']*'|turnstileSiteKey: '$TURNSTILE_SITE_KEY'|" src/environments/environment.prod.ts
             pnpm run build
             cd ../infra
-            npx cdk deploy FringeStack --require-approval never
+            pnpm exec cdk deploy FringeStack --require-approval never
           fi
 
       - name: Print stack outputs
