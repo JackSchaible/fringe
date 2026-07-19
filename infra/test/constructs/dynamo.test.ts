@@ -65,4 +65,16 @@ describe("FringeDynamo", () => {
       UpdateReplacePolicy: "Retain",
     });
   });
+
+  it("enables point-in-time recovery", () => {
+    template.hasResourceProperties("AWS::DynamoDB::GlobalTable", {
+      Replicas: Match.arrayWith([
+        Match.objectLike({
+          PointInTimeRecoverySpecification: {
+            PointInTimeRecoveryEnabled: true,
+          },
+        }),
+      ]),
+    });
+  });
 });

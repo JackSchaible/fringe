@@ -1,4 +1,4 @@
-@use "tailwindcss";
+@use 'tailwindcss';
 
 // ── Design tokens ────────────────────────────────────────────────────────────
 
@@ -114,10 +114,10 @@
 body {
   margin: 0;
   font-family:
-    "Inter",
+    'Inter',
     -apple-system,
     BlinkMacSystemFont,
-    "Segoe UI",
+    'Segoe UI',
     sans-serif;
   background-color: var(--bg);
   background-image: var(--bg-gradient);

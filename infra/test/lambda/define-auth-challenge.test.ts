@@ -1,7 +1,8 @@
 import type { Context, DefineAuthChallengeTriggerEvent } from "aws-lambda";
 import { handler } from "../../lambda/auth/define-auth-challenge";
 
-type SessionEntry = DefineAuthChallengeTriggerEvent["request"]["session"][number];
+type SessionEntry =
+  DefineAuthChallengeTriggerEvent["request"]["session"][number];
 
 // Minimal stub for a Cognito auth session entry
 const makeSession = (

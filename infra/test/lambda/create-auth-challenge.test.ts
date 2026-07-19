@@ -125,9 +125,7 @@ describe("create-auth-challenge handler", () => {
     const event = makeEvent();
     await invokeHandler(event);
     const [[commandArg]] = mockSendEmailCommand.mock.calls;
-    expect(commandArg.Message?.Subject?.Data).toBe(
-      "Your Fringe sign-in code",
-    );
+    expect(commandArg.Message?.Subject?.Data).toBe("Your Fringe sign-in code");
   });
 
   it("includes the OTP in the email body text", async () => {

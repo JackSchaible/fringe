@@ -20,6 +20,7 @@ export class FringeDynamo extends Construct {
           sortKey: { name: "pk", type: AttributeType.STRING },
         },
       ],
+      pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
   }

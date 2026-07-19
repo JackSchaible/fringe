@@ -1,8 +1,8 @@
 @let show = item().show;
 <div class="schedule-item">
   <div class="time-col">
-    <div class="day">{{ item().showTime | date: "EEE MMM d" }}</div>
-    <div class="time">{{ item().showTime | date: "h:mm a" }}</div>
+    <div class="day">{{ item().showTime | date: 'EEE MMM d' }}</div>
+    <div class="time">{{ item().showTime | date: 'h:mm a' }}</div>
     <div i18n="@@schedule.duration" class="duration">
       <fa-icon [icon]="faClock" />
       {{ show.lengthInMinutes }} min
@@ -41,7 +41,7 @@
           [href]="fringeUrl(show.showId)"
         >
           <fa-icon [icon]="faArrowUpRightFromSquare" />
-          {{ +show.price === 0 ? "Free" : `$${show.price}` }}
+          {{ +show.price === 0 ? 'Free' : `$${show.price}` }}
         </a>
       </div>
     </div>

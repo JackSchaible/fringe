@@ -114,6 +114,16 @@ module.exports = tseslint.config(
               from: "lib",
               name: ["Date", "Event", "Readonly", "ReadonlyArray"],
             },
+            // CDK construct classes carry internal (near-private) state that
+            // makes a mapped Readonly<T> wrapper structurally incompatible
+            // with the concrete class — passing one where the real type is
+            // expected then fails to compile. Trusted as-is, same as the
+            // other framework types above.
+            {
+              from: "package",
+              package: "aws-cdk-lib/aws-certificatemanager",
+              name: ["Certificate"],
+            },
           ],
         },
       ],

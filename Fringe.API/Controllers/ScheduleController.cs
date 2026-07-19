@@ -23,7 +23,8 @@ internal sealed class ScheduleController(FringeRepository repo) : ControllerBase
             return BadRequest("Join a group before viewing the schedule.");
         }
 
-        List<GroupMemberRecord> members = await repo.GetGroupMembersAsync(user.GroupId).ConfigureAwait(false);
+        List<GroupMemberRecord> members = [.. (await repo.GetGroupMembersAsync(user.GroupId).ConfigureAwait(false))
+            .Where(m => !string.IsNullOrEmpty(m.UserId))];
 
         List<UserVoteRecord>[] memberVotesList = await Task.WhenAll(
             members.Select(m => repo.GetVotesForUserAsync(m.UserId))).ConfigureAwait(false);

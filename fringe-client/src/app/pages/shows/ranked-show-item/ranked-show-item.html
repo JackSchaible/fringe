@@ -1,15 +1,16 @@
+@let current = show();
 <div cdkDrag class="ranked-item">
   <span class="rank-num">{{ rank() }}</span>
   <div class="drag-handle" cdkDragHandle>
     <fa-icon [icon]="faGripVertical" />
   </div>
-  @if (show().imageUrl !== undefined) {
+  @if (current.imageUrl) {
     <img
       class="thumb"
       [width]="thumbSize"
       [height]="thumbSize"
-      [ngSrc]="show().imageUrl ?? ''"
-      [alt]="show().title"
+      [ngSrc]="current.imageUrl"
+      [alt]="current.title"
     />
   } @else {
     <div class="thumb-placeholder">
@@ -17,8 +18,8 @@
     </div>
   }
   <div class="show-meta">
-    <span class="show-title">{{ show().title }}</span>
-    <span class="show-tag">{{ show().tag }}</span>
+    <span class="show-title">{{ current.title }}</span>
+    <span class="show-tag">{{ current.tag }}</span>
   </div>
   <a
     class="ranked-action-btn"
@@ -27,7 +28,7 @@
     i18n-rel="@@pages.shows.shows.03.rel"
     title="Buy tickets"
     i18n-title="@@pages.shows.shows.04.title"
-    [href]="fringeUrl(show().showId)"
+    [href]="fringeUrl(current.showId)"
   >
     <fa-icon [icon]="faArrowUpRightFromSquare" />
   </a>
@@ -36,7 +37,7 @@
     class="ranked-action-btn"
     title="Show details"
     i18n-title="@@pages.shows.shows.05.title"
-    (click)="viewDetails.emit(show())"
+    (click)="viewDetails.emit(current)"
   >
     <fa-icon [icon]="faCircleInfo" />
   </button>

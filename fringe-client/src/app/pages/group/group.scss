@@ -50,7 +50,7 @@
   font-size: 2rem;
   font-weight: 800;
   letter-spacing: 0.35em;
-  font-family: "SF Mono", "Fira Code", monospace;
+  font-family: 'SF Mono', 'Fira Code', monospace;
   background: linear-gradient(135deg, #a78bfa 0%, #e879f9 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -221,7 +221,7 @@
 
   &::before,
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 50%;
     width: 44%;

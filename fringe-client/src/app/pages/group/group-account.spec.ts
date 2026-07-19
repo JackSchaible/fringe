@@ -1,4 +1,8 @@
-import { buildComponent, makeApiSpy, makeAuthSpy } from './group-test-helpers.spec';
+import {
+  buildComponent,
+  makeApiSpy,
+  makeAuthSpy,
+} from './group-test-helpers.spec';
 import { throwError } from 'rxjs';
 
 const TOAST_DURATION_MS = 2_000,
