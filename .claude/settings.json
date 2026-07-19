@@ -1,5 +1,9 @@
 {
   "permissions": {
-    "allow": ["Bash(dotnet format *)", "Bash(dotnet build *)"]
+    "allow": [
+      "Bash(dotnet format *)",
+      "Bash(dotnet build *)",
+      "Bash(pnpm run *)"
+    ]
   }
 }

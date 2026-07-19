@@ -21,6 +21,7 @@ import { ShowsFiltersComponent } from './shows-filters/shows-filters';
 import { faCircleNotch } from '@fortawesome/pro-solid-svg-icons';
 import { faListOl } from '@fortawesome/pro-regular-svg-icons';
 import { firstValueFrom } from 'rxjs';
+import { venueDisplayName } from '../../venue-display';
 
 const EMPTY_COUNT = 0,
   RANK_BASE = 1;
@@ -108,7 +109,7 @@ export class ShowsPage implements OnInit {
           !query ||
           show.title.toLowerCase().includes(query) ||
           (show.tag ?? '').toLowerCase().includes(query) ||
-          (show.venue?.name ?? '').toLowerCase().includes(query),
+          venueDisplayName(show.venue).toLowerCase().includes(query),
       )
       .filter(
         (show) => genres.size === EMPTY_COUNT || genres.has(show.tag ?? ''),
@@ -121,7 +122,7 @@ export class ShowsPage implements OnInit {
       .filter(
         (show) =>
           locations.size === EMPTY_COUNT ||
-          locations.has(show.venue?.name ?? ''),
+          locations.has(venueDisplayName(show.venue)),
       )
       .filter((show) => {
         const price = parsePrice(show);

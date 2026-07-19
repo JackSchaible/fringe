@@ -4,6 +4,7 @@ import { faChevronDown, faChevronUp } from '@fortawesome/pro-light-svg-icons';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { RangeSliderComponent } from '../range-slider/range-slider';
 import type { Show } from '../../../models';
+import { venueDisplayName } from '../../../venue-display';
 
 const EMPTY_COUNT = 0,
   ONE_COUNT = 1;
@@ -67,7 +68,7 @@ export class ShowsFiltersComponent {
   protected readonly locationOptions = computed<ReadonlyArray<PillOption>>(
     () => {
       const names = this.shows()
-        .map((show) => show.venue?.name)
+        .map((show) => venueDisplayName(show.venue))
         .filter((name): name is string => Boolean(name));
       return [...new Set(names)]
         .sort(byLocaleCompare)

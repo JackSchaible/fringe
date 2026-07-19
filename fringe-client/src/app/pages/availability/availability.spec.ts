@@ -32,9 +32,6 @@ const showWithTimes: Show = {
     ]);
     spy.getShows.and.returnValue(of(shows));
     spy.getAvailability.and.returnValue(of(availability));
-    // Calling of() with no args emits nothing, silently skipping the subscriber's next callback under test.
-    // An explicit undefined is required to match Observable<void>'s actual runtime emission.
-    // eslint-disable-next-line no-undefined
     spy.saveAvailability.and.returnValue(of(undefined));
     return spy;
   };

@@ -39,12 +39,8 @@ export const mockGroup: Group = {
     spy.getMe.and.returnValue(of(mockUser));
     spy.createGroup.and.returnValue(of(mockGroup));
     spy.joinGroup.and.returnValue(of(mockGroup));
-    // Calling of() with no args emits nothing, silently skipping the subscriber's next callback under test.
-    // An explicit undefined is required to match Observable<void>'s actual runtime emission.
-    /* eslint-disable no-undefined */
     spy.updateDisplayName.and.returnValue(of(undefined));
     spy.deleteMe.and.returnValue(of(undefined));
-    /* eslint-enable no-undefined */
     return spy;
   },
   makeAuthSpy = (): jasmine.SpyObj<AuthService> => {

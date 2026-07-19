@@ -247,6 +247,10 @@ module.exports = tseslint.config(
       // eslint-plugin-jest's test-aware `jest/unbound-method` for spec files.
       // No Jasmine equivalent exists, so we scope the base rule off here.
       '@typescript-eslint/unbound-method': 'off',
+      // Test fixtures legitimately construct `undefined` directly (missing
+      // optional fields, absent-value assertions) far more often than
+      // production code does — not worth an inline disable at every call site.
+      'no-undefined': 'off',
     },
   },
   {
