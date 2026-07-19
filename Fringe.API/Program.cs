@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using System.IdentityModel.Tokens.Jwt;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -51,10 +52,15 @@ if (!string.IsNullOrEmpty(userPoolId))
         .AddJwtBearer(options =>
         {
             options.Authority = $"https://cognito-idp.{region}.amazonaws.com/{userPoolId}";
-            if (!string.IsNullOrEmpty(cognitoClientId))
-            {
-                options.Audience = cognitoClientId;
-            }
+
+            // Cognito access tokens (what the frontend sends) carry the app
+            // client in a `client_id` claim, not the standard `aud` claim that
+            // options.Audience checks against — so validate that claim directly
+            // instead of leaving audience validation off entirely.
+            options.TokenValidationParameters.AudienceValidator = (_, securityToken, _) =>
+                string.IsNullOrEmpty(cognitoClientId) ||
+                (securityToken is JwtSecurityToken jwt &&
+                    jwt.Claims.Any(claim => claim.Type == "client_id" && claim.Value == cognitoClientId));
         });
 }
 else
