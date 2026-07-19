@@ -33,7 +33,7 @@ internal static class ShowTimeFetcher
         ConcurrentBag<ShowTime> allShowtimes = [];
         List<int> failedIds = [];
 
-        await Parallel.ForEachAsync(showIdList, new ParallelOptions { MaxDegreeOfParallelism = 10 }, async (showId, ct) =>
+        await Parallel.ForEachAsync(showIdList, new ParallelOptions { MaxDegreeOfParallelism = 5 }, async (showId, ct) =>
         {
             try
             {

@@ -1,8 +1,9 @@
 @if (auth.currentUser()) {
   <nav class="nav">
-    <a i18n="@@app.02" routerLink="/shows" class="nav-brand"
-      >Jack's Fringe Planner</a
-    >
+    <a routerLink="/shows" class="nav-brand">
+      <span i18n="@@app.02" class="brand-full">Jack's Fringe Planner</span>
+      <span i18n="@@app.07" class="brand-short">Fringe Planner</span>
+    </a>
     <div class="nav-links">
       <a i18n="@@app.nav.shows" routerLink="/shows" routerLinkActive="active">
         <fa-icon [icon]="faFilm" />

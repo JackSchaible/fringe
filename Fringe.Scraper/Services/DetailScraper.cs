@@ -25,7 +25,7 @@ internal static partial class DetailScraper
         ConcurrentBag<Show> shows = [];
         List<int> failedIds = [];
 
-        await Parallel.ForEachAsync(showIds, new ParallelOptions { MaxDegreeOfParallelism = 25 }, async (showId, ct) =>
+        await Parallel.ForEachAsync(showIds, new ParallelOptions { MaxDegreeOfParallelism = 10 }, async (showId, ct) =>
         {
             try
             {

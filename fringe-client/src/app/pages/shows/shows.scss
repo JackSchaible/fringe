@@ -50,6 +50,7 @@
 .ranked-col {
   position: sticky;
   top: 68px;
+  min-width: 0;
 
   @media (max-width: 768px) {
     position: static;

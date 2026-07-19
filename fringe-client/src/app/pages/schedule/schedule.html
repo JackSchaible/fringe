@@ -29,7 +29,7 @@
         >Go rate shows</a
       >
     </div>
-  } @else if (schedule().length === 0) {
+  } @else if (schedule().length === 0 && activeProposalIndex() === null) {
     <div class="schedule-layout">
       <div class="schedule-main">
         <!-- Shows are rated but availability blocks everything -->
