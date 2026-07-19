@@ -11,7 +11,7 @@
     "format:server": "dotnet format fringe.sln --verify-no-changes",
     "format:client": "pnpm --dir fringe-client run format:check",
     "format:infra": "pnpm --prefix infra run format:check",
-    "test": "./scripts/test-all.sh",
+    "test": "node scripts/test-all.cjs",
     "test:server": "dotnet test fringe.sln --collect:\"XPlat Code Coverage\" --results-directory coverage/dotnet --logger trx",
     "test:client": "pnpm --dir fringe-client run test:coverage",
     "test:infra": "pnpm --prefix infra run test:coverage"
