@@ -1,54 +1,42 @@
 <div class="shows-page">
   @if (loading()) {
-    <div class="loader">Loading shows…</div>
+    <div i18n="@@pages.shows.shows.13" class="loader">Loading shows…</div>
   } @else {
     <div class="columns">
       <!-- Ranked list -->
       <section class="ranked-col">
         <div class="col-header">
-          <h2><fa-icon [icon]="faListOl" /> Your Ranking</h2>
-          @if (saving()) {
-            <fa-icon [icon]="faCircleNotch" animation="spin" class="saving-icon" title="Saving…" />
-          }
+          <h2 i18n="@@shows.ranking-heading">
+            <fa-icon [icon]="faListOl" /> Your Ranking
+          </h2>
+          <fa-icon
+            animation="spin"
+            i18n-animation="@@pages.shows.shows.01.animation"
+            class="saving-icon"
+            title="Saving…"
+            i18n-title="@@pages.shows.shows.02.title"
+            [icon]="faCircleNotch"
+            [hidden]="!saving()"
+          />
         </div>
 
         <div
           cdkDropList
+          class="drag-list"
           [cdkDropListData]="rankedShows()"
           (cdkDropListDropped)="onDrop($event)"
-          class="drag-list"
         >
-          @for (show of rankedShows(); track show.showId; let i = $index) {
-            <div cdkDrag class="ranked-item">
-              <span class="rank-num">{{ i + 1 }}</span>
-              <div class="drag-handle" cdkDragHandle>
-                <fa-icon [icon]="faGripVertical" />
-              </div>
-              @if (show.imageUrl) {
-                <img [src]="show.imageUrl" [alt]="show.title" class="thumb" />
-              } @else {
-                <div class="thumb-placeholder">
-                  <fa-icon [icon]="faMasksTheater" />
-                </div>
-              }
-              <div class="show-meta">
-                <span class="show-title">{{ show.title }}</span>
-                <span class="show-tag">{{ show.tag }}</span>
-              </div>
-              <a class="ranked-action-btn" [href]="fringeUrl(show.showId)" target="_blank"
-                 rel="noopener noreferrer" title="Buy tickets">
-                <fa-icon [icon]="faArrowUpRightFromSquare" />
-              </a>
-              <button class="ranked-action-btn" (click)="selectedShow.set(show)"
-                      title="Show details">
-                <fa-icon [icon]="faCircleInfo" />
-              </button>
-              <button class="remove-btn" (click)="removeFromRanked(show, $event)" title="Remove">
-                <fa-icon [icon]="faXmark" />
-              </button>
-            </div>
+          @for (show of rankedShows(); track show.showId) {
+            <fg-ranked-show-item
+              [show]="show"
+              [rank]="$index + 1"
+              (viewDetails)="selectedShow.set($event)"
+              (remove)="removeFromRanked($event)"
+            />
           } @empty {
-            <p class="empty-hint">Click a show on the right to add it to your ranking.</p>
+            <p i18n="@@pages.shows.shows.14" class="empty-hint">
+              Click a show on the right to add it to your ranking.
+            </p>
           }
         </div>
       </section>
@@ -56,53 +44,37 @@
       <!-- Browse all shows -->
       <section class="browse-col">
         <div class="col-header">
-          <h2>Browse Shows</h2>
+          <h2 i18n="@@pages.shows.shows.15">Browse Shows</h2>
           <input
             class="search-input"
             type="search"
             placeholder="Search…"
-            [value]="searchQuery()"
-            (input)="searchQuery.set($any($event.target).value)"
+            i18n-placeholder="@@pages.shows.shows.07.placeholder"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
           />
         </div>
 
         <div class="shows-grid">
           @for (show of filteredUnranked(); track show.showId) {
-            <div class="show-card" (click)="addToRanked(show)" role="button" tabindex="0"
-                 (keydown.enter)="addToRanked(show)">
-              @if (show.imageUrl) {
-                <img [src]="show.imageUrl" [alt]="show.title" class="card-img" />
-              } @else {
-                <div class="card-img card-img-placeholder">
-                  <fa-icon [icon]="faMasksTheater" />
-                </div>
-              }
-              <div class="card-body">
-                <p class="card-title">{{ show.title }}</p>
-                @if (show.tag) { <p class="card-tag">{{ show.tag }}</p> }
-                <div class="card-meta">
-                  @if (show.contentRating) {
-                    <span class="rating-badge">{{ show.contentRating.code }}</span>
-                  }
-                  <a class="price" [href]="fringeUrl(show.showId)" target="_blank"
-                     rel="noopener noreferrer" (click)="$event.stopPropagation()"
-                     title="Buy tickets">
-                    {{ +show.price === 0 ? 'Free' : '$' + show.price }}
-                  </a>
-                  <button class="card-action-btn" (click)="selectShow(show, $event)"
-                          title="Show details">
-                    <fa-icon [icon]="faCircleInfo" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            <fg-browse-show-card
+              [show]="show"
+              (viewDetails)="selectedShow.set($event)"
+              (add)="addToRanked($event)"
+            />
           } @empty {
             @if (noShows()) {
-              <p class="browse-empty">No shows yet — the scraper hasn't run. Check back soon.</p>
+              <p i18n="@@pages.shows.shows.16" class="browse-empty">
+                No shows yet — the scraper hasn't run. Check back soon.
+              </p>
             } @else if (searchQuery()) {
-              <p class="browse-empty">No shows match "{{ searchQuery() }}".</p>
+              <p i18n="@@pages.shows.shows.17" class="browse-empty">
+                No shows match "{{ searchQuery() }}".
+              </p>
             } @else {
-              <p class="browse-empty">You've ranked all the shows!</p>
+              <p i18n="@@pages.shows.shows.18" class="browse-empty">
+                You've ranked all the shows!
+              </p>
             }
           }
         </div>
@@ -111,60 +83,7 @@
 
     <!-- Detail drawer -->
     @if (selectedShow(); as show) {
-      <div class="detail-backdrop" (click)="selectedShow.set(null)" aria-hidden="true"></div>
-      <aside class="detail-panel">
-        <div class="detail-header">
-          <span class="detail-header-title">{{ show.title }}</span>
-          <button class="close-btn" (click)="selectedShow.set(null)" title="Close">
-            <fa-icon [icon]="faXmark" />
-          </button>
-        </div>
-
-        @if (show.imageUrl) {
-          <img [src]="show.imageUrl" [alt]="show.title" class="detail-img" />
-        }
-
-        <div class="detail-body">
-          <h3 class="detail-title">{{ show.title }}</h3>
-
-          <div class="detail-chips">
-            @if (show.tag) { <span class="chip">{{ show.tag }}</span> }
-            @if (show.contentRating) {
-              <span class="chip chip-rating">{{ show.contentRating.name }}</span>
-            }
-            <span class="chip chip-price">{{ +show.price === 0 ? 'Free' : '$' + show.price }}</span>
-          </div>
-
-          <div class="detail-stats">
-            @if (show.lengthInMinutes) {
-              <span class="stat">
-                <fa-icon [icon]="faClock" />
-                {{ show.lengthInMinutes }} min
-              </span>
-            }
-            @if (show.venue?.name) {
-              <span class="stat">
-                <fa-icon [icon]="faLocationDot" />
-                {{ show.venue!.name }}
-              </span>
-            }
-          </div>
-
-          @if (show.venue?.address) {
-            <p class="detail-address">{{ show.venue!.address }}</p>
-          }
-
-          @if (show.plainTextDescription || show.description) {
-            <p class="detail-desc">{{ show.plainTextDescription || show.description }}</p>
-          }
-
-          <a class="book-btn" [href]="fringeUrl(show.showId)" target="_blank"
-             rel="noopener noreferrer">
-            <fa-icon [icon]="faArrowUpRightFromSquare" />
-            Book tickets
-          </a>
-        </div>
-      </aside>
+      <fg-show-detail-panel [show]="show" (dismiss)="selectedShow.set(null)" />
     }
   }
 </div>

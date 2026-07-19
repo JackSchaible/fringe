@@ -1,69 +1,87 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import type { User } from '../models';
 import { environment } from '../../environments/environment';
-import { User } from '../models';
 
 const DEV_USER_KEY = 'fringe_dev_user';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  readonly currentUser = signal<User | null>(null);
-  readonly devMode = !environment.cognitoUserPoolId;
+  public readonly currentUser = signal<User | null>(null);
+  public readonly devMode = !environment.cognitoUserPoolId;
 
   private readonly router = inject(Router);
 
   // ── Email OTP (production) ───────────────────────────────────────────────
-
-  async sendOtp(email: string): Promise<void> {
+  public static async sendOtp(email: string): Promise<void> {
     const { signUp, signIn, signOut } = await import('aws-amplify/auth');
-    try { await signOut(); } catch { /* ignore stale session */ }
+    try {
+      await signOut();
+    } catch {
+      /* Ignore stale session */
+    }
     try {
       await signUp({
-        username: email,
-        password: crypto.randomUUID(),
         options: { userAttributes: { email } },
+        password: crypto.randomUUID(),
+        username: email,
       });
-    } catch (e: unknown) {
-      if ((e as { name?: string }).name !== 'UsernameExistsException') throw e;
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name !== 'UsernameExistsException') {
+        throw error;
+      }
     }
-    await signIn({ username: email, options: { authFlowType: 'CUSTOM_WITHOUT_SRP' } });
+    await signIn({
+      options: { authFlowType: 'CUSTOM_WITHOUT_SRP' },
+      username: email,
+    });
   }
 
-  async confirmOtp(code: string): Promise<void> {
-    const { confirmSignIn } = await import('aws-amplify/auth');
-    const { isSignedIn } = await confirmSignIn({ challengeResponse: code.trim() });
-    if (!isSignedIn) throw new Error('Incorrect code — please try again.');
+  public static getDevUserId(): string | null {
+    return localStorage.getItem(DEV_USER_KEY);
+  }
+
+  public async confirmOtp(code: string): Promise<void> {
+    const { confirmSignIn } = await import('aws-amplify/auth'),
+      { isSignedIn } = await confirmSignIn({ challengeResponse: code.trim() });
+    if (!isSignedIn) {
+      throw new Error('Incorrect code — please try again.');
+    }
     await this.loadUserFromCognito();
   }
 
-  async loadUserFromCognito(): Promise<void> {
+  public async loadUserFromCognito(): Promise<void> {
     try {
-      const { fetchUserAttributes, getCurrentUser } = await import('aws-amplify/auth');
-      const cognitoUser = await getCurrentUser();
-      const attrs = await fetchUserAttributes();
+      const { fetchUserAttributes, getCurrentUser } =
+          await import('aws-amplify/auth'),
+        attrs = await fetchUserAttributes(),
+        cognitoUser = await getCurrentUser();
+
       this.currentUser.set({
-        userId: cognitoUser.userId,
-        email: attrs.email ?? '',
         displayName: attrs.name ?? attrs.email ?? cognitoUser.username,
-        groupId: undefined,
+        email: attrs.email ?? '',
+        groupId: null,
+        userId: cognitoUser.userId,
       });
     } catch {
       this.currentUser.set(null);
     }
   }
 
-  async getToken(): Promise<string | null> {
-    if (this.devMode) return null;
+  public async getToken(): Promise<string | null> {
+    if (this.devMode) {
+      return null;
+    }
     try {
-      const { fetchAuthSession } = await import('aws-amplify/auth');
-      const session = await fetchAuthSession();
+      const { fetchAuthSession } = await import('aws-amplify/auth'),
+        session = await fetchAuthSession();
       return session.tokens?.accessToken.toString() ?? null;
     } catch {
       return null;
     }
   }
 
-  async signOut(): Promise<void> {
+  public async signOut(): Promise<void> {
     if (this.devMode) {
       localStorage.removeItem(DEV_USER_KEY);
       this.currentUser.set(null);
@@ -76,14 +94,14 @@ export class AuthService {
     await this.router.navigate(['/login']);
   }
 
-  async isAuthenticated(): Promise<boolean> {
+  public async isAuthenticated(): Promise<boolean> {
     if (this.devMode) {
-      return !!this.getDevUserId();
+      return Boolean(AuthService.getDevUserId());
     }
     return (await this.getToken()) !== null;
   }
 
-  clearSession(): void {
+  public clearSession(): void {
     if (this.devMode) {
       localStorage.removeItem(DEV_USER_KEY);
     }
@@ -92,19 +110,25 @@ export class AuthService {
 
   // ── Dev mode ─────────────────────────────────────────────────────────────
 
-  getDevUserId(): string | null {
-    return localStorage.getItem(DEV_USER_KEY);
-  }
-
-  signInDev(userId: string): void {
+  public signInDev(userId: string): void {
     localStorage.setItem(DEV_USER_KEY, userId);
-    this.currentUser.set({ userId, email: `${userId}@dev`, displayName: userId });
+    this.currentUser.set({
+      displayName: userId,
+      email: `${userId}@dev`,
+      groupId: null,
+      userId,
+    });
   }
 
-  initDevSession(): void {
-    const id = this.getDevUserId();
-    if (id) {
-      this.currentUser.set({ userId: id, email: `${id}@dev`, displayName: id });
+  public initDevSession(): void {
+    const id = AuthService.getDevUserId();
+    if (id !== null) {
+      this.currentUser.set({
+        displayName: id,
+        email: `${id}@dev`,
+        groupId: null,
+        userId: id,
+      });
     }
   }
 }

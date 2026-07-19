@@ -1,32 +1,43 @@
+using System.Collections.ObjectModel;
+using System.Globalization;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using Fringe.Data.DynamoRecords;
-using FringeScraper.Models;
+using Fringe.Data.Models;
 
 namespace Fringe.Data;
 
+/// <summary>Data access layer for all Fringe DynamoDB operations.</summary>
 public class FringeRepository(IDynamoDBContext db)
 {
     // ── Shows ────────────────────────────────────────────────────────────────
 
-    public async Task SaveShowsAsync(IEnumerable<Show> shows)
+    /// <summary>Saves or updates a batch of shows.</summary>
+    public virtual async Task SaveShowsAsync(IEnumerable<Show> shows)
     {
-        var batch = db.CreateBatchWrite<ShowRecord>();
+        IBatchWrite<ShowRecord> batch = db.CreateBatchWrite<ShowRecord>();
         foreach (Show show in shows.DistinctBy(s => s.Id))
+        {
             batch.AddPutItem(ToShowRecord(show));
-        await batch.ExecuteAsync();
+        }
+        await batch.ExecuteAsync().ConfigureAwait(false);
     }
 
-    public async Task SaveShowTimesAsync(IEnumerable<ShowTime> showTimes)
+    /// <summary>Saves or updates a batch of show times.</summary>
+    public virtual async Task SaveShowTimesAsync(IEnumerable<ShowTime> showTimes)
     {
-        var batch = db.CreateBatchWrite<ShowTimeRecord>();
+        IBatchWrite<ShowTimeRecord> batch = db.CreateBatchWrite<ShowTimeRecord>();
         foreach (ShowTime st in showTimes.DistinctBy(st => (st.ShowId, st.DateTime)))
+        {
             batch.AddPutItem(ToShowTimeRecord(st));
-        await batch.ExecuteAsync();
+        }
+        await batch.ExecuteAsync().ConfigureAwait(false);
     }
 
-    public Task<List<ShowRecord>> GetAllShowsAsync() =>
-        db.FromQueryAsync<ShowRecord>(new QueryOperationConfig
+    /// <summary>Returns all shows from the entity-type GSI.</summary>
+    public virtual Task<List<ShowRecord>> GetAllShowsAsync()
+    {
+        return db.FromQueryAsync<ShowRecord>(new QueryOperationConfig
         {
             IndexName = "entity-type-index",
             KeyExpression = new Expression
@@ -35,108 +46,169 @@ public class FringeRepository(IDynamoDBContext db)
                 ExpressionAttributeValues = { [":et"] = new Primitive("SHOW") }
             }
         }).GetRemainingAsync();
+    }
 
-    public async Task<ShowRecord?> GetShowAsync(int showId) =>
-        await db.LoadAsync<ShowRecord>($"SHOW#{showId}", "METADATA");
+    /// <summary>Returns a single show by ID, or <see langword="null"/> if not found.</summary>
+    public virtual async Task<ShowRecord?> GetShowAsync(int showId)
+    {
+        return await db.LoadAsync<ShowRecord>($"SHOW#{showId}", "METADATA").ConfigureAwait(false);
+    }
 
-    public Task<List<ShowTimeRecord>> GetShowTimesForShowAsync(int showId) =>
-        db.QueryAsync<ShowTimeRecord>(
+    /// <summary>Returns all showtimes for the specified show.</summary>
+    public virtual Task<List<ShowTimeRecord>> GetShowTimesForShowAsync(int showId)
+    {
+        return db.QueryAsync<ShowTimeRecord>(
                 $"SHOW#{showId}",
                 QueryOperator.BeginsWith,
                 ["SHOWTIME#"],
                 new QueryConfig())
           .GetRemainingAsync();
+    }
 
     // ── Votes ────────────────────────────────────────────────────────────────
 
-    public async Task UpsertVoteAsync(string userId, int showId, int rank) =>
+    /// <summary>Creates or updates a vote for a show.</summary>
+    public virtual async Task UpsertVoteAsync(string userId, int showId, int rank)
+    {
         await db.SaveAsync(new UserVoteRecord
         {
             Pk = $"USER#{userId}",
             Sk = $"VOTE#SHOW#{showId}",
             Score = rank,
-            UpdatedAt = DateTime.UtcNow.ToString("O")
-        });
-
-    public async Task DeleteVotesAsync(string userId, IEnumerable<int> showIds)
-    {
-        var batch = db.CreateBatchWrite<UserVoteRecord>();
-        foreach (int id in showIds)
-            batch.AddDeleteKey($"USER#{userId}", $"VOTE#SHOW#{id}");
-        await batch.ExecuteAsync();
+            UpdatedAt = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)
+        }).ConfigureAwait(false);
     }
 
-    public Task<List<UserVoteRecord>> GetVotesForUserAsync(string userId) =>
-        db.QueryAsync<UserVoteRecord>(
+    /// <summary>Deletes votes for the specified shows.</summary>
+    public virtual async Task DeleteVotesAsync(string userId, IEnumerable<int> showIds)
+    {
+        ArgumentNullException.ThrowIfNull(showIds);
+        IBatchWrite<UserVoteRecord> batch = db.CreateBatchWrite<UserVoteRecord>();
+        foreach (int id in showIds)
+        {
+            batch.AddDeleteKey($"USER#{userId}", $"VOTE#SHOW#{id}");
+        }
+        await batch.ExecuteAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>Returns all votes cast by a user.</summary>
+    public virtual Task<List<UserVoteRecord>> GetVotesForUserAsync(string userId)
+    {
+        return db.QueryAsync<UserVoteRecord>(
                 $"USER#{userId}",
                 QueryOperator.BeginsWith,
                 ["VOTE#SHOW#"],
                 new QueryConfig())
           .GetRemainingAsync();
+    }
 
     // ── Users ────────────────────────────────────────────────────────────────
 
-    public async Task UpsertUserAsync(UserRecord user) =>
-        await db.SaveAsync(user);
-
-    public async Task<UserRecord?> GetUserAsync(string userId) =>
-        await db.LoadAsync<UserRecord>($"USER#{userId}", "PROFILE");
-
-    public async Task DeleteUserDataAsync(string userId)
+    /// <summary>Creates or replaces a user record.</summary>
+    public virtual async Task UpsertUserAsync(UserRecord user)
     {
-        var user = await GetUserAsync(userId);
+        await db.SaveAsync(user).ConfigureAwait(false);
+    }
 
-        var deleteTasks = new List<Task>();
+    /// <summary>Updates the display name for a user and their group member record.</summary>
+    public virtual async Task UpdateDisplayNameAsync(string userId, string displayName)
+    {
+        UserRecord? user = await GetUserAsync(userId).ConfigureAwait(false);
+        if (user == null)
+        {
+            return;
+        }
+        user.DisplayName = displayName;
+        await db.SaveAsync(user).ConfigureAwait(false);
 
-        var votes = await GetVotesForUserAsync(userId);
+        if (user.GroupId != null)
+        {
+            GroupMemberRecord? member = await db.LoadAsync<GroupMemberRecord>($"GROUP#{user.GroupId}", $"MEMBER#{userId}").ConfigureAwait(false);
+            if (member != null)
+            {
+                member.DisplayName = displayName;
+                await db.SaveAsync(member).ConfigureAwait(false);
+            }
+        }
+    }
+
+    /// <summary>Returns a user profile by ID, or <see langword="null"/> if not found.</summary>
+    public virtual async Task<UserRecord?> GetUserAsync(string userId)
+    {
+        return await db.LoadAsync<UserRecord>($"USER#{userId}", "PROFILE").ConfigureAwait(false);
+    }
+
+    /// <summary>Deletes all data associated with a user (votes, group membership, profile).</summary>
+    public virtual async Task DeleteUserDataAsync(string userId)
+    {
+        UserRecord? user = await GetUserAsync(userId).ConfigureAwait(false);
+
+        List<Task> deleteTasks = [];
+
+        List<UserVoteRecord> votes = await GetVotesForUserAsync(userId).ConfigureAwait(false);
         if (votes.Count > 0)
         {
-            var voteBatch = db.CreateBatchWrite<UserVoteRecord>();
-            foreach (var vote in votes)
+            IBatchWrite<UserVoteRecord> voteBatch = db.CreateBatchWrite<UserVoteRecord>();
+            foreach (UserVoteRecord vote in votes)
+            {
                 voteBatch.AddDeleteItem(vote);
+            }
             deleteTasks.Add(voteBatch.ExecuteAsync());
         }
 
         if (user?.GroupId != null)
+        {
             deleteTasks.Add(db.DeleteAsync<GroupMemberRecord>($"GROUP#{user.GroupId}", $"MEMBER#{userId}"));
+        }
 
         if (user != null)
+        {
             deleteTasks.Add(db.DeleteAsync(user));
+        }
 
-        await Task.WhenAll(deleteTasks);
+        await Task.WhenAll(deleteTasks).ConfigureAwait(false);
     }
 
     // ── Groups ───────────────────────────────────────────────────────────────
 
-    public async Task CreateGroupAsync(GroupRecord group)
+    /// <summary>Saves a new group and its associated invite code record.</summary>
+    public virtual async Task CreateGroupAsync(GroupRecord group)
     {
-        await db.SaveAsync(group);
+        ArgumentNullException.ThrowIfNull(group);
+        await db.SaveAsync(group).ConfigureAwait(false);
         await db.SaveAsync(new InviteCodeRecord
         {
             Pk = $"INVITE#{group.InviteCode}",
             GroupId = group.GroupId
-        });
+        }).ConfigureAwait(false);
     }
 
-    public async Task<GroupRecord?> GetGroupAsync(string groupId) =>
-        await db.LoadAsync<GroupRecord>($"GROUP#{groupId}", "METADATA");
-
-    public async Task<GroupRecord?> GetGroupByInviteCodeAsync(string inviteCode)
+    /// <summary>Returns a group by ID, or <see langword="null"/> if not found.</summary>
+    public virtual async Task<GroupRecord?> GetGroupAsync(string groupId)
     {
-        var code = await db.LoadAsync<InviteCodeRecord>($"INVITE#{inviteCode}", "METADATA");
-        if (code == null) return null;
-        return await GetGroupAsync(code.GroupId);
+        return await db.LoadAsync<GroupRecord>($"GROUP#{groupId}", "METADATA").ConfigureAwait(false);
     }
 
-    public Task<List<GroupMemberRecord>> GetGroupMembersAsync(string groupId) =>
-        db.QueryAsync<GroupMemberRecord>(
+    /// <summary>Looks up a group by invite code, or returns <see langword="null"/> if not found.</summary>
+    public virtual async Task<GroupRecord?> GetGroupByInviteCodeAsync(string inviteCode)
+    {
+        InviteCodeRecord? code = await db.LoadAsync<InviteCodeRecord>($"INVITE#{inviteCode}", "METADATA").ConfigureAwait(false);
+        return code == null ? null : await GetGroupAsync(code.GroupId).ConfigureAwait(false);
+    }
+
+    /// <summary>Returns all members of a group.</summary>
+    public virtual Task<List<GroupMemberRecord>> GetGroupMembersAsync(string groupId)
+    {
+        return db.QueryAsync<GroupMemberRecord>(
                 $"GROUP#{groupId}",
                 QueryOperator.BeginsWith,
                 ["MEMBER#"],
                 new QueryConfig())
           .GetRemainingAsync();
+    }
 
-    public async Task JoinGroupAsync(string groupId, string userId, string displayName, string email)
+    /// <summary>Adds a user to a group and updates their profile with the group ID.</summary>
+    public virtual async Task JoinGroupAsync(string groupId, string userId, string displayName, string email)
     {
         await db.SaveAsync(new GroupMemberRecord
         {
@@ -145,73 +217,92 @@ public class FringeRepository(IDynamoDBContext db)
             UserId = userId,
             DisplayName = displayName,
             Email = email,
-            JoinedAt = DateTime.UtcNow.ToString("O")
-        });
+            JoinedAt = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)
+        }).ConfigureAwait(false);
 
-        var user = await GetUserAsync(userId) ?? new UserRecord
+        UserRecord user = await GetUserAsync(userId).ConfigureAwait(false) ?? new UserRecord
         {
             Pk = $"USER#{userId}",
             Email = email,
             DisplayName = displayName
         };
         user.GroupId = groupId;
-        await db.SaveAsync(user);
+        await db.SaveAsync(user).ConfigureAwait(false);
     }
 
     // ── Availability ──────────────────────────────────────────────────────────
 
-    public async Task<UserAvailabilityRecord?> GetAvailabilityAsync(string userId) =>
-        await db.LoadAsync<UserAvailabilityRecord>($"USER#{userId}", "AVAILABILITY");
+    /// <summary>Returns the availability record for a user, or <see langword="null"/> if not set.</summary>
+    public virtual async Task<UserAvailabilityRecord?> GetAvailabilityAsync(string userId)
+    {
+        return await db.LoadAsync<UserAvailabilityRecord>($"USER#{userId}", "AVAILABILITY").ConfigureAwait(false);
+    }
 
-    public async Task SaveAvailabilityAsync(string userId, List<AvailabilityWindowData> windows) =>
-        await db.SaveAsync(new UserAvailabilityRecord
+    /// <summary>Saves the availability windows for a user.</summary>
+    public virtual async Task SaveAvailabilityAsync(string userId, Collection<AvailabilityWindowData> windows)
+    {
+        ArgumentNullException.ThrowIfNull(windows);
+        UserAvailabilityRecord record = new()
         {
             Pk = $"USER#{userId}",
-            Sk = "AVAILABILITY",
-            Windows = windows
-        });
+            Sk = "AVAILABILITY"
+        };
+        foreach (AvailabilityWindowData window in windows)
+        {
+            record.Windows.Add(window);
+        }
+        await db.SaveAsync(record).ConfigureAwait(false);
+    }
 
     // ── Mapping helpers ───────────────────────────────────────────────────────
 
-    private static ShowRecord ToShowRecord(Show show) => new()
+    private static ShowRecord ToShowRecord(Show show)
     {
-        Pk = $"SHOW#{show.Id}",
-        Sk = "METADATA",
-        EntityType = "SHOW",
-        ShowId = show.Id,
-        Title = show.Title,
-        Description = show.Description,
-        PlainTextDescription = show.PlainTextDescription,
-        ImageUrl = show.ImageUrl,
-        Tag = show.Tag,
-        Price = show.Price.ToString("F2"),
-        Fee = show.Fee.ToString("F2"),
-        FirstShowDate = show.FirstShowDate == DateOnly.MinValue ? null : show.FirstShowDate.ToString("yyyy-MM-dd"),
-        LengthInMinutes = show.LengthInMinutes,
-        Venue = new VenueData
+        return new ShowRecord
         {
-            VenueNumber = show.Venue.VenueNumber,
-            Name = show.Venue.Name,
-            Address = show.Venue.Address,
-            Phone = show.Venue.Phone,
-            PostalCode = show.Venue.PostalCode
-        },
-        ContentRating = new ContentRatingData
-        {
-            Name = show.ContentRating.Name,
-            Code = show.ContentRating.Code,
-            Description = show.ContentRating.Description
-        }
-    };
+            Pk = $"SHOW#{show.Id}",
+            Sk = "METADATA",
+            EntityType = "SHOW",
+            ShowId = show.Id,
+            Title = show.Title,
+            Description = show.Description,
+            PlainTextDescription = show.PlainTextDescription,
+            ImageUrl = show.ImageUrl,
+            Tag = show.Tag,
+            Price = show.Price.ToString("F2", CultureInfo.InvariantCulture),
+            Fee = show.Fee.ToString("F2", CultureInfo.InvariantCulture),
+            FirstShowDate = show.FirstShowDate == DateOnly.MinValue
+                ? null
+                : show.FirstShowDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            LengthInMinutes = show.LengthInMinutes,
+            Venue = new VenueData
+            {
+                VenueNumber = show.Venue.VenueNumber,
+                Name = show.Venue.Name,
+                Address = show.Venue.Address,
+                Phone = show.Venue.Phone,
+                PostalCode = show.Venue.PostalCode
+            },
+            ContentRating = new ContentRatingData
+            {
+                Name = show.ContentRating.Name,
+                Code = show.ContentRating.Code,
+                Description = show.ContentRating.Description
+            }
+        };
+    }
 
-    private static ShowTimeRecord ToShowTimeRecord(ShowTime st) => new()
+    private static ShowTimeRecord ToShowTimeRecord(ShowTime st)
     {
-        Pk = $"SHOW#{st.ShowId}",
-        Sk = $"SHOWTIME#{st.DateTime:O}",
-        DateTime = st.DateTime.ToString("O"),
-        PerformanceTime = st.PerformanceTime.ToString("HH:mm"),
-        PerformanceDate = st.PerformanceDate,
-        PresentationFormat = st.PresentationFormat,
-        Reserved = st.Reserved
-    };
+        return new ShowTimeRecord
+        {
+            Pk = $"SHOW#{st.ShowId}",
+            Sk = $"SHOWTIME#{st.DateTime.ToString("O", CultureInfo.InvariantCulture)}",
+            DateTime = st.DateTime.ToString("O", CultureInfo.InvariantCulture),
+            PerformanceTime = st.PerformanceTime.ToString("HH:mm", CultureInfo.InvariantCulture),
+            PerformanceDate = st.PerformanceDate,
+            PresentationFormat = st.PresentationFormat,
+            Reserved = st.Reserved
+        };
+    }
 }

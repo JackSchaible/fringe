@@ -1,13 +1,13 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { CookieConsentService } from '../../services/cookie-consent.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'fg-cookie-consent-drawer',
   imports: [RouterLink],
-  templateUrl: './cookie-consent-drawer.html',
+  selector: 'fg-cookie-consent-drawer',
   styleUrl: './cookie-consent-drawer.scss',
+  templateUrl: './cookie-consent-drawer.html',
 })
-export class CookieConsentDrawer {
+export class CookieConsentDrawerComponent {
   protected readonly consent = inject(CookieConsentService);
 }

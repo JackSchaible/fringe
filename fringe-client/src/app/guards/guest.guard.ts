@@ -1,11 +1,12 @@
-import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { type CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { inject } from '@angular/core';
 
 export const guestGuard: CanActivateFn = async () => {
-  const auth = inject(AuthService);
-  const router = inject(Router);
-
-  const ok = await auth.isAuthenticated();
-  return ok ? router.createUrlTree(['/shows']) : true;
+  const authService = inject(AuthService),
+    routerService = inject(Router);
+  if (await authService.isAuthenticated()) {
+    return routerService.createUrlTree(['/shows']);
+  }
+  return true;
 };

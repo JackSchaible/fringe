@@ -1,0 +1,53 @@
+@let show = item().show;
+<div class="schedule-item">
+  <div class="time-col">
+    <div class="day">{{ item().showTime | date: "EEE MMM d" }}</div>
+    <div class="time">{{ item().showTime | date: "h:mm a" }}</div>
+    <div i18n="@@schedule.duration" class="duration">
+      <fa-icon [icon]="faClock" />
+      {{ show.lengthInMinutes }} min
+    </div>
+  </div>
+  <div class="show-col">
+    @if (show.imageUrl) {
+      <img
+        class="show-thumb"
+        width="64"
+        height="64"
+        [ngSrc]="show.imageUrl"
+        [alt]="show.title"
+      />
+    }
+    <div class="show-info">
+      <h2>{{ show.title }}</h2>
+      @if (show.tag) {
+        <p class="tag">{{ show.tag }}</p>
+      }
+      @if (show.venue) {
+        <p class="venue">
+          <fa-icon [icon]="faLocationDot" />
+          {{ show.venue.name }}
+        </p>
+      }
+      <div class="show-badges">
+        @if (show.contentRating) {
+          <span class="rating-badge">{{ show.contentRating.code }}</span>
+        }
+        <a
+          class="ticket-link"
+          target="_blank"
+          rel="noopener noreferrer"
+          i18n-rel="@@pages.schedule.schedule.01.rel"
+          [href]="fringeUrl(show.showId)"
+        >
+          <fa-icon [icon]="faArrowUpRightFromSquare" />
+          {{ +show.price === 0 ? "Free" : `$${show.price}` }}
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="score-col">
+    <div class="score">{{ item().groupScore }}</div>
+    <div i18n="@@pages.schedule.schedule.12" class="score-label">pts</div>
+  </div>
+</div>

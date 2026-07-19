@@ -1,0 +1,159 @@
+.schedule-item {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-2);
+  border-left: 3px solid rgba(167, 139, 250, 0.35);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    box-shadow 0.15s;
+
+  &:hover {
+    border-color: var(--border-4);
+    border-left-color: var(--accent-light);
+    background: var(--surface-raised);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.time-col {
+  flex-shrink: 0;
+  text-align: right;
+  min-width: 72px;
+  padding-right: 1rem;
+  border-right: 1px solid var(--border-2);
+
+  .day {
+    font-size: 0.65rem;
+    color: var(--text-4);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .time {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-accent);
+    letter-spacing: -0.02em;
+    margin-top: 0.1rem;
+  }
+  .duration {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    font-size: 0.65rem;
+    color: var(--text-5);
+    margin-top: 0.2rem;
+  }
+}
+
+.show-col {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+
+  .show-thumb {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    flex-shrink: 0;
+    border: 1px solid var(--border-2);
+  }
+}
+
+.show-info {
+  min-width: 0;
+
+  h2 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.01em;
+    color: var(--text-1);
+  }
+
+  .tag {
+    font-size: 0.75rem;
+    color: var(--text-3);
+    margin: 0 0 0.2rem;
+  }
+
+  .venue {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    color: var(--text-5);
+    margin: 0;
+  }
+}
+
+.show-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
+}
+
+.rating-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: var(--surface-badge);
+  color: var(--text-4);
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+  letter-spacing: 0.03em;
+}
+
+.ticket-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-accent);
+  text-decoration: none;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.75;
+  }
+}
+
+.score-col {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 0.4rem 0.75rem;
+  background: var(--surface-accent);
+  border: 1px solid var(--border-accent);
+  border-radius: 0.625rem;
+
+  .score {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--accent-light);
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .score-label {
+    font-size: 0.6rem;
+    color: var(--text-4);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0.1rem;
+  }
+}

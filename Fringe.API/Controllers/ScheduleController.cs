@@ -1,3 +1,4 @@
+using System.Globalization;
 using Fringe.Data;
 using Fringe.Data.DynamoRecords;
 using Microsoft.AspNetCore.Authorization;
@@ -5,60 +6,67 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Fringe.API.Controllers;
 
+/// <summary>Computes and returns the optimal group schedule.</summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ScheduleController(FringeRepository repo) : ControllerBase
+internal sealed class ScheduleController(FringeRepository repo) : ControllerBase
 {
+    /// <summary>Returns the computed schedule for the current user's group.</summary>
     [HttpGet]
     public async Task<ActionResult<ScheduleResponseDto>> GetSchedule()
     {
         string userId = GetUserId();
-        var user = await repo.GetUserAsync(userId);
+        UserRecord? user = await repo.GetUserAsync(userId).ConfigureAwait(false);
         if (user?.GroupId == null)
+        {
             return BadRequest("Join a group before viewing the schedule.");
+        }
 
-        var members = await repo.GetGroupMembersAsync(user.GroupId);
+        List<GroupMemberRecord> members = await repo.GetGroupMembersAsync(user.GroupId).ConfigureAwait(false);
 
-        // Fetch votes and availability for all members concurrently
-        var memberVotesList = await Task.WhenAll(
-            members.Select(m => repo.GetVotesForUserAsync(m.UserId)));
-        var availabilityRecords = await Task.WhenAll(
-            members.Select(m => repo.GetAvailabilityAsync(m.UserId)));
+        List<UserVoteRecord>[] memberVotesList = await Task.WhenAll(
+            members.Select(m => repo.GetVotesForUserAsync(m.UserId))).ConfigureAwait(false);
+        UserAvailabilityRecord?[] availabilityRecords = await Task.WhenAll(
+            members.Select(m => repo.GetAvailabilityAsync(m.UserId))).ConfigureAwait(false);
 
-        // Build availability map: userId → parsed UTC windows (empty list = no constraints)
-        var availabilityMap = members
+        // If nobody has set availability, treat everyone as unconstrained (legacy behaviour).
+        // Once any member has a record, members without one are treated as unavailable.
+        bool anyoneHasAvailability = availabilityRecords.Any(r => r != null && r.Windows.Count > 0);
+
+        Dictionary<string, List<(DateTime Start, DateTime End)>> availabilityMap = members
             .Zip(availabilityRecords)
             .ToDictionary(
                 x => x.First.UserId,
-                x => ParseWindows(x.Second?.Windows));
+                x => anyoneHasAvailability
+                    ? ParseWindows(x.Second?.Windows)
+                    : new List<(DateTime, DateTime)>());
 
-        // Aggregate priority scores: rank 1 = most wanted → highest points
         var scores = new Dictionary<int, int>();
-        foreach (var votes in memberVotesList)
+        foreach (List<UserVoteRecord> memberVotes in memberVotesList)
         {
-            int totalRanked = votes.Count;
-            foreach (var v in votes)
+            int totalRanked = memberVotes.Count;
+            foreach (UserVoteRecord v in memberVotes)
             {
-                int showId = int.Parse(v.Sk.Replace("VOTE#SHOW#", ""));
+                int showId = int.Parse(v.Sk.Replace("VOTE#SHOW#", "", StringComparison.Ordinal), CultureInfo.InvariantCulture);
                 int points = totalRanked - v.Score + 1;
                 scores[showId] = scores.GetValueOrDefault(showId) + points;
             }
         }
 
         if (scores.Count == 0)
-            return Ok(new ScheduleResponseDto([], []));
+        {
+            return Ok(new ScheduleResponseDto([], [], [], HasVotes: false));
+        }
 
-        // Load shows, filter to voted, sorted by descending score
-        var allShows = await repo.GetAllShowsAsync();
+        List<ShowRecord> allShows = await repo.GetAllShowsAsync().ConfigureAwait(false);
         var votedShows = allShows
             .Where(s => scores.ContainsKey(s.ShowId))
             .OrderByDescending(s => scores[s.ShowId])
             .ToList();
 
-        // Fetch showtimes concurrently
-        var showTimeLists = await Task.WhenAll(
-            votedShows.Select(s => repo.GetShowTimesForShowAsync(s.ShowId)));
+        List<ShowTimeRecord>[] showTimeLists = await Task.WhenAll(
+            votedShows.Select(s => repo.GetShowTimesForShowAsync(s.ShowId))).ConfigureAwait(false);
 
         var showTimesMap = votedShows
             .Zip(showTimeLists)
@@ -66,28 +74,37 @@ public class ScheduleController(FringeRepository repo) : ControllerBase
                 x => x.First.ShowId,
                 x => x.Second.Select(st => st.DateTime).Order().ToList());
 
-        // Main schedule with all members' availability constraints
-        var mainItems = BuildSchedule(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: null);
+        var memberNames = members.ToDictionary(m => m.UserId, m => (string?)(m.DisplayName ?? m.Email));
 
-        // Alternate proposals: re-run without each member's constraints; surface if more shows fit
+        List<ScheduleItemDto> mainItems = BuildSchedule(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: null);
+
         var proposals = new List<AlternateProposalDto>();
-        foreach (var (member, availability) in members.Zip(availabilityRecords))
+        foreach (GroupMemberRecord member in members)
         {
-            if ((availability?.Windows ?? []).Count == 0) continue;
+            if (availabilityMap[member.UserId].Count == 0 && !anyoneHasAvailability)
+            {
+                continue;
+            }
 
-            var altItems = BuildSchedule(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: member.UserId);
+            List<ScheduleItemDto> altItems = BuildSchedule(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: member.UserId);
             int extra = altItems.Count - mainItems.Count;
-            if (extra <= 0) continue;
+            if (extra <= 0)
+            {
+                continue;
+            }
 
             string name = member.DisplayName ?? member.Email ?? "a member";
             string showWord = extra == 1 ? "show" : "shows";
+            string verb = mainItems.Count == 0 ? "fit" : "could be added";
             proposals.Add(new AlternateProposalDto(
-                $"If {name} relaxes their availability, {extra} more {showWord} could be added",
+                $"{extra} more {showWord} {verb} without {name}'s availability restrictions",
                 name,
                 altItems));
         }
 
-        return Ok(new ScheduleResponseDto(mainItems, proposals));
+        List<MissedShowDto> missedShows = ComputeMissedShows(votedShows, showTimesMap, mainItems, availabilityMap, memberNames);
+
+        return Ok(new ScheduleResponseDto(mainItems, proposals, missedShows, HasVotes: true));
     }
 
     private static List<ScheduleItemDto> BuildSchedule(
@@ -104,20 +121,28 @@ public class ScheduleController(FringeRepository repo) : ControllerBase
             .Where(kvp => kvp.Key != excludedUserId)
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-        foreach (var show in votedShows)
+        foreach (ShowRecord show in votedShows)
         {
-            if (!showTimesMap.TryGetValue(show.ShowId, out var times)) continue;
-
-            foreach (var timeStr in times)
+            if (!showTimesMap.TryGetValue(show.ShowId, out List<string>? times))
             {
-                var start = DateTime.Parse(timeStr, null,
-                    System.Globalization.DateTimeStyles.RoundtripKind);
-                var end = start.AddMinutes(show.LengthInMinutes);
+                continue;
+            }
+
+            foreach (string timeStr in times)
+            {
+                var start = DateTime.Parse(timeStr, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+                DateTime end = start.AddMinutes(show.LengthInMinutes);
 
                 bool conflicts = bookedSlots.Any(s => start < s.End && end > s.Start);
-                if (conflicts) continue;
+                if (conflicts)
+                {
+                    continue;
+                }
 
-                if (!IsAvailableForAll(start, end, effectiveAvailability)) continue;
+                if (!IsAvailableForAll(start, end, effectiveAvailability))
+                {
+                    continue;
+                }
 
                 schedule.Add(new ScheduleItemDto(ShowsController.ToDto(show, times), timeStr, scores[show.ShowId]));
                 bookedSlots.Add((start, end));
@@ -125,24 +150,98 @@ public class ScheduleController(FringeRepository repo) : ControllerBase
             }
         }
 
-        return schedule.OrderBy(s => s.ShowTime).ToList();
+        return [.. schedule.OrderBy(s => s.ShowTime)];
     }
 
     private static bool IsAvailableForAll(
         DateTime start, DateTime end,
-        Dictionary<string, List<(DateTime Start, DateTime End)>> availabilityMap) =>
-        availabilityMap.All(kvp =>
+        Dictionary<string, List<(DateTime Start, DateTime End)>> availabilityMap)
+    {
+        return availabilityMap.All(kvp =>
         {
-            var windows = kvp.Value;
+            List<(DateTime Start, DateTime End)> windows = kvp.Value;
             return windows.Count == 0 || windows.Any(w => w.Start <= start && w.End >= end);
         });
+    }
 
-    private static List<(DateTime Start, DateTime End)> ParseWindows(List<AvailabilityWindowData>? raw) =>
-        (raw ?? [])
+    private static List<string> GetBlockingMembers(
+        DateTime start, DateTime end,
+        Dictionary<string, List<(DateTime Start, DateTime End)>> availabilityMap,
+        Dictionary<string, string?> memberNames)
+    {
+        return [..availabilityMap
+            .Where(kvp =>
+            {
+                List<(DateTime Start, DateTime End)> windows = kvp.Value;
+                return !(windows.Count == 0 || windows.Any(w => w.Start <= start && w.End >= end));
+            })
+            .Select(kvp => memberNames.GetValueOrDefault(kvp.Key) ?? kvp.Key)];
+    }
+
+    private static List<MissedShowDto> ComputeMissedShows(
+        List<ShowRecord> votedShows,
+        Dictionary<int, List<string>> showTimesMap,
+        List<ScheduleItemDto> mainSchedule,
+        Dictionary<string, List<(DateTime Start, DateTime End)>> availabilityMap,
+        Dictionary<string, string?> memberNames)
+    {
+        var scheduledIds = mainSchedule.Select(i => i.Show.ShowId).ToHashSet();
+        List<(DateTime, DateTime)> bookedSlots = [..mainSchedule.Select(i =>
+        {
+            var s = DateTime.Parse(i.ShowTime, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+            return (s, s.AddMinutes(i.Show.LengthInMinutes));
+        })];
+
+        var missed = new List<MissedShowDto>();
+
+        foreach (ShowRecord show in votedShows)
+        {
+            if (scheduledIds.Contains(show.ShowId))
+            {
+                continue;
+            }
+
+            if (!showTimesMap.TryGetValue(show.ShowId, out List<string>? times))
+            {
+                continue;
+            }
+
+            bool conflictsWithScheduled = false;
+            var allBlockers = new HashSet<string>();
+
+            foreach (string timeStr in times)
+            {
+                var start = DateTime.Parse(timeStr, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+                DateTime end = start.AddMinutes(show.LengthInMinutes);
+
+                if (bookedSlots.Any(s => start < s.Item2 && end > s.Item1))
+                {
+                    conflictsWithScheduled = true;
+                    continue;
+                }
+
+                foreach (string blocker in GetBlockingMembers(start, end, availabilityMap, memberNames))
+                {
+                    _ = allBlockers.Add(blocker);
+                }
+            }
+
+            missed.Add(new MissedShowDto(ShowsController.ToDto(show, times), conflictsWithScheduled, [.. allBlockers]));
+        }
+
+        return missed;
+    }
+
+    private static List<(DateTime Start, DateTime End)> ParseWindows(IEnumerable<AvailabilityWindowData>? raw)
+    {
+        return [..(raw ?? [])
             .Select(w => (
-                Start: DateTime.Parse(w.Start, null, System.Globalization.DateTimeStyles.RoundtripKind),
-                End: DateTime.Parse(w.End, null, System.Globalization.DateTimeStyles.RoundtripKind)))
-            .ToList();
+                Start: DateTime.Parse(w.Start, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                End: DateTime.Parse(w.End, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)))];
+    }
 
-    private string GetUserId() => User.FindFirst("sub")?.Value ?? "";
+    private string GetUserId()
+    {
+        return User.FindFirst("sub")?.Value ?? "";
+    }
 }

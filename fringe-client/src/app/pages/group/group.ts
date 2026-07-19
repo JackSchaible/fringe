@@ -1,87 +1,169 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faCheck } from '@fortawesome/pro-solid-svg-icons';
-import { faUsers, faCirclePlus, faTicket, faCopy } from '@fortawesome/pro-regular-svg-icons';
+import { Component, type OnInit, inject, signal } from '@angular/core';
+import {
+  faCirclePlus,
+  faCopy,
+  faTicket,
+  faUser,
+  faUsers,
+} from '@fortawesome/pro-regular-svg-icons';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
-import { Group } from '../../models';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { FormsModule } from '@angular/forms';
+import type { Group } from '../../models';
+import { GroupMembersListComponent } from './group-members-list/group-members-list';
+import type { HttpErrorResponse } from '@angular/common/http';
+import { faCheck } from '@fortawesome/pro-solid-svg-icons';
+
+const TOAST_DURATION_MS = 2_000;
 
 @Component({
+  imports: [FormsModule, FaIconComponent, GroupMembersListComponent],
   selector: 'fg-group',
-  imports: [FormsModule, FaIconComponent],
-  templateUrl: './group.html',
   styleUrl: './group.scss',
+  templateUrl: './group.html',
 })
 export class GroupPage implements OnInit {
-  private readonly api = inject(ApiService);
-  private readonly auth = inject(AuthService);
+  public readonly loading = signal(true);
+  public readonly myGroup = signal<Group | null>(null);
+  public readonly error = signal('');
+  public readonly copied = signal(false);
+  public readonly confirmingDelete = signal(false);
+  public readonly deleting = signal(false);
 
-  readonly loading = signal(true);
-  readonly myGroup = signal<Group | null>(null);
-  readonly error = signal('');
-  readonly copied = signal(false);
-  readonly confirmingDelete = signal(false);
-  readonly deleting = signal(false);
-
-  readonly groupName = signal('');
-  readonly inviteCode = signal('');
+  public readonly groupName = signal('');
+  public readonly inviteCode = signal('');
+  public readonly username = signal('');
+  public readonly usernameSaved = signal(false);
+  public readonly savingUsername = signal(false);
 
   protected readonly faCheck = faCheck;
   protected readonly faUsers = faUsers;
   protected readonly faCirclePlus = faCirclePlus;
   protected readonly faTicket = faTicket;
   protected readonly faCopy = faCopy;
+  protected readonly faUser = faUser;
 
-  ngOnInit(): void {
+  private readonly api = inject(ApiService);
+  private readonly auth = inject(AuthService);
+
+  public ngOnInit(): void {
     this.api.getMyGroup().subscribe({
-      next: g => {
-        this.myGroup.set(g);
+      error: () => {
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      next: (group) => {
+        this.myGroup.set(group);
+        this.loading.set(false);
+      },
+    });
+
+    this.api.getMe().subscribe({
+      error: () => {
+        // Failing to load the display name is non-fatal; the field just stays blank.
+      },
+      next: (user) => {
+        this.username.set(user.displayName);
+      },
     });
   }
 
-  createGroup() {
+  public createGroup(): void {
     const name = this.groupName().trim();
-    if (!name) return;
+    if (!name) {
+      return;
+    }
     this.error.set('');
     this.api.createGroup(name).subscribe({
-      next: g => this.myGroup.set(g),
-      error: e => this.error.set(e.error ?? 'Failed to create group'),
+      error: (err: HttpErrorResponse) => {
+        let message = 'Failed to create group';
+        if (typeof err.error === 'string') {
+          message = err.error;
+        }
+        this.error.set(message);
+      },
+      next: (group) => {
+        this.myGroup.set(group);
+      },
     });
   }
 
-  joinGroup() {
+  public joinGroup(): void {
     const code = this.inviteCode().trim().toUpperCase();
-    if (!code) return;
+    if (!code) {
+      return;
+    }
     this.error.set('');
     this.api.joinGroup(code).subscribe({
-      next: g => this.myGroup.set(g),
-      error: e => this.error.set(e.error ?? 'Invalid invite code'),
+      error: (err: HttpErrorResponse) => {
+        let message = 'Invalid invite code';
+        if (typeof err.error === 'string') {
+          message = err.error;
+        }
+        this.error.set(message);
+      },
+      next: (group) => {
+        this.myGroup.set(group);
+      },
     });
   }
 
-  copyCode() {
+  public copyCode(): void {
     const code = this.myGroup()?.inviteCode;
-    if (!code) return;
-    navigator.clipboard.writeText(code).then(() => {
+    if (typeof code !== 'string') {
+      return;
+    }
+    void navigator.clipboard.writeText(code).then(() => {
       this.copied.set(true);
-      setTimeout(() => this.copied.set(false), 2000);
+      setTimeout(() => {
+        this.copied.set(false);
+      }, TOAST_DURATION_MS);
     });
   }
 
-  async deleteAccount() {
+  public saveUsername(): void {
+    const name = this.username().trim();
+    if (!name) {
+      return;
+    }
+    this.savingUsername.set(true);
+    this.api.updateDisplayName(name).subscribe({
+      error: () => {
+        this.savingUsername.set(false);
+      },
+      next: () => {
+        this.savingUsername.set(false);
+        this.usernameSaved.set(true);
+        setTimeout(() => {
+          this.usernameSaved.set(false);
+        }, TOAST_DURATION_MS);
+        this.refreshGroup();
+      },
+    });
+  }
+
+  public deleteAccount(): void {
     this.deleting.set(true);
     this.api.deleteMe().subscribe({
-      next: async () => {
-        await this.auth.signOut();
-      },
       error: () => {
         this.deleting.set(false);
         this.confirmingDelete.set(false);
         this.error.set('Failed to delete account. Please try again.');
+      },
+      next: () => {
+        void this.auth.signOut();
+      },
+    });
+  }
+
+  private refreshGroup(): void {
+    // Refresh group so the member row reflects the new name.
+    this.api.getMyGroup().subscribe({
+      error: () => {
+        // A stale member row is non-fatal; the next successful refresh will fix it.
+      },
+      next: (group) => {
+        this.myGroup.set(group);
       },
     });
   }

@@ -10,9 +10,13 @@ using Microsoft.Extensions.Configuration;
 string envPath = File.Exists(".env") ? ".env" : Path.Combine("Fringe.Scraper", ".env");
 bool envLoaded = File.Exists(envPath);
 if (envLoaded)
-    Env.Load(envPath);
+{
+    _ = Env.Load(envPath);
+}
 else
+{
     Console.WriteLine($"⚠️  No .env file found (checked: {envPath}). Using environment variables only.");
+}
 
 IConfigurationRoot config = new ConfigurationBuilder()
     .SetBasePath(AppContext.BaseDirectory)
@@ -25,7 +29,7 @@ string tableName = config["DynamoTableName"]
 
 if (string.IsNullOrWhiteSpace(tableName))
 {
-    Console.Error.WriteLine("❌ DYNAMO_TABLE_NAME is not set. Add it to Fringe.Scraper/.env or set the environment variable.");
+    ScraperLogger.LogError("❌ DYNAMO_TABLE_NAME is not set. Add it to Fringe.Scraper/.env or set the environment variable.");
     return;
 }
 
@@ -35,7 +39,7 @@ string? dynamoEndpoint = Environment.GetEnvironmentVariable("DYNAMO_ENDPOINT");
 
 Console.WriteLine($"📋 Config: table={tableName}, endpoint={dynamoEndpoint ?? "(AWS default)"}");
 
-AmazonDynamoDBClient dynamoClient = !string.IsNullOrEmpty(dynamoEndpoint)
+using AmazonDynamoDBClient dynamoClient = !string.IsNullOrEmpty(dynamoEndpoint)
     ? new AmazonDynamoDBClient(
         new Amazon.Runtime.BasicAWSCredentials("local", "local"),
         new AmazonDynamoDBConfig { ServiceURL = dynamoEndpoint })
@@ -45,4 +49,4 @@ IDynamoDBContext dynamoContext = new DynamoDBContextBuilder()
     .Build();
 FringeRepository repository = new(dynamoContext);
 
-await ScraperRunner.RunAsync(repository);
+await ScraperRunner.RunAsync(repository).ConfigureAwait(false);

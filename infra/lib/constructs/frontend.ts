@@ -1,24 +1,30 @@
 import * as cdk from "aws-cdk-lib";
-import { Bucket, BlockPublicAccess } from "aws-cdk-lib/aws-s3";
-import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
 import {
-  Distribution,
-  ViewerProtocolPolicy,
   AllowedMethods,
   CachePolicy,
+  Distribution,
+  ViewerProtocolPolicy,
 } from "aws-cdk-lib/aws-cloudfront";
-import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
-import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
+import { BlockPublicAccess, Bucket } from "aws-cdk-lib/aws-s3";
+import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
+import type { Certificate } from "aws-cdk-lib/aws-certificatemanager";
 import { Construct } from "constructs";
+import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 
 interface FrontendProps {
   certificate: Certificate;
 }
 
+const ERROR_RESPONSE_TTL_SECONDS = 0;
+
 export class FringeFrontend extends Construct {
   public readonly distributionDomain: string;
 
-  constructor(scope: Construct, id: string, props: FrontendProps) {
+  public constructor(
+    scope: Readonly<Construct>,
+    id: string,
+    props: Readonly<FrontendProps>,
+  ) {
     super(scope, id);
 
     const bucket = new Bucket(this, "SiteBucket", {
@@ -42,13 +48,13 @@ export class FringeFrontend extends Construct {
           httpStatus: 403,
           responsePagePath: "/index.html",
           responseHttpStatus: 200,
-          ttl: cdk.Duration.seconds(0),
+          ttl: cdk.Duration.seconds(ERROR_RESPONSE_TTL_SECONDS),
         },
         {
           httpStatus: 404,
           responsePagePath: "/index.html",
           responseHttpStatus: 200,
-          ttl: cdk.Duration.seconds(0),
+          ttl: cdk.Duration.seconds(ERROR_RESPONSE_TTL_SECONDS),
         },
       ],
     });

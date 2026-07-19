@@ -1,146 +1,226 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faPlus, faTrash, faCheck } from '@fortawesome/pro-regular-svg-icons';
-import { faCalendarClock } from '@fortawesome/pro-light-svg-icons';
+import {
+  type AvailabilityWindow,
+  type CalendarCell,
+  type CalendarMonth,
+  buildCalendarMonths,
+  buildFestivalDays,
+  utcToLocalDate,
+} from './calendar-utils';
+import type {
+  CalendarOptions,
+  DateSelectArg,
+  EventClickArg,
+} from '@fullcalendar/core';
+import {
+  Component,
+  type OnInit,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
+import {
+  type FullCalendarComponent,
+  FullCalendarModule,
+} from '@fullcalendar/angular';
 import { ApiService } from '../../services/api.service';
-import { Show } from '../../models';
+import { CalendarMonthComponent } from './calendar-month/calendar-month';
+import type { EventImpl } from '@fullcalendar/core/internal';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faCheck } from '@fortawesome/pro-solid-svg-icons';
+import { firstValueFrom } from 'rxjs';
+import interactionPlugin from '@fullcalendar/interaction';
+import timeGridPlugin from '@fullcalendar/timegrid';
 
-interface TimeWindow {
-  start: string; // 'HH:MM' local time
-  end: string;   // 'HH:MM' local time
-}
-
-interface DayAvailability {
-  date: string;        // 'YYYY-MM-DD' local date
-  label: string;       // 'Fri Aug 15'
-  windows: TimeWindow[];
-}
+const CALENDAR_HEIGHT_PX = 380,
+  DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  EMPTY_COUNT = 0,
+  SAVED_FEEDBACK_MS = 3_000;
 
 @Component({
+  imports: [FaIconComponent, FullCalendarModule, CalendarMonthComponent],
   selector: 'fg-availability',
-  imports: [FormsModule, FaIconComponent],
-  templateUrl: './availability.html',
   styleUrl: './availability.scss',
+  templateUrl: './availability.html',
 })
 export class AvailabilityPage implements OnInit {
+  public readonly loading = signal(true);
+  public readonly saving = signal(false);
+  public readonly saved = signal(false);
+  public readonly calendarMonths = signal<ReadonlyArray<CalendarMonth>>([]);
+  public readonly selectedDate = signal<string | null>(null);
+  public readonly selectedDayLabel = signal<string>('');
+
+  public calendarOptions: CalendarOptions = {
+    allDaySlot: false,
+    eventBorderColor: 'transparent',
+    eventClick: (info: EventClickArg) => {
+      info.event.remove();
+      this.syncWindowsFromCalendar();
+    },
+    eventColor: '#7c3aed',
+    eventTextColor: '#f3e8ff',
+    events: [],
+    expandRows: false,
+    headerToolbar: false,
+    height: CALENDAR_HEIGHT_PX,
+    initialView: 'timeGridDay',
+    plugins: [timeGridPlugin, interactionPlugin],
+    select: (info: DateSelectArg) => {
+      const api = this.calendarRef().getApi();
+      api.addEvent({ end: info.endStr, start: info.startStr });
+      api.unselect();
+      this.syncWindowsFromCalendar();
+    },
+    selectMirror: true,
+    selectable: true,
+    slotDuration: '00:30:00',
+    slotLabelFormat: {
+      hour: 'numeric',
+      meridiem: 'short',
+      omitZeroMinute: true,
+    },
+    slotLabelInterval: '01:00:00',
+    slotMaxTime: '24:00:00',
+    slotMinTime: '10:00:00',
+    unselectAuto: false,
+  };
+
+  protected readonly faCheck = faCheck;
+  protected readonly dayNames = DAY_NAMES;
+
+  private readonly calendarRef =
+    viewChild.required<FullCalendarComponent>('calendar');
   private readonly api = inject(ApiService);
 
-  readonly loading = signal(true);
-  readonly saving = signal(false);
-  readonly saved = signal(false);
-  readonly days = signal<DayAvailability[]>([]);
+  private windowsByDate: Partial<Record<string, Array<AvailabilityWindow>>> =
+    {};
 
-  protected readonly faPlus = faPlus;
-  protected readonly faTrash = faTrash;
-  protected readonly faCheck = faCheck;
-  protected readonly faCalendarClock = faCalendarClock;
+  public ngOnInit(): void {
+    void this.loadAvailability();
+  }
 
-  ngOnInit(): void {
-    Promise.all([
-      this.api.getShows().toPromise(),
-      this.api.getAvailability().toPromise(),
-    ]).then(([shows, availability]) => {
-      const festivalDays = this.deriveFestivalDays(shows ?? []);
-      const existingWindowsByDate = this.parseExistingWindows(availability?.windows ?? []);
+  public selectDay(cell: Readonly<CalendarCell>): void {
+    if (
+      !cell.isFestival ||
+      cell.festivalDay === null ||
+      cell.date === null ||
+      cell.date.trim().length === EMPTY_COUNT
+    ) {
+      return;
+    }
+    const day = cell.festivalDay,
+      selectedDate = cell.date;
+    this.selectedDate.set(selectedDate);
+    this.selectedDayLabel.set(
+      new Date(`${selectedDate}T12:00:00`).toLocaleDateString('en-CA', {
+        day: 'numeric',
+        month: 'long',
+        weekday: 'long',
+      }),
+    );
 
-      this.days.set(festivalDays.map(date => ({
-        date,
-        label: this.formatDayLabel(date),
-        windows: existingWindowsByDate[date] ?? [],
-      })));
-      this.loading.set(false);
+    // Rebuild options by reference so Angular's [options] binding triggers FullCalendar re-render
+    this.calendarOptions = {
+      ...this.calendarOptions,
+      slotMaxTime: day.latest,
+      slotMinTime: day.earliest,
+    };
+
+    // GotoDate + load saved windows after the new options have rendered
+    setTimeout(() => {
+      const api = this.calendarRef().getApi();
+      api.gotoDate(selectedDate);
+      api.removeAllEvents();
+      for (const window of this.windowsByDate[selectedDate] ?? []) {
+        api.addEvent({ end: window.end, start: window.start });
+      }
     });
   }
 
-  addWindow(day: DayAvailability): void {
-    day.windows = [...day.windows, { start: '10:00', end: '23:00' }];
-    this.days.update(d => [...d]);
-  }
-
-  removeWindow(day: DayAvailability, index: number): void {
-    day.windows = day.windows.filter((_, i) => i !== index);
-    this.days.update(d => [...d]);
-  }
-
-  updateWindow(day: DayAvailability, index: number, field: 'start' | 'end', value: string): void {
-    day.windows[index] = { ...day.windows[index], [field]: value };
-    this.days.update(d => [...d]);
-  }
-
-  save(): void {
+  public save(): void {
+    this.syncWindowsFromCalendar();
     this.saving.set(true);
     this.saved.set(false);
-
-    const windows = this.days()
-      .flatMap(day =>
-        day.windows
-          .filter(w => w.start && w.end && w.start < w.end)
-          .map(w => ({
-            start: this.localToUtc(day.date, w.start),
-            end: this.localToUtc(day.date, w.end),
-          }))
-      );
-
+    const windows = Object.values(this.windowsByDate).flatMap(
+      (entry) => entry ?? [],
+    );
     this.api.saveAvailability({ windows }).subscribe({
+      error: () => {
+        this.saving.set(false);
+      },
       next: () => {
         this.saving.set(false);
         this.saved.set(true);
-        setTimeout(() => this.saved.set(false), 3000);
+        this.rebuildHighlights();
+        setTimeout(() => {
+          this.saved.set(false);
+        }, SAVED_FEEDBACK_MS);
       },
-      error: () => this.saving.set(false),
     });
   }
 
-  clearAll(): void {
-    this.days.update(days => days.map(d => ({ ...d, windows: [] })));
-  }
-
-  private deriveFestivalDays(shows: Show[]): string[] {
-    const dates = new Set<string>();
-    for (const show of shows) {
-      for (const st of show.showTimes) {
-        dates.add(this.utcToLocalDate(st));
-      }
+  public clearDay(): void {
+    const date = this.selectedDate();
+    if (date === null) {
+      return;
     }
-    return [...dates].sort();
+    this.calendarRef().getApi().removeAllEvents();
+    Reflect.deleteProperty(this.windowsByDate, date);
+    this.rebuildHighlights();
   }
 
-  private parseExistingWindows(windows: { start: string; end: string }[]): Record<string, TimeWindow[]> {
-    const byDate: Record<string, TimeWindow[]> = {};
-    for (const w of windows) {
-      const date = this.utcToLocalDate(w.start);
-      byDate[date] ??= [];
-      byDate[date].push({
-        start: this.utcToLocalTime(w.start),
-        end: this.utcToLocalTime(w.end),
-      });
+  private async loadAvailability(): Promise<void> {
+    const [shows, availability] = await Promise.all([
+      firstValueFrom(this.api.getShows()),
+      firstValueFrom(this.api.getAvailability()),
+    ]);
+    for (const win of availability.windows) {
+      const date = utcToLocalDate(win.start);
+      this.windowsByDate[date] ??= [];
+      this.windowsByDate[date].push({ end: win.end, start: win.start });
     }
-    return byDate;
+
+    const days = buildFestivalDays(shows, this.windowsByDate);
+    this.calendarMonths.set(buildCalendarMonths(days));
+    this.loading.set(false);
   }
 
-  private localToUtc(date: string, time: string): string {
-    return new Date(`${date}T${time}:00`).toISOString();
+  private syncWindowsFromCalendar(): void {
+    const date = this.selectedDate(),
+      events = this.calendarRef().getApi().getEvents();
+    if (date === null) {
+      return;
+    }
+
+    this.windowsByDate[date] = events.map((eventType: EventImpl) => ({
+      end: eventType.endStr,
+      start: eventType.startStr,
+    }));
+    this.rebuildHighlights();
   }
 
-  private utcToLocalDate(utcIso: string): string {
-    const d = new Date(utcIso);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
+  private rebuildHighlights(): void {
+    this.calendarMonths.update((months) =>
+      months.map((month) => ({
+        ...month,
+        weeks: month.weeks.map((week) =>
+          week.map((cell) => this.withHighlight(cell)),
+        ),
+      })),
+    );
   }
 
-  private utcToLocalTime(utcIso: string): string {
-    const d = new Date(utcIso);
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  }
-
-  private formatDayLabel(date: string): string {
-    return new Date(`${date}T12:00:00`).toLocaleDateString('en-CA', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    });
+  private withHighlight(cell: Readonly<CalendarCell>): CalendarCell {
+    if (!cell.isFestival || cell.date === null || cell.festivalDay === null) {
+      return cell;
+    }
+    return {
+      ...cell,
+      festivalDay: {
+        ...cell.festivalDay,
+        hasWindows:
+          (this.windowsByDate[cell.date]?.length ?? EMPTY_COUNT) > EMPTY_COUNT,
+      },
+    };
   }
 }

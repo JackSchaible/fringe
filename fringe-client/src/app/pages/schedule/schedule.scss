@@ -1,6 +1,6 @@
 .schedule-page {
   padding: 1.5rem;
-  max-width: 780px;
+  max-width: 1040px;
   margin: 0 auto;
 
   h1 {
@@ -48,13 +48,20 @@
 .btn-primary {
   display: inline-block;
   padding: 0.6rem 1.5rem;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--accent) 0%,
+    var(--accent-dark) 100%
+  );
   color: #fff;
   border-radius: 0.625rem;
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 600;
-  transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+  transition:
+    opacity 0.15s,
+    transform 0.15s,
+    box-shadow 0.15s;
   box-shadow: 0 4px 15px rgba(109, 40, 217, 0.35);
 
   &:hover {
@@ -79,7 +86,10 @@
   border-left: 3px solid rgba(167, 139, 250, 0.35);
   border-radius: 0.75rem;
   padding: 1rem 1.25rem;
-  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    box-shadow 0.15s;
 
   &:hover {
     border-color: var(--border-4);
@@ -96,8 +106,20 @@
   padding-right: 1rem;
   border-right: 1px solid var(--border-2);
 
-  .day      { font-size: 0.65rem; color: var(--text-4); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
-  .time     { font-size: 1.05rem; font-weight: 700; color: var(--text-accent); letter-spacing: -0.02em; margin-top: 0.1rem; }
+  .day {
+    font-size: 0.65rem;
+    color: var(--text-4);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .time {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-accent);
+    letter-spacing: -0.02em;
+    margin-top: 0.1rem;
+  }
   .duration {
     display: flex;
     align-items: center;
@@ -184,7 +206,41 @@
   text-decoration: none;
   transition: opacity 0.15s;
 
-  &:hover { opacity: 0.75; }
+  &:hover {
+    opacity: 0.75;
+  }
+}
+
+.blocked-state {
+  text-align: center;
+  padding: 2.5rem 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-4);
+
+  .blocked-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-2);
+    margin: 0;
+  }
+
+  .blocked-sub {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    max-width: 420px;
+    margin: 0;
+
+    a {
+      color: var(--accent-light);
+      text-decoration: none;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
 }
 
 .active-banner {
@@ -212,7 +268,9 @@
   font-size: 0.75rem;
   font-family: inherit;
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 
   &:hover {
     color: var(--text-1);
@@ -220,10 +278,69 @@
   }
 }
 
+// ── Missed shows ──────────────────────────────────────────────────────────
+
+.missed-section {
+  padding-top: 0;
+}
+
+.missed-heading {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-4);
+  margin: 0 0 0.625rem;
+}
+
+.missed-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border-1);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.missed-title {
+  font-size: 0.875rem;
+  color: var(--text-3);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.missed-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.missed-tag {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.25rem;
+  letter-spacing: 0.02em;
+
+  &.conflict {
+    background: rgba(234, 179, 8, 0.12);
+    color: #a16207;
+  }
+
+  &.blocked {
+    background: rgba(239, 68, 68, 0.1);
+    color: #b91c1c;
+  }
+}
+
 // ── Alternate proposals ────────────────────────────────────────────────────
 
 .proposals-section {
-  margin-top: 2.5rem;
+  margin-top: 2rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border-2);
 }
@@ -281,13 +398,81 @@
 .proposal-body {
   border-top: 1px solid var(--border-1);
   padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.needs-change {
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  border-radius: 0.5rem;
+  padding: 0.75rem 0.875rem;
+}
+
+.needs-change-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-2);
+  margin: 0 0 0.5rem;
+}
+
+.needs-window {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+  font-size: 0.8rem;
+}
+
+.needs-time {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--text-accent);
+  font-size: 0.75rem;
+}
+
+.needs-show {
+  color: var(--text-3);
+}
+
+.proposal-schedule-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-5);
+  margin: 0;
+}
+
+.proposal-item.is-new {
+  background: rgba(124, 58, 237, 0.07);
+  border-radius: 0.375rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  margin-left: -0.5rem;
+  margin-right: -0.5rem;
+}
+
+.new-badge {
+  flex-shrink: 0;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent-light);
+  background: rgba(124, 58, 237, 0.15);
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.35rem;
 }
 
 .proposal-schedule {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  margin-bottom: 0.875rem;
 }
 
 .proposal-item {
@@ -332,7 +517,11 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.5rem 1.1rem;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--accent) 0%,
+    var(--accent-dark) 100%
+  );
   color: #fff;
   border: none;
   border-radius: 0.5rem;
@@ -340,7 +529,9 @@
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
   box-shadow: 0 3px 10px rgba(109, 40, 217, 0.3);
 
   &:hover {

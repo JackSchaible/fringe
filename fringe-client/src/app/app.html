@@ -1,25 +1,41 @@
 @if (auth.currentUser()) {
   <nav class="nav">
-    <a routerLink="/shows" class="nav-brand">Jack's Fringe Planner</a>
+    <a i18n="@@app.02" routerLink="/shows" class="nav-brand"
+      >Jack's Fringe Planner</a
+    >
     <div class="nav-links">
-      <a routerLink="/shows" routerLinkActive="active">
+      <a i18n="@@app.nav.shows" routerLink="/shows" routerLinkActive="active">
         <fa-icon [icon]="faFilm" />
         Shows
       </a>
-      <a routerLink="/schedule" routerLinkActive="active">
+      <a
+        i18n="@@app.nav.schedule"
+        routerLink="/schedule"
+        routerLinkActive="active"
+      >
         <fa-icon [icon]="faCalendarDays" />
         Schedule
       </a>
-      <a routerLink="/group" routerLinkActive="active">
+      <a i18n="@@app.nav.group" routerLink="/group" routerLinkActive="active">
         <fa-icon [icon]="faUsers" />
         Group
       </a>
-      <a routerLink="/availability" routerLinkActive="active">
+      <a
+        i18n="@@app.nav.availability"
+        routerLink="/availability"
+        routerLinkActive="active"
+      >
         <fa-icon [icon]="faClock" />
         Availability
       </a>
     </div>
-    <button class="nav-signout" (click)="auth.signOut()" title="Sign out">
+    <button
+      type="button"
+      class="nav-signout"
+      title="Sign out"
+      i18n-title="@@app.01.title"
+      (click)="auth.signOut()"
+    >
       <fa-icon [icon]="faArrowRightFromBracket" />
     </button>
   </nav>
@@ -30,16 +46,16 @@
 </main>
 
 <footer class="site-footer">
-  <span class="footer-copy"
+  <span i18n="@@app.03" class="footer-copy"
     >&copy; {{ year }} Cactus Studios. Independent project. Not affiliated with
     Fringe Theatre Adventures.</span
   >
   <span class="footer-sep">·</span>
-  <a routerLink="/privacy">Privacy Policy</a>
+  <a i18n="@@app.04" routerLink="/privacy">Privacy Policy</a>
   <span class="footer-sep">·</span>
-  <a routerLink="/terms">Terms of Service</a>
+  <a i18n="@@app.05" routerLink="/terms">Terms of Service</a>
   <span class="footer-sep">·</span>
-  <a href="mailto:hello@jackschaible.ca">Contact</a>
+  <a i18n="@@app.06" href="mailto:hello@jackschaible.ca">Contact</a>
 </footer>
 
 <fg-cookie-consent-drawer />

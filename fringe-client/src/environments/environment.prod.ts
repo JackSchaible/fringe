@@ -1,7 +1,10 @@
 export const environment = {
-  production: true,
   apiUrl: 'https://api.fringe.jackschaible.ca',
-  cognitoUserPoolId: '',   // populated from CDK output at build time
-  cognitoClientId: '',     // populated from CDK output at build time
-  turnstileSiteKey: '',    // populated from GitHub secret at build time
+  // Populated from CDK output at build time
+  cognitoClientId: '',
+  // Populated from CDK output at build time
+  cognitoUserPoolId: '',
+  production: true,
+  // Populated from GitHub secret at build time
+  turnstileSiteKey: '',
 };

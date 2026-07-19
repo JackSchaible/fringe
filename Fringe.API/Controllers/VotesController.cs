@@ -1,42 +1,52 @@
+using System.Globalization;
 using Fringe.Data;
+using Fringe.Data.DynamoRecords;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fringe.API.Controllers;
 
+/// <summary>Manages the current user's show votes.</summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class VotesController(FringeRepository repo) : ControllerBase
+internal sealed class VotesController(FringeRepository repo) : ControllerBase
 {
+    /// <summary>Returns the current user's votes.</summary>
     [HttpGet]
     public async Task<List<VoteDto>> GetVotes()
     {
         string userId = GetUserId();
-        var records = await repo.GetVotesForUserAsync(userId);
-        return records
-            .Select(r => new VoteDto(int.Parse(r.Sk.Replace("VOTE#SHOW#", "")), r.Score))
-            .ToList();
+        List<UserVoteRecord> records = await repo.GetVotesForUserAsync(userId).ConfigureAwait(false);
+        return [..records.Select(r => new VoteDto(
+            int.Parse(r.Sk.Replace("VOTE#SHOW#", "", StringComparison.Ordinal), CultureInfo.InvariantCulture),
+            r.Score))];
     }
 
+    /// <summary>Replaces the current user's votes with the provided list.</summary>
     [HttpPut]
-    public async Task<IActionResult> SaveVotes([FromBody] List<VoteDto> votes)
+    public async Task<IActionResult> SaveVotes([FromBody] IEnumerable<VoteDto> votes)
     {
         string userId = GetUserId();
+        List<VoteDto> voteList = [.. votes];
 
-        // Delete existing votes not in the new list so removed shows are cleared
-        var existing = await repo.GetVotesForUserAsync(userId);
-        var newShowIds = votes.Select(v => v.ShowId).ToHashSet();
-        var toDelete = existing
-            .Select(r => int.Parse(r.Sk.Replace("VOTE#SHOW#", "")))
+        List<UserVoteRecord> existing = await repo.GetVotesForUserAsync(userId).ConfigureAwait(false);
+        var newShowIds = voteList.Select(v => v.ShowId).ToHashSet();
+        IEnumerable<int> toDelete = existing
+            .Select(r => int.Parse(r.Sk.Replace("VOTE#SHOW#", "", StringComparison.Ordinal), CultureInfo.InvariantCulture))
             .Where(id => !newShowIds.Contains(id));
-        await repo.DeleteVotesAsync(userId, toDelete);
+        await repo.DeleteVotesAsync(userId, toDelete).ConfigureAwait(false);
 
-        foreach (var vote in votes)
-            await repo.UpsertVoteAsync(userId, vote.ShowId, vote.Rank);
+        foreach (VoteDto vote in voteList)
+        {
+            await repo.UpsertVoteAsync(userId, vote.ShowId, vote.Rank).ConfigureAwait(false);
+        }
 
         return NoContent();
     }
 
-    private string GetUserId() => User.FindFirst("sub")?.Value ?? "";
+    private string GetUserId()
+    {
+        return User.FindFirst("sub")?.Value ?? "";
+    }
 }

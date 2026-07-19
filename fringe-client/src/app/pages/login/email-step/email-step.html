@@ -1,0 +1,41 @@
+<div class="otp-form">
+  <p i18n="@@login.email-hint" class="step-hint">
+    <fa-icon class="hint-icon" [icon]="faEnvelope" />
+    Enter your email to receive a sign-in code.
+  </p>
+  <input
+    type="email"
+    placeholder="Email address"
+    i18n-placeholder="@@pages.login.login.01.placeholder"
+    autocomplete="email"
+    [ngModel]="email()"
+    (ngModelChange)="email.set($event)"
+    (keyup.enter)="send.emit()"
+  />
+  <label i18n="@@login.terms-check" class="terms-check">
+    <input
+      type="checkbox"
+      [ngModel]="agreedToTerms()"
+      (ngModelChange)="agreedToTerms.set($event)"
+    />
+    I have read and agree to the
+    <a routerLink="/terms" target="_blank">Terms of Service</a>
+    and
+    <a routerLink="/privacy" target="_blank">Privacy Policy</a>
+  </label>
+  <div id="turnstile-widget"></div>
+  <button
+    type="button"
+    i18n="@@pages.login.login.09"
+    class="btn-primary"
+    [disabled]="loading() || !captchaToken() || !agreedToTerms()"
+    (click)="send.emit()"
+  >
+    @if (loading()) {
+      Sending…
+    } @else {
+      <fa-icon [icon]="faPaperPlane" />
+      Send code
+    }
+  </button>
+</div>

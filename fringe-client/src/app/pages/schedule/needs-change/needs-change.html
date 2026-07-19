@@ -1,0 +1,20 @@
+@if (newShows().length > 0) {
+  <div class="needs-change">
+    <p i18n="@@schedule.needs-change" class="needs-change-heading">
+      <fa-icon [icon]="faCircleInfo" />
+      For {{ excludedMemberName() }} to unlock
+      {{ newShows().length === 1 ? "this show" : "these shows" }}, they need
+      availability at:
+    </p>
+    @for (item of newShows(); track item.show.showId) {
+      <div class="needs-window">
+        <span i18n="@@pages.schedule.schedule.19" class="needs-time"
+          >{{ item.showTime | date: "EEE MMM d, h:mm" }}–{{
+            showEndTime(item) | date: "h:mm a"
+          }}</span
+        >
+        <span class="needs-show">{{ item.show.title }}</span>
+      </div>
+    }
+  </div>
+}

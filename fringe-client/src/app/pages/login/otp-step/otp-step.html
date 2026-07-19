@@ -1,0 +1,44 @@
+<div class="otp-form">
+  <p i18n="@@login.otp-hint" class="step-hint">
+    <fa-icon class="hint-icon" [icon]="faKey" />
+    Code sent to <strong>{{ email() }}</strong
+    >.<br />
+    Check your inbox. If you don't see it, check your spam folder.
+  </p>
+  <input
+    type="text"
+    inputmode="numeric"
+    i18n-inputmode="@@pages.login.login.02.inputmode"
+    pattern="[0-9]*"
+    placeholder="6-digit code"
+    maxlength="6"
+    autocomplete="one-time-code"
+    [ngModel]="otp()"
+    (ngModelChange)="otp.set($event)"
+    (keyup.enter)="verify.emit()"
+  />
+  <button
+    type="button"
+    i18n="@@pages.login.login.10"
+    class="btn-primary"
+    [disabled]="loading()"
+    (click)="verify.emit()"
+  >
+    @if (loading()) {
+      Verifying…
+    } @else {
+      <fa-icon [icon]="faArrowRightToBracket" />
+      Sign in
+    }
+  </button>
+  <button
+    type="button"
+    i18n="@@login.back-btn"
+    class="btn-text"
+    [disabled]="loading()"
+    (click)="back.emit()"
+  >
+    <fa-icon [icon]="faArrowLeft" />
+    Use a different email
+  </button>
+</div>

@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Security.Cryptography;
 using Fringe.Data;
 using Fringe.Data.DynamoRecords;
 using Microsoft.AspNetCore.Authorization;
@@ -5,19 +7,23 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Fringe.API.Controllers;
 
+/// <summary>Manages groups and group membership.</summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class GroupsController(FringeRepository repo) : ControllerBase
+internal sealed class GroupsController(FringeRepository repo) : ControllerBase
 {
+    /// <summary>Creates a new group and joins the current user to it.</summary>
     [HttpPost]
     public async Task<ActionResult<GroupDto>> CreateGroup([FromBody] CreateGroupRequest req)
     {
         string userId = GetUserId();
 
-        var user = await repo.GetUserAsync(userId);
+        UserRecord? user = await repo.GetUserAsync(userId).ConfigureAwait(false);
         if (user?.GroupId != null)
+        {
             return BadRequest("You are already in a group.");
+        }
 
         string groupId = Guid.NewGuid().ToString("N")[..12];
         string inviteCode = GenerateInviteCode();
@@ -29,73 +35,86 @@ public class GroupsController(FringeRepository repo) : ControllerBase
             Name = req.Name,
             OwnerId = userId,
             InviteCode = inviteCode,
-            CreatedAt = DateTime.UtcNow.ToString("O")
-        });
+            CreatedAt = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)
+        }).ConfigureAwait(false);
 
-        await repo.JoinGroupAsync(groupId, userId, user?.DisplayName ?? "", user?.Email ?? "");
+        await repo.JoinGroupAsync(groupId, userId, user?.DisplayName ?? "", user?.Email ?? "").ConfigureAwait(false);
 
         return Ok(new GroupDto(groupId, req.Name, inviteCode, []));
     }
 
+    /// <summary>Joins the current user to an existing group using an invite code.</summary>
     [HttpPost("join")]
     public async Task<ActionResult<GroupDto>> JoinGroup([FromBody] JoinGroupRequest req)
     {
         string userId = GetUserId();
 
-        var user = await repo.GetUserAsync(userId);
+        UserRecord? user = await repo.GetUserAsync(userId).ConfigureAwait(false);
         if (user?.GroupId != null)
+        {
             return BadRequest("You are already in a group.");
+        }
 
-        var group = await repo.GetGroupByInviteCodeAsync(req.InviteCode.ToUpperInvariant());
+        GroupRecord? group = await repo.GetGroupByInviteCodeAsync(req.InviteCode.ToUpperInvariant()).ConfigureAwait(false);
         if (group == null)
+        {
             return NotFound("Invalid invite code.");
+        }
 
-        await repo.JoinGroupAsync(group.GroupId, userId, user?.DisplayName ?? "", user?.Email ?? "");
+        await repo.JoinGroupAsync(group.GroupId, userId, user?.DisplayName ?? "", user?.Email ?? "").ConfigureAwait(false);
 
-        var members = await repo.GetGroupMembersAsync(group.GroupId);
+        List<GroupMemberRecord> members = await repo.GetGroupMembersAsync(group.GroupId).ConfigureAwait(false);
         return Ok(ToDto(group, members));
     }
 
+    /// <summary>Returns the current user's group with member vote counts.</summary>
     [HttpGet("me")]
     public async Task<ActionResult<GroupDto>> GetMyGroup()
     {
         string userId = GetUserId();
-        var user = await repo.GetUserAsync(userId);
+        UserRecord? user = await repo.GetUserAsync(userId).ConfigureAwait(false);
         if (user?.GroupId == null)
+        {
             return NotFound();
+        }
 
-        var group = await repo.GetGroupAsync(user.GroupId);
+        GroupRecord? group = await repo.GetGroupAsync(user.GroupId).ConfigureAwait(false);
         if (group == null)
+        {
             return NotFound();
+        }
 
-        var members = await repo.GetGroupMembersAsync(user.GroupId);
+        List<GroupMemberRecord> members = await repo.GetGroupMembersAsync(user.GroupId).ConfigureAwait(false);
 
-        // Attach vote counts
-        var voteCounts = await Task.WhenAll(
+        (GroupMemberRecord m, int)[] voteCounts = await Task.WhenAll(
             members.Select(async m =>
             {
-                var votes = await repo.GetVotesForUserAsync(m.UserId);
+                List<UserVoteRecord> votes = await repo.GetVotesForUserAsync(m.UserId).ConfigureAwait(false);
                 return (m, votes.Count);
-            }));
+            })).ConfigureAwait(false);
 
-        var memberDtos = voteCounts
-            .Select(x => new GroupMemberDto(x.m.UserId, x.m.DisplayName, x.m.Email, x.Item2))
-            .ToList();
+        List<GroupMemberDto> memberDtos = [.. voteCounts.Select(x => new GroupMemberDto(x.m.UserId, x.m.DisplayName, x.m.Email, x.Item2))];
 
         return Ok(new GroupDto(group.GroupId, group.Name, group.InviteCode, memberDtos));
     }
 
-    private string GetUserId() => User.FindFirst("sub")?.Value ?? "";
+    private string GetUserId()
+    {
+        return User.FindFirst("sub")?.Value ?? "";
+    }
 
     private static string GenerateInviteCode()
     {
-        const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no ambiguous chars
-        return new string(Enumerable.Range(0, 6)
-            .Select(_ => chars[Random.Shared.Next(chars.Length)])
-            .ToArray());
+        const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        return new string([.. Enumerable.Range(0, 6).Select(_ => chars[RandomNumberGenerator.GetInt32(chars.Length)])]);
     }
 
-    private static GroupDto ToDto(GroupRecord g, List<GroupMemberRecord> members) =>
-        new(g.GroupId, g.Name, g.InviteCode,
-            members.Select(m => new GroupMemberDto(m.UserId, m.DisplayName, m.Email, 0)).ToList());
+    private static GroupDto ToDto(GroupRecord g, List<GroupMemberRecord> members)
+    {
+        return new GroupDto(
+            g.GroupId,
+            g.Name,
+            g.InviteCode,
+            [.. members.Select(m => new GroupMemberDto(m.UserId, m.DisplayName, m.Email, 0))]);
+    }
 }

@@ -1,17 +1,26 @@
-namespace FringeScraper.Services;
-
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
-using Models;
+using Fringe.Data.Models;
 
-public static partial class DetailScraper
+namespace FringeScraper.Services;
+
+/// <summary>Scrapes detailed show metadata from individual Fringe show pages.</summary>
+internal static partial class DetailScraper
 {
-    private const string BaseUrl = "https://tickets.fringetheatre.ca";
+    private const string baseUrl = "https://tickets.fringetheatre.ca";
 
-    public static async Task<(List<Show>, List<Venue>, List<ContentRating>)> ScrapeShowsAsync(List<int> showIds)
+    /// <summary>Scrapes show details for the given show IDs using the default fetcher.</summary>
+    public static Task<(List<Show>, List<Venue>, List<ContentRating>)> ScrapeShowsAsync(IEnumerable<int> showIds)
+    {
+        return ScrapeShowsAsync(showIds, new Fetcher());
+    }
+
+    /// <summary>Scrapes show details for the given show IDs using the provided fetcher.</summary>
+    public static async Task<(List<Show>, List<Venue>, List<ContentRating>)> ScrapeShowsAsync(IEnumerable<int> showIds, IFetcher fetcher)
     {
         ConcurrentBag<Show> shows = [];
         List<int> failedIds = [];
@@ -20,65 +29,88 @@ public static partial class DetailScraper
         {
             try
             {
-                Show? show = await ScrapeShowDetailsAsync(showId);
+                Show? show = await ScrapeShowDetailsAsync(showId, fetcher).ConfigureAwait(false);
                 if (show != null)
+                {
                     shows.Add(show);
+                }
                 else
+                {
                     failedIds.Add(showId);
+                }
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"❌ Error scraping show ID {showId}: {ex.GetType().Name}: {ex.Message}");
+                Console.WriteLine($"   at {ex.StackTrace?.Split('\n').FirstOrDefault()?.Trim()}");
+                failedIds.Add(showId);
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"❌ Error scraping show ID {showId}: {ex.GetType().Name}: {ex.Message}");
+                Console.WriteLine($"   at {ex.StackTrace?.Split('\n').FirstOrDefault()?.Trim()}");
+                failedIds.Add(showId);
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"❌ Error scraping show ID {showId}: {ex.GetType().Name}: {ex.Message}");
+                Console.WriteLine($"   at {ex.StackTrace?.Split('\n').FirstOrDefault()?.Trim()}");
+                failedIds.Add(showId);
+            }
+            catch (OverflowException ex)
             {
                 Console.WriteLine($"❌ Error scraping show ID {showId}: {ex.GetType().Name}: {ex.Message}");
                 Console.WriteLine($"   at {ex.StackTrace?.Split('\n').FirstOrDefault()?.Trim()}");
                 failedIds.Add(showId);
             }
 
-            await Task.Delay(Random.Shared.Next(50, 200), ct);
-        });
+            await Task.Delay(RandomNumberGenerator.GetInt32(50, 200), ct).ConfigureAwait(false);
+        }).ConfigureAwait(false);
 
         if (failedIds.Count > 0)
+        {
             Console.WriteLine($"⚠️ Failed to scrape {failedIds.Count} shows: {string.Join(", ", failedIds)}");
+        }
 
         Console.WriteLine($"✅ Successfully scraped {shows.Count} shows.");
 
-        List<Venue> dedupedVenues = shows
-            .Select(s => s.Venue)
-            .GroupBy(v => v.VenueNumber)
-            .Select(g => g.First())
-            .ToList();
+        List<Venue> dedupedVenues = [.. shows.Select(s => s.Venue).GroupBy(v => v.VenueNumber).Select(g => g.First())];
+        List<ContentRating> dedupedRatings = [.. shows.Select(s => s.ContentRating).GroupBy(r => r.Code).Select(g => g.First())];
 
-        List<ContentRating> dedupedRatings = shows
-            .Select(s => s.ContentRating)
-            .GroupBy(r => r.Code)
-            .Select(g => g.First())
-            .ToList();
-
-        Dictionary<int, Venue> venueDict = dedupedVenues.ToDictionary(v => v.VenueNumber);
-        Dictionary<string, ContentRating> ratingDict = dedupedRatings.ToDictionary(r => r.Code);
+        var venueDict = dedupedVenues.ToDictionary(v => v.VenueNumber);
+        var ratingDict = dedupedRatings.ToDictionary(r => r.Code);
 
         foreach (Show show in shows)
         {
             if (venueDict.TryGetValue(show.Venue.VenueNumber, out Venue? venue))
+            {
                 show.Venue = venue;
+            }
             else
+            {
                 Console.WriteLine($"⚠️ Venue {show.Venue.VenueNumber} not found for show {show.Id}. Using default.");
+            }
 
             if (ratingDict.TryGetValue(show.ContentRating.Code, out ContentRating? rating))
+            {
                 show.ContentRating = rating;
+            }
             else
+            {
                 Console.WriteLine($"⚠️ Rating {show.ContentRating.Code} not found for show {show.Id}. Using default.");
+            }
         }
 
-        return (shows.ToList(), dedupedVenues, dedupedRatings);
+        return ([.. shows], dedupedVenues, dedupedRatings);
     }
 
-    private static async Task<Show?> ScrapeShowDetailsAsync(int showId)
+    private static async Task<Show?> ScrapeShowDetailsAsync(int showId, IFetcher fetcher)
     {
-        string url = $"{BaseUrl}/event/601:{showId}";
-        IHtmlDocument document = await Fetcher.LoadAsync(url);
+        var url = new Uri($"{baseUrl}/event/601:{showId}");
+        IHtmlDocument document = await fetcher.LoadAsync(url).ConfigureAwait(false);
 
         string title = document.QuerySelector(".content h2")?.TextContent.Trim() ?? "";
-        var descParagraphs = document.QuerySelectorAll(".content p");
+        IHtmlCollection<IElement> descParagraphs = document.QuerySelectorAll(".content p");
         string plainTextDescription = string.Join("\n\n",
             descParagraphs.Select(p => p.TextContent.Trim()).Where(t => !string.IsNullOrWhiteSpace(t)));
 
@@ -91,7 +123,8 @@ public static partial class DetailScraper
         ContentRating contentRating = ExtractContentRating(document);
         string description = ExtractOriginalDescription(document);
 
-        string img = document.QuerySelector("img.event-image-square")?.GetAttribute("src") ?? "";
+        string imgSrc = document.QuerySelector("img.event-image-square")?.GetAttribute("src") ?? "";
+        Uri? imageUrl = Uri.TryCreate(imgSrc, UriKind.Absolute, out Uri? parsedUri) ? parsedUri : null;
 
         return new Show
         {
@@ -100,7 +133,7 @@ public static partial class DetailScraper
             PlainTextDescription = plainTextDescription,
             Description = description,
             Tag = tag,
-            ImageUrl = img,
+            ImageUrl = imageUrl,
             Price = price,
             Fee = fee,
             FirstShowDate = firstShowDate,
@@ -110,55 +143,60 @@ public static partial class DetailScraper
         };
     }
 
-    private static IEnumerable<string> ScheduleItemTexts(IHtmlDocument doc) =>
-        doc.QuerySelectorAll("ul.schedule li").Select(li => li.TextContent.Trim());
+    private static IEnumerable<string> ScheduleItemTexts(IHtmlDocument doc)
+    {
+        return doc.QuerySelectorAll("ul.schedule li").Select(li => li.TextContent.Trim());
+    }
 
     private static (decimal Price, decimal Fee) ExtractPriceAndFee(IHtmlDocument doc)
     {
-        string text = ScheduleItemTexts(doc).FirstOrDefault(t => t.Contains("inc")) ?? "";
+        string text = ScheduleItemTexts(doc).FirstOrDefault(t => t.Contains("inc", StringComparison.Ordinal)) ?? "";
         Match match = PriceRegex().Match(text);
-        if (!match.Success) return (0, 0);
+        if (!match.Success)
+        {
+            return (0, 0);
+        }
 
-        decimal total = decimal.Parse(match.Groups[1].Value);
-        decimal fee = decimal.Parse(match.Groups[2].Value);
+        decimal total = decimal.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+        decimal fee = decimal.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
         return (total - fee, fee);
     }
 
     private static DateOnly ExtractFirstShowDate(IHtmlDocument doc)
     {
         string? dateText = ScheduleItemTexts(doc).FirstOrDefault(t => DateRegex().IsMatch(t));
-        if (dateText == null) return DateOnly.MinValue;
-
-        // Format: "9-July 12, 2026" → start day, month name, year
-        Match match = DateRegex().Match(dateText);
-        if (!match.Success) return DateOnly.MinValue;
-
-        if (!int.TryParse(match.Groups["day"].Value, out int day)) return DateOnly.MinValue;
-        if (!int.TryParse(match.Groups["year"].Value, out int year)) return DateOnly.MinValue;
-        if (!DateTime.TryParseExact(match.Groups["month"].Value, "MMMM",
-                CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime monthDate))
+        if (dateText == null)
+        {
             return DateOnly.MinValue;
+        }
 
-        return new DateOnly(year, monthDate.Month, day);
+        Match match = DateRegex().Match(dateText);
+        return match.Success
+            && int.TryParse(match.Groups["day"].Value, out int day)
+            && int.TryParse(match.Groups["year"].Value, out int year)
+            && DateTime.TryParseExact(match.Groups["month"].Value, "MMMM",
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime monthDate)
+            ? new DateOnly(year, monthDate.Month, day)
+            : DateOnly.MinValue;
     }
 
     private static int ExtractDuration(IHtmlDocument doc)
     {
-        string? durText = ScheduleItemTexts(doc).FirstOrDefault(t => t.Contains("minute"));
+        string? durText = ScheduleItemTexts(doc).FirstOrDefault(t => t.Contains("minute", StringComparison.Ordinal));
         Match match = DurationRegex().Match(durText ?? "");
-        return match.Success ? int.Parse(match.Groups[1].Value) : 0;
+        return match.Success ? int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) : 0;
     }
 
     private static Venue ExtractVenue(IHtmlDocument doc)
     {
-        var venueSection = doc.QuerySelector("section.venu-main");
+        IElement? venueSection = doc.QuerySelector("section.venu-main");
 
         int venueNumber = -1;
         string venueName = "Unknown";
 
         if (venueSection != null)
         {
-            var h3 = venueSection.QuerySelectorAll("h3")
+            IElement? h3 = venueSection.QuerySelectorAll("h3")
                 .FirstOrDefault(h => VenueIdAndNameRegex().IsMatch(h.TextContent.Trim()));
 
             if (h3 != null)
@@ -166,17 +204,17 @@ public static partial class DetailScraper
                 Match match = VenueIdRegex().Match(h3.TextContent.Trim());
                 if (match.Success)
                 {
-                    venueNumber = int.Parse(match.Groups["num"].Value);
+                    venueNumber = int.Parse(match.Groups["num"].Value, CultureInfo.InvariantCulture);
                     venueName = match.Groups["name"].Value.Trim();
                 }
             }
         }
 
-        var paras = venueSection?.QuerySelectorAll("p").ToList() ?? [];
+        List<IElement> paras = venueSection != null ? [.. venueSection.QuerySelectorAll("p")] : [];
         string address = paras.Count > 0 ? paras[0].TextContent.Trim() : "";
-        string postal = paras.Count > 1 ? paras[1].TextContent.Trim().Replace(" ", "") : "";
+        string postal = paras.Count > 1 ? paras[1].TextContent.Trim().Replace(" ", "", StringComparison.Ordinal) : "";
         string phone = venueSection?.QuerySelector("span")?.TextContent.Trim()
-            .Replace("-", "").Replace(" ", "") ?? "";
+            .Replace("-", "", StringComparison.Ordinal).Replace(" ", "", StringComparison.Ordinal) ?? "";
 
         return new Venue
         {
@@ -190,37 +228,43 @@ public static partial class DetailScraper
 
     private static ContentRating ExtractContentRating(IHtmlDocument doc)
     {
-        string? ratingText = ScheduleItemTexts(doc).FirstOrDefault(t => t.Contains("("));
+        string? ratingText = ScheduleItemTexts(doc).FirstOrDefault(t => t.Contains('(', StringComparison.Ordinal));
 
         Match match = RatingRegex().Match(ratingText ?? "");
-        if (match.Success)
-        {
-            return new ContentRating
-            {
-                Name = match.Groups[1].Value.Trim(),
-                Code = match.Groups[2].Value.Trim(),
-                Description = ""
-            };
-        }
-
-        return new ContentRating { Name = "Unrated", Code = "UR", Description = "" };
+        return match.Success
+            ? new ContentRating { Name = match.Groups[1].Value.Trim(), Code = match.Groups[2].Value.Trim(), Description = "" }
+            : new ContentRating { Name = "Unrated", Code = "UR", Description = "" };
     }
 
     private static string ExtractOriginalDescription(IHtmlDocument doc)
     {
-        var h2 = doc.QuerySelector(".content h2");
-        if (h2?.ParentElement == null) return "";
+        IElement? h2 = doc.QuerySelector(".content h2");
+        if (h2?.ParentElement == null)
+        {
+            return "";
+        }
 
         List<string> paragraphs = [];
         foreach (INode node in h2.ParentElement.ChildNodes)
         {
-            if (node is not IElement el) continue;
-            if (el.LocalName == "ul" && el.ClassList.Contains("schedule")) break;
-            if (el.LocalName != "p") continue;
+            if (node is not IElement el)
+            {
+                continue;
+            }
+            if (el.LocalName == "ul" && el.ClassList.Contains("schedule"))
+            {
+                break;
+            }
+            if (el.LocalName != "p")
+            {
+                continue;
+            }
 
             string text = el.TextContent.Trim();
             if (!string.IsNullOrWhiteSpace(text))
+            {
                 paragraphs.Add(text);
+            }
         }
 
         return string.Join("\n\n", paragraphs);

@@ -7,29 +7,39 @@ using Fringe.Data;
 
 namespace FringeScraper;
 
-public class LambdaHandler
+/// <summary>Lambda entry point that invokes the scraper pipeline on each EventBridge trigger.</summary>
+internal sealed class LambdaHandler : IDisposable
 {
-    private readonly FringeRepository _repository;
+    private readonly AmazonDynamoDBClient dynamoClient;
+    private readonly FringeRepository repository;
 
+    /// <summary>Initialises a new instance of the <see cref="LambdaHandler"/> class.</summary>
     public LambdaHandler()
     {
-        var client = new AmazonDynamoDBClient();
-        var context = new DynamoDBContextBuilder()
-            .WithDynamoDBClient(() => client)
+        dynamoClient = new AmazonDynamoDBClient();
+        IDynamoDBContext context = new DynamoDBContextBuilder()
+            .WithDynamoDBClient(() => dynamoClient)
             .Build();
-        _repository = new FringeRepository(context);
+        repository = new FringeRepository(context);
     }
 
+    /// <summary>Releases the DynamoDB client.</summary>
+    public void Dispose()
+    {
+        dynamoClient.Dispose();
+    }
+
+    /// <summary>Runs the scraper pipeline when invoked by EventBridge.</summary>
     public async Task FunctionHandler(ILambdaContext context)
     {
         string? tableName = Environment.GetEnvironmentVariable("DYNAMO_TABLE_NAME");
         if (string.IsNullOrWhiteSpace(tableName))
         {
-            context.Logger.LogError("❌ DYNAMO_TABLE_NAME is not set. Set it in the Lambda environment configuration.");
+            context.Logger.LogError(ScraperLogger.AsString("❌ DYNAMO_TABLE_NAME is not set. Set it in the Lambda environment configuration."));
             return;
         }
 
         context.Logger.LogInformation($"Fringe Scraper Lambda invoked. Table: {tableName}");
-        await ScraperRunner.RunAsync(_repository);
+        await ScraperRunner.RunAsync(repository).ConfigureAwait(false);
     }
 }

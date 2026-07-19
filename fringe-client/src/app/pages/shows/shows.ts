@@ -1,111 +1,133 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
-import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faGripVertical, faXmark, faCircleNotch, faCircleInfo, faArrowUpRightFromSquare } from '@fortawesome/pro-solid-svg-icons';
-import { faListOl } from '@fortawesome/pro-regular-svg-icons';
-import { faMasksTheater, faClock, faLocationDot } from '@fortawesome/pro-light-svg-icons';
+import {
+  type CdkDragDrop,
+  CdkDropList,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
+import {
+  Component,
+  type OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import type { Show, Vote } from '../../models';
 import { ApiService } from '../../services/api.service';
-import { Show, Vote } from '../../models';
+import { BrowseShowCardComponent } from './browse-show-card/browse-show-card';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { FormsModule } from '@angular/forms';
+import { RankedShowItemComponent } from './ranked-show-item/ranked-show-item';
+import { ShowDetailPanelComponent } from './show-detail-panel/show-detail-panel';
+import { faCircleNotch } from '@fortawesome/pro-solid-svg-icons';
+import { faListOl } from '@fortawesome/pro-regular-svg-icons';
+import { firstValueFrom } from 'rxjs';
+
+const EMPTY_COUNT = 0,
+  RANK_BASE = 1;
 
 @Component({
+  imports: [
+    FormsModule,
+    CdkDropList,
+    FaIconComponent,
+    RankedShowItemComponent,
+    BrowseShowCardComponent,
+    ShowDetailPanelComponent,
+  ],
   selector: 'fg-shows',
-  imports: [FormsModule, CdkDropList, CdkDrag, FaIconComponent],
-  templateUrl: './shows.html',
   styleUrl: './shows.scss',
+  templateUrl: './shows.html',
 })
 export class ShowsPage implements OnInit {
-  private readonly api = inject(ApiService);
+  public readonly loading = signal(true);
+  public readonly saving = signal(false);
+  public readonly searchQuery = signal('');
 
-  readonly loading = signal(true);
-  readonly saving = signal(false);
-  readonly searchQuery = signal('');
+  public readonly rankedShows = signal<Array<Show>>([]);
+  public readonly noShows = computed(
+    () => this.allShows().length === EMPTY_COUNT,
+  );
 
-  private readonly allShows = signal<Show[]>([]);
-  readonly rankedShows = signal<Show[]>([]);
-  readonly noShows = computed(() => this.allShows().length === 0);
-
-  readonly filteredUnranked = computed(() => {
-    const ranked = new Set(this.rankedShows().map(s => s.showId));
-    const q = this.searchQuery().toLowerCase();
+  public readonly filteredUnranked = computed(() => {
+    const ranked = new Set(this.rankedShows().map((show) => show.showId)),
+      query = this.searchQuery().toLowerCase();
     return this.allShows()
-      .filter(s => !ranked.has(s.showId))
-      .filter(s =>
-        !q ||
-        s.title.toLowerCase().includes(q) ||
-        (s.tag ?? '').toLowerCase().includes(q) ||
-        (s.venue?.name ?? '').toLowerCase().includes(q)
+      .filter((show) => !ranked.has(show.showId))
+      .filter(
+        (show) =>
+          !query ||
+          show.title.toLowerCase().includes(query) ||
+          (show.tag ?? '').toLowerCase().includes(query) ||
+          (show.venue?.name ?? '').toLowerCase().includes(query),
       );
   });
 
-  readonly selectedShow = signal<Show | null>(null);
+  public readonly selectedShow = signal<Show | null>(null);
 
-  protected readonly faGripVertical = faGripVertical;
-  protected readonly faXmark = faXmark;
   protected readonly faCircleNotch = faCircleNotch;
-  protected readonly faCircleInfo = faCircleInfo;
-  protected readonly faArrowUpRightFromSquare = faArrowUpRightFromSquare;
   protected readonly faListOl = faListOl;
-  protected readonly faMasksTheater = faMasksTheater;
-  protected readonly faClock = faClock;
-  protected readonly faLocationDot = faLocationDot;
 
-  ngOnInit(): void {
+  private readonly allShows = signal<Array<Show>>([]);
+
+  private readonly api = inject(ApiService);
+
+  public ngOnInit(): void {
     void this.load();
+  }
+
+  public onDrop(event: CdkDragDrop<Array<Show>>): void {
+    const reordered = [...this.rankedShows()];
+    moveItemInArray(reordered, event.previousIndex, event.currentIndex);
+    this.rankedShows.set(reordered);
+    this.saveVotes();
+  }
+
+  public addToRanked(show: Show): void {
+    this.rankedShows.update((ranked) => [...ranked, show]);
+    this.saveVotes();
+  }
+
+  public removeFromRanked(show: Show): void {
+    this.rankedShows.update((ranked) =>
+      ranked.filter((entry) => entry.showId !== show.showId),
+    );
+    this.saveVotes();
   }
 
   private async load(): Promise<void> {
     const [shows, votes] = await Promise.all([
-      this.api.getShows().toPromise(),
-      this.api.getVotes().toPromise(),
+      firstValueFrom(this.api.getShows()),
+      firstValueFrom(this.api.getVotes()),
     ]);
 
-    this.allShows.set(shows ?? []);
+    this.allShows.set(shows);
 
-    if (votes?.length) {
-      const voteMap = new Map<number, number>(votes.map(v => [v.showId, v.rank]));
-      const ranked = (shows ?? [])
-        .filter(s => voteMap.has(s.showId))
-        .sort((a, b) => voteMap.get(a.showId)! - voteMap.get(b.showId)!);
+    if (votes.length > EMPTY_COUNT) {
+      const voteMap = new Map<number, number>(
+          votes.map((vote) => [vote.showId, vote.rank]),
+        ),
+        ranked = shows
+          .filter((show) => voteMap.has(show.showId))
+          .sort(
+            (first, second) =>
+              (voteMap.get(first.showId) ?? EMPTY_COUNT) -
+              (voteMap.get(second.showId) ?? EMPTY_COUNT),
+          );
       this.rankedShows.set(ranked);
     }
 
     this.loading.set(false);
   }
 
-  onDrop(event: CdkDragDrop<Show[]>) {
-    const arr = [...this.rankedShows()];
-    moveItemInArray(arr, event.previousIndex, event.currentIndex);
-    this.rankedShows.set(arr);
-    this.saveVotes();
-  }
-
-  selectShow(show: Show, event: Event): void {
-    event.stopPropagation();
-    this.selectedShow.set(show);
-  }
-
-  fringeUrl(showId: number): string {
-    return `https://tickets.fringetheatre.ca/event/601:${showId}`;
-  }
-
-  addToRanked(show: Show) {
-    this.rankedShows.update(ranked => [...ranked, show]);
-    this.saveVotes();
-  }
-
-  removeFromRanked(show: Show, event: Event) {
-    event.stopPropagation();
-    this.rankedShows.update(ranked => ranked.filter(s => s.showId !== show.showId));
-    this.saveVotes();
-  }
-
-  private saveVotes() {
+  private saveVotes(): void {
     this.saving.set(true);
-    const votes: Vote[] = this.rankedShows().map((show, i) => ({
+    const votes: Array<Vote> = this.rankedShows().map((show, index) => ({
+      rank: index + RANK_BASE,
       showId: show.showId,
-      rank: i + 1,
     }));
-    this.api.saveVotes(votes).subscribe({ complete: () => this.saving.set(false) });
+    this.api.saveVotes(votes).subscribe({
+      complete: () => {
+        this.saving.set(false);
+      },
+    });
   }
 }

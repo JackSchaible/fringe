@@ -1,0 +1,121 @@
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{cs,csx}]
+indent_size = 4
+
+# Microsoft .NET analyzers: run all analyzer categories as build-breaking diagnostics.
+dotnet_analyzer_diagnostic.severity = error
+dotnet_analyzer_diagnostic.category-Design.severity = error
+dotnet_analyzer_diagnostic.category-Documentation.severity = error
+dotnet_analyzer_diagnostic.category-Globalization.severity = error
+dotnet_analyzer_diagnostic.category-Interoperability.severity = error
+dotnet_analyzer_diagnostic.category-Maintainability.severity = error
+dotnet_analyzer_diagnostic.category-Naming.severity = error
+dotnet_analyzer_diagnostic.category-Performance.severity = error
+dotnet_analyzer_diagnostic.category-Reliability.severity = error
+dotnet_analyzer_diagnostic.category-Security.severity = error
+dotnet_analyzer_diagnostic.category-SingleFile.severity = error
+dotnet_analyzer_diagnostic.category-Style.severity = error
+dotnet_analyzer_diagnostic.category-Usage.severity = error
+
+# Microsoft C# coding conventions: use language keywords, keep static access explicit,
+# and avoid unnecessary instance qualification.
+dotnet_style_predefined_type_for_locals_parameters_members = true:error
+dotnet_style_predefined_type_for_member_access = true:error
+dotnet_style_qualification_for_event = false:error
+dotnet_style_qualification_for_field = false:error
+dotnet_style_qualification_for_method = false:error
+dotnet_style_qualification_for_property = false:error
+
+# Microsoft C# coding conventions: use var only where the type is apparent.
+csharp_style_var_elsewhere = false:error
+csharp_style_var_for_built_in_types = false:error
+csharp_style_var_when_type_is_apparent = true:error
+
+# Microsoft C# coding conventions: prefer modern, clearer C# forms.
+csharp_style_namespace_declarations = file_scoped:error
+csharp_using_directive_placement = outside_namespace:error
+csharp_style_prefer_utf8_string_literals = true:error
+csharp_style_prefer_method_group_conversion = true:error
+csharp_style_prefer_primary_constructors = true:error
+csharp_style_prefer_switch_expression = true:error
+csharp_style_prefer_pattern_matching = true:error
+csharp_style_prefer_not_pattern = true:error
+csharp_style_prefer_extended_property_pattern = true:error
+csharp_style_prefer_tuple_swap = true:error
+csharp_style_prefer_index_operator = true:error
+csharp_style_prefer_range_operator = true:error
+csharp_style_prefer_null_check_over_type_check = true:error
+csharp_style_prefer_local_over_anonymous_function = true:error
+csharp_style_prefer_readonly_struct = true:error
+csharp_style_prefer_readonly_struct_member = true:error
+csharp_style_prefer_readonly_directive = true:error
+csharp_style_unused_value_assignment_preference = discard_variable:error
+csharp_style_unused_value_expression_statement_preference = discard_variable:error
+
+# Microsoft .NET code-style rules: prefer object, collection, and null-propagation simplifications.
+dotnet_style_coalesce_expression = true:error
+dotnet_style_collection_initializer = true:error
+dotnet_style_explicit_tuple_names = true:error
+dotnet_style_namespace_match_folder = true:error
+dotnet_style_null_propagation = true:error
+dotnet_style_object_initializer = true:error
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+dotnet_style_prefer_auto_properties = true:error
+dotnet_style_prefer_collection_expression = true:error
+dotnet_style_prefer_compound_assignment = true:error
+dotnet_style_prefer_conditional_expression_over_assignment = true:error
+dotnet_style_prefer_conditional_expression_over_return = true:error
+dotnet_style_prefer_foreach_explicit_cast_in_source = when_strongly_typed:error
+dotnet_style_prefer_inferred_anonymous_type_member_names = true:error
+dotnet_style_prefer_inferred_tuple_names = true:error
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:error
+dotnet_style_prefer_simplified_boolean_expressions = true:error
+dotnet_style_prefer_simplified_interpolation = true:error
+dotnet_style_readonly_field = true:error
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:error
+
+# Microsoft naming conventions.
+dotnet_naming_rule.interfaces_should_be_prefixed_with_i.severity = error
+dotnet_naming_rule.interfaces_should_be_prefixed_with_i.symbols = interfaces
+dotnet_naming_rule.interfaces_should_be_prefixed_with_i.style = prefix_interface_with_i
+
+dotnet_naming_rule.types_should_be_pascal_case.severity = error
+dotnet_naming_rule.types_should_be_pascal_case.symbols = types
+dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case
+
+dotnet_naming_rule.non_field_members_should_be_pascal_case.severity = error
+dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols = non_field_members
+dotnet_naming_rule.non_field_members_should_be_pascal_case.style = pascal_case
+
+dotnet_naming_rule.private_fields_should_be_camel_case.severity = error
+dotnet_naming_rule.private_fields_should_be_camel_case.symbols = private_fields
+dotnet_naming_rule.private_fields_should_be_camel_case.style = camel_case
+
+dotnet_naming_rule.parameters_should_be_camel_case.severity = error
+dotnet_naming_rule.parameters_should_be_camel_case.symbols = parameters
+dotnet_naming_rule.parameters_should_be_camel_case.style = camel_case
+
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.types.applicable_kinds = class, struct, interface, enum, delegate
+dotnet_naming_symbols.non_field_members.applicable_kinds = property, event, method
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_symbols.parameters.applicable_kinds = parameter
+
+dotnet_naming_style.prefix_interface_with_i.capitalization = pascal_case
+dotnet_naming_style.prefix_interface_with_i.required_prefix = I
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+dotnet_naming_style.camel_case.capitalization = camel_case
+
+# xUnit test classes must be public; suppress the "make internal" and "never instantiated" rules in test files.
+[**/*Tests.cs]
+dotnet_diagnostic.CA1515.severity = none
+dotnet_diagnostic.CA1812.severity = none

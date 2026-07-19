@@ -1,109 +1,104 @@
 <div class="schedule-page">
-  <h1>Group Schedule</h1>
+  <h1 i18n="@@pages.schedule.schedule.02">Group Schedule</h1>
 
   @if (loading()) {
-    <p class="status">Computing schedule…</p>
+    <p i18n="@@pages.schedule.schedule.03" class="status">
+      Computing schedule…
+    </p>
   } @else if (noGroup()) {
     <div class="empty-state">
-      <fa-icon [icon]="faUserGroup" size="3x" class="empty-icon" />
-      <p>You're not in a group yet.</p>
-      <a routerLink="/group" class="btn-primary">Create or join a group</a>
+      <fa-icon size="3x" class="empty-icon" [icon]="faUserGroup" />
+      <p i18n="@@pages.schedule.schedule.04">You're not in a group yet.</p>
+      <a
+        i18n="@@pages.schedule.schedule.05"
+        routerLink="/group"
+        class="btn-primary"
+        >Create or join a group</a
+      >
+    </div>
+  } @else if (!hasVotes()) {
+    <div class="empty-state">
+      <fa-icon size="3x" class="empty-icon" [icon]="faCalendarXmark" />
+      <p i18n="@@pages.schedule.schedule.06">
+        No schedule yet — your group hasn't ranked any shows.
+      </p>
+      <a
+        i18n="@@pages.schedule.schedule.07"
+        routerLink="/shows"
+        class="btn-primary"
+        >Go rate shows</a
+      >
     </div>
   } @else if (schedule().length === 0) {
-    <div class="empty-state">
-      <fa-icon [icon]="faCalendarXmark" size="3x" class="empty-icon" />
-      <p>No schedule yet. Your group needs to rank some shows first.</p>
-      <a routerLink="/shows" class="btn-primary">Go rate shows</a>
+    <div class="schedule-layout">
+      <div class="schedule-main">
+        <!-- Shows are rated but availability blocks everything -->
+        <div class="blocked-state">
+          <fa-icon size="3x" class="empty-icon" [icon]="faCalendarClock" />
+          <p i18n="@@pages.schedule.schedule.08" class="blocked-title">
+            No shows fit everyone's availability
+          </p>
+          <p i18n="@@schedule.blocked-sub" class="blocked-sub">
+            Your group has rated shows, but no showtimes fall within a window
+            when everyone is free.
+            <a routerLink="/availability">Update your availability</a> or see
+            the proposals below.
+          </p>
+        </div>
+      </div>
+
+      <aside class="schedule-sidebar">
+        <fg-missed-shows-list [missedShows]="missedShows()" />
+      </aside>
     </div>
+
+    <fg-alternate-proposals
+      subtitle="Here's what fits if someone adjusts their availability or is excluded from scheduling."
+      i18n-subtitle="@@schedule.proposals-subtitle-empty"
+      [proposals]="proposals()"
+      [schedule]="schedule()"
+      (accept)="acceptProposal($event)"
+    />
   } @else {
-    @if (activeProposalIndex() !== null) {
-      <div class="active-banner">
+    <!-- Has a schedule -->
+    @let activeIndex = activeProposalIndex();
+    @if (activeIndex !== null) {
+      <div i18n="@@schedule.active-banner" class="active-banner">
         <fa-icon [icon]="faCheck" />
-        Viewing alternate: {{ proposals()[activeProposalIndex()!].excludedMemberName }}'s constraints relaxed
-        <button class="btn-reset" (click)="resetToMain()">Back to main schedule</button>
+        Viewing alternate — {{ proposals()[activeIndex].excludedMemberName }}'s
+        constraints removed
+        <button type="button" class="btn-reset" (click)="resetToMain()">
+          Back to main schedule
+        </button>
       </div>
     }
 
-    <p class="subtitle">{{ activeSchedule().length }} shows selected from group votes</p>
-    <div class="schedule-list">
-      @for (item of activeSchedule(); track item.show.showId) {
-        <div class="schedule-item">
-          <div class="time-col">
-            <div class="day">{{ item.showTime | date:'EEE MMM d' }}</div>
-            <div class="time">{{ item.showTime | date:'h:mm a' }}</div>
-            <div class="duration">
-              <fa-icon [icon]="faClock" />
-              {{ item.show.lengthInMinutes }} min
-            </div>
-          </div>
+    <p i18n="@@pages.schedule.schedule.11" class="subtitle">
+      {{ activeSchedule().length }} shows selected from group votes
+    </p>
 
-          <div class="show-col">
-            @if (item.show.imageUrl) {
-              <img [src]="item.show.imageUrl" [alt]="item.show.title" class="show-thumb" />
-            }
-            <div class="show-info">
-              <h2>{{ item.show.title }}</h2>
-              @if (item.show.tag) { <p class="tag">{{ item.show.tag }}</p> }
-              @if (item.show.venue) {
-                <p class="venue">
-                  <fa-icon [icon]="faLocationDot" />
-                  {{ item.show.venue.name }}
-                </p>
-              }
-              <div class="show-badges">
-                @if (item.show.contentRating) {
-                  <span class="rating-badge">{{ item.show.contentRating.code }}</span>
-                }
-                <a class="ticket-link" [href]="fringeUrl(item.show.showId)" target="_blank"
-                   rel="noopener noreferrer">
-                  <fa-icon [icon]="faArrowUpRightFromSquare" />
-                  {{ +item.show.price === 0 ? 'Free' : '$' + item.show.price }}
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div class="score-col">
-            <div class="score">{{ item.groupScore }}</div>
-            <div class="score-label">pts</div>
-          </div>
+    <div class="schedule-layout">
+      <div class="schedule-main">
+        <div class="schedule-list">
+          @for (item of activeSchedule(); track item.show.showId) {
+            <fg-schedule-item-row [item]="item" />
+          }
         </div>
-      }
+      </div>
+
+      <aside class="schedule-sidebar">
+        <fg-missed-shows-list [missedShows]="missedShows()" />
+      </aside>
     </div>
 
-    @if (proposals().length > 0 && activeProposalIndex() === null) {
-      <section class="proposals-section">
-        <h3 class="proposals-heading">Alternate Proposals</h3>
-        <p class="proposals-subtitle">These scenarios could fit more shows by relaxing one member's availability.</p>
-        @for (proposal of proposals(); track $index; let i = $index) {
-          <div class="proposal-card">
-            <div class="proposal-header" (click)="toggleProposal(i)">
-              <div class="proposal-text">{{ proposal.description }}</div>
-              <fa-icon [icon]="expandedProposal() === i ? faChevronUp : faChevronDown" class="proposal-chevron" />
-            </div>
-
-            @if (expandedProposal() === i) {
-              <div class="proposal-body">
-                <div class="proposal-schedule">
-                  @for (item of proposal.items; track item.show.showId) {
-                    <div class="proposal-item">
-                      <div class="proposal-time">
-                        <span class="proposal-day">{{ item.showTime | date:'EEE d' }}</span>
-                        <span class="proposal-clock">{{ item.showTime | date:'h:mm a' }}</span>
-                      </div>
-                      <div class="proposal-title">{{ item.show.title }}</div>
-                    </div>
-                  }
-                </div>
-                <button class="btn-accept" (click)="acceptProposal(i)">
-                  <fa-icon [icon]="faCheck" />
-                  Accept this scenario
-                </button>
-              </div>
-            }
-          </div>
-        }
-      </section>
+    @if (activeIndex === null) {
+      <fg-alternate-proposals
+        subtitle="More shows could fit if someone adjusts their availability or is excluded from scheduling."
+        i18n-subtitle="@@schedule.proposals-subtitle-full"
+        [proposals]="proposals()"
+        [schedule]="schedule()"
+        (accept)="acceptProposal($event)"
+      />
     }
   }
 </div>

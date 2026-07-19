@@ -1,0 +1,18 @@
+<div class="detail-stats">
+  @if (show().lengthInMinutes) {
+    <span i18n="@@shows.duration-stat" class="stat">
+      <fa-icon [icon]="faClock" />
+      {{ show().lengthInMinutes }} min
+    </span>
+  }
+  @if (show().venue; as venue) {
+    <span class="stat">
+      <fa-icon [icon]="faLocationDot" />
+      {{ venue.name }}
+    </span>
+  }
+</div>
+
+@if (show().venue; as venue) {
+  <p class="detail-address">{{ venue.address }}</p>
+}

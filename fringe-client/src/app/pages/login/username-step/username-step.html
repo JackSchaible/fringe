@@ -1,0 +1,29 @@
+<div class="otp-form">
+  <p i18n="@@login.username-hint" class="step-hint">
+    <fa-icon class="hint-icon" [icon]="faUser" />
+    Choose a display name so your friends know who you are.
+  </p>
+  <input
+    type="text"
+    placeholder="Display name (optional)"
+    i18n-placeholder="@@pages.login.login.03.placeholder"
+    autocomplete="nickname"
+    [ngModel]="username()"
+    (ngModelChange)="username.set($event)"
+    (keyup.enter)="save.emit()"
+  />
+  <button
+    type="button"
+    i18n="@@pages.login.login.11"
+    class="btn-primary"
+    [disabled]="loading()"
+    (click)="save.emit()"
+  >
+    @if (loading()) {
+      Saving…
+    } @else {
+      <fa-icon [icon]="faArrowRightToBracket" />
+      {{ username().trim() ? "Save & continue" : "Skip" }}
+    }
+  </button>
+</div>

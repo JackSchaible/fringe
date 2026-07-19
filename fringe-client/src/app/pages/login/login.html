@@ -1,87 +1,59 @@
 <div class="login-page">
   <div class="login-card">
-    <h1 class="brand">Fringe</h1>
-    <p class="tagline">Group festival planner</p>
+    <h1 i18n="@@pages.login.login.05" class="brand">Fringe</h1>
+    <p i18n="@@pages.login.login.06" class="tagline">Group festival planner</p>
 
     @if (cognitoConfigured) {
-      @if (step() === 'email') {
-        <div class="otp-form">
-          <p class="step-hint">
-            <fa-icon [icon]="faEnvelope" class="hint-icon" />
-            Enter your email to receive a sign-in code.
-          </p>
-          <input
-            type="email"
-            placeholder="Email address"
-            [value]="email()"
-            (input)="email.set($any($event.target).value)"
-            autocomplete="email"
-            (keyup.enter)="sendCode()"
-          />
-          <label class="terms-check">
-            <input type="checkbox" [checked]="agreedToTerms()" (change)="agreedToTerms.set($any($event.target).checked)" />
-            I have read and agree to the
-            <a routerLink="/terms" target="_blank">Terms of Service</a>
-            and
-            <a routerLink="/privacy" target="_blank">Privacy Policy</a>
-          </label>
-          <div id="turnstile-widget"></div>
-          <button class="btn-primary" (click)="sendCode()" [disabled]="loading() || !captchaToken() || !agreedToTerms()">
-            @if (loading()) {
-              Sending…
-            } @else {
-              <fa-icon [icon]="faPaperPlane" />
-              Send code
-            }
-          </button>
-        </div>
+      @if (step() === "email") {
+        <fg-login-email-step
+          [captchaToken]="captchaToken()"
+          [loading]="loading()"
+          [(email)]="email"
+          [(agreedToTerms)]="agreedToTerms"
+          (send)="sendCode()"
+        />
       }
 
-      @if (step() === 'otp') {
-        <div class="otp-form">
-          <p class="step-hint">
-            <fa-icon [icon]="faKey" class="hint-icon" />
-            Code sent to <strong>{{ email() }}</strong>.<br /> Check your inbox. If you don't see it, check your spam folder.
-          </p>
-          <input
-            type="text"
-            inputmode="numeric"
-            pattern="[0-9]*"
-            placeholder="6-digit code"
-            maxlength="6"
-            [value]="otp()"
-            (input)="otp.set($any($event.target).value)"
-            autocomplete="one-time-code"
-            (keyup.enter)="verifyCode()"
-          />
-          <button class="btn-primary" (click)="verifyCode()" [disabled]="loading()">
-            @if (loading()) {
-              Verifying…
-            } @else {
-              <fa-icon [icon]="faArrowRightToBracket" />
-              Sign in
-            }
-          </button>
-          <button class="btn-text" (click)="back()" [disabled]="loading()">
-            <fa-icon [icon]="faArrowLeft" />
-            Use a different email
-          </button>
-        </div>
+      @if (step() === "otp") {
+        <fg-login-otp-step
+          [email]="email()"
+          [loading]="loading()"
+          [(otp)]="otp"
+          (verify)="verifyCode()"
+          (back)="back()"
+        />
       }
-    }
 
-    @if (!cognitoConfigured) {
+      @if (step() === "username") {
+        <fg-login-username-step
+          [loading]="loading()"
+          [(username)]="username"
+          (save)="saveUsername()"
+        />
+      }
+
+    } @else {
       <div class="dev-panel">
-        <p class="dev-label">Dev mode — enter any user ID</p>
+        <p i18n="@@pages.login.login.12" class="dev-label">
+          Dev mode — enter any user ID
+        </p>
         <div class="dev-row">
           <input
             type="text"
             placeholder="user-id"
-            [value]="devUserId()"
-            (input)="devUserId.set($any($event.target).value)"
+            i18n-placeholder="@@pages.login.login.04.placeholder"
+            [ngModel]="devUserId()"
+            (ngModelChange)="devUserId.set($event)"
             (keyup.enter)="signInDev()"
           />
-          <button class="btn-primary" (click)="signInDev()">Go</button>
+          <button
+            type="button"
+            i18n="@@pages.login.login.13"
+            class="btn-primary"
+            (click)="signInDev()"
+          >
+            Go
+          </button>
         </div>
       </div>
     }

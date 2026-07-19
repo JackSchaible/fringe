@@ -28,11 +28,9 @@ export AWS_DEFAULT_REGION=us-east-1
 DDB="aws dynamodb --endpoint-url $ENDPOINT --region us-east-1"
 
 put() {
-  local tmp
-  tmp=$(mktemp)
-  cat > "$tmp"
-  $DDB put-item --table-name "$TABLE" --item "file://$tmp" > /dev/null
-  rm -f "$tmp"
+  local item
+  item=$(cat)
+  $DDB put-item --table-name "$TABLE" --item "$item" > /dev/null
 }
 
 # ── Wipe ──────────────────────────────────────────────────────────────────────

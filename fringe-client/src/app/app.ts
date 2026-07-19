@@ -1,16 +1,28 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faFilm, faCalendarDays, faUsers, faArrowRightFromBracket, faClock } from '@fortawesome/pro-solid-svg-icons';
+import { Component, type OnInit, inject } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import {
+  faArrowRightFromBracket,
+  faCalendarDays,
+  faClock,
+  faFilm,
+  faUsers,
+} from '@fortawesome/pro-solid-svg-icons';
 import { AuthService } from './services/auth.service';
+import { CookieConsentDrawerComponent } from './components/cookie-consent-drawer/cookie-consent-drawer';
 import { CookieConsentService } from './services/cookie-consent.service';
-import { CookieConsentDrawer } from './components/cookie-consent-drawer/cookie-consent-drawer';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 @Component({
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    FaIconComponent,
+    CookieConsentDrawerComponent,
+  ],
   selector: 'fg-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, FaIconComponent, CookieConsentDrawer],
+  styleUrl: './app.scss',
   templateUrl: './app.html',
-  styleUrl: './app.scss'
 })
 export class AppComponent implements OnInit {
   protected readonly auth = inject(AuthService);
@@ -24,7 +36,7 @@ export class AppComponent implements OnInit {
   protected readonly faArrowRightFromBracket = faArrowRightFromBracket;
   protected readonly faClock = faClock;
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     if (this.auth.devMode) {
       this.auth.initDevSession();
     } else {
