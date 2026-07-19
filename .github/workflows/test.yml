@@ -56,6 +56,11 @@ jobs:
         working-directory: fringe-client
         run: pnpm test --watch=false --browsers=ChromeHeadless
 
+      - name: Create CDK asset stubs
+        run: |
+          mkdir -p Fringe.API/publish Fringe.Scraper/publish fringe-client/dist/client-new/browser
+          touch Fringe.API/publish/.gitkeep Fringe.Scraper/publish/.gitkeep fringe-client/dist/client-new/browser/.gitkeep
+
       - name: Install infra dependencies
         working-directory: infra
         run: pnpm install --frozen-lockfile
