@@ -57,7 +57,6 @@ const makeApiSpy = (
     } else {
       spy.getVotes.and.returnValue(of(votesResult));
     }
-    // eslint-disable-next-line no-undefined
     spy.saveVotes.and.returnValue(of(undefined));
     return spy;
   },

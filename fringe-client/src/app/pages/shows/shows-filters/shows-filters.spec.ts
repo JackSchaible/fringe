@@ -175,6 +175,23 @@ describe('ShowsFiltersComponent option lists', () => {
   });
 });
 
+describe('ShowsFiltersComponent location pill fallback', () => {
+  it('falls back to the address for a location pill when the venue name is "Unknown"', async () => {
+    const showWithUnknownVenueName: Show = {
+        ...show1,
+        venue: { address: '10330 84 Ave NW', name: 'Unknown', phone: '' },
+      },
+      fixture = await build({ shows: [showWithUnknownVenueName, show2] }),
+      pills = getNativeElement(fixture).querySelectorAll(
+        'fg-pill-group:nth-of-type(3) .pill',
+      );
+    expect([...pills].map((pill) => pill.textContent.trim())).toEqual([
+      '10330 84 Ave NW',
+      'Venue B',
+    ]);
+  });
+});
+
 describe('ShowsFiltersComponent pill events', () => {
   it('emits toggleGenre when a genre pill is clicked', async () => {
     const fixture = await build(),

@@ -22,6 +22,15 @@ const SECOND_STAT_INDEX = 1,
     showTimes: [],
     title: 'Comedy Night',
   },
+  showWithUnknownVenueName: Show = {
+    fee: '$1',
+    lengthInMinutes: 60,
+    price: '$10',
+    showId: 3,
+    showTimes: [],
+    title: 'Improv Chaos',
+    venue: { address: '10330 84 Ave NW', name: 'Unknown', phone: '' },
+  },
   build = async (
     show: Readonly<Show>,
   ): Promise<ComponentFixture<ShowDetailStatsComponent>> => {
@@ -64,6 +73,19 @@ describe('ShowDetailStatsComponent', () => {
 
   it('omits venue stats when venue is absent', async () => {
     const fixture = await build(showWithoutVenue);
+    expect(
+      getNativeElement(fixture).querySelector('.detail-address'),
+    ).toBeNull();
+  });
+
+  it('falls back to the address as the venue name when the name is "Unknown"', async () => {
+    const fixture = await build(showWithUnknownVenueName),
+      stats = getNativeElement(fixture).querySelectorAll('.stat');
+    expect(stats[SECOND_STAT_INDEX].textContent).toContain('10330 84 Ave NW');
+  });
+
+  it('omits the separate address line when the name already fell back to it', async () => {
+    const fixture = await build(showWithUnknownVenueName);
     expect(
       getNativeElement(fixture).querySelector('.detail-address'),
     ).toBeNull();

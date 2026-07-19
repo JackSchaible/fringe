@@ -5,14 +5,14 @@
       {{ show().lengthInMinutes }} min
     </span>
   }
-  @if (show().venue; as venue) {
+  @if (venueName(); as name) {
     <span class="stat">
       <fa-icon [icon]="faLocationDot" />
-      {{ venue.name }}
+      {{ name }}
     </span>
   }
 </div>
 
-@if (show().venue; as venue) {
-  <p class="detail-address">{{ venue.address }}</p>
+@if (venueAddress(); as address) {
+  <p class="detail-address">{{ address }}</p>
 }

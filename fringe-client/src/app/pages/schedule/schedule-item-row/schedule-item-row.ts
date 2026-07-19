@@ -1,9 +1,10 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { DatePipe, NgOptimizedImage } from '@angular/common';
 import { faClock, faLocationDot } from '@fortawesome/pro-light-svg-icons';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import type { ScheduleItem } from '../../../models';
 import { faArrowUpRightFromSquare } from '@fortawesome/pro-solid-svg-icons';
+import { venueDisplayName } from '../../../venue-display';
 
 const fringeUrl = (showId: number): string =>
   `https://tickets.fringetheatre.ca/event/601:${showId}`;
@@ -22,4 +23,8 @@ export class ScheduleItemRowComponent {
   protected readonly faClock = faClock;
   protected readonly faLocationDot = faLocationDot;
   protected readonly faArrowUpRightFromSquare = faArrowUpRightFromSquare;
+
+  protected readonly venueName = computed<string>(() =>
+    venueDisplayName(this.item().show.venue),
+  );
 }
