@@ -1,0 +1,77 @@
+<div class="filters">
+  <div
+    class="filters-header"
+    role="button"
+    tabindex="0"
+    (click)="toggleExpanded()"
+    (keydown.enter)="toggleExpanded()"
+  >
+    <span i18n="@@pages.shows.shows.27" class="filters-title">Filters</span>
+    @if (hasActiveFilters()) {
+      <span class="filters-active-dot"></span>
+    }
+    <fa-icon
+      class="filters-chevron"
+      [icon]="expanded() ? faChevronUp : faChevronDown"
+    />
+  </div>
+
+  @if (expanded()) {
+    <fg-pill-group
+      i18n-label="@@pages.shows.shows.20"
+      label="Genre"
+      [options]="genreOptions()"
+      [selected]="selectedGenres()"
+      (toggled)="toggleGenre.emit($event)"
+    />
+    <fg-pill-group
+      i18n-label="@@pages.shows.shows.21"
+      label="Rating"
+      [options]="ratingOptions()"
+      [selected]="selectedRatings()"
+      (toggled)="toggleRating.emit($event)"
+    />
+    <fg-pill-group
+      i18n-label="@@pages.shows.shows.22"
+      label="Location"
+      [options]="locationOptions()"
+      [selected]="selectedLocations()"
+      (toggled)="toggleLocation.emit($event)"
+    />
+
+    <div class="filter-group filter-sliders">
+      <fg-range-slider
+        i18n-label="@@pages.shows.shows.23"
+        label="Price"
+        valuePrefix="$"
+        [min]="priceBounds()[0]"
+        [max]="priceBounds()[1]"
+        [step]="1"
+        [value]="priceRange()"
+        (valueChange)="priceRangeChange.emit($event)"
+      />
+      <fg-range-slider
+        i18n-label="@@pages.shows.shows.24"
+        label="Duration"
+        i18n-valueSuffix="@@pages.shows.shows.26"
+        valueSuffix=" min"
+        [min]="durationBounds()[0]"
+        [max]="durationBounds()[1]"
+        [step]="5"
+        [value]="durationRange()"
+        (valueChange)="durationRangeChange.emit($event)"
+      />
+    </div>
+
+    @if (hasActiveFilters()) {
+      <button
+        type="button"
+        class="clear-btn"
+        i18n="@@pages.shows.shows.25"
+        (click)="clear.emit()"
+      >
+        Clear filters
+      </button>
+    }
+  }
+</div>

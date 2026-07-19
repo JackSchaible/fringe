@@ -228,6 +228,7 @@ module.exports = tseslint.config(
                 'HTMLElement',
                 'Event',
                 'Readonly',
+                'ReadonlySet',
                 'ReadonlyArray',
               ],
             },

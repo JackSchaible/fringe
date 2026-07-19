@@ -55,6 +55,23 @@
           />
         </div>
 
+        <fg-shows-filters
+          [shows]="allShows()"
+          [selectedGenres]="selectedGenres()"
+          [selectedRatings]="selectedRatings()"
+          [selectedLocations]="selectedLocations()"
+          [priceRange]="priceRange()"
+          [priceBounds]="priceBounds()"
+          [durationRange]="durationRange()"
+          [durationBounds]="durationBounds()"
+          (toggleGenre)="toggleGenre($event)"
+          (toggleRating)="toggleRating($event)"
+          (toggleLocation)="toggleLocation($event)"
+          (priceRangeChange)="setPriceRange($event)"
+          (durationRangeChange)="setDurationRange($event)"
+          (clear)="clearFilters()"
+        />
+
         <div class="shows-grid">
           @for (show of filteredUnranked(); track show.showId) {
             <fg-browse-show-card

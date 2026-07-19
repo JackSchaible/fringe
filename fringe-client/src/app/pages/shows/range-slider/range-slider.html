@@ -1,0 +1,33 @@
+<div class="range-slider">
+  <div class="range-slider-header">
+    @if (label()) {
+      <span class="range-slider-label">{{ label() }}</span>
+    }
+    <span class="range-slider-values">
+      {{ valuePrefix() }}{{ value()[0] }}{{ valueSuffix() }} –
+      {{ valuePrefix() }}{{ value()[1] }}{{ valueSuffix() }}
+    </span>
+  </div>
+  <div class="range-slider-track">
+    <input
+      #minInput
+      type="range"
+      class="range-slider-input"
+      [min]="min()"
+      [max]="max()"
+      [step]="step()"
+      [value]="value()[0]"
+      (input)="onMinInput(minInput.value)"
+    />
+    <input
+      #maxInput
+      type="range"
+      class="range-slider-input"
+      [min]="min()"
+      [max]="max()"
+      [step]="step()"
+      [value]="value()[1]"
+      (input)="onMaxInput(maxInput.value)"
+    />
+  </div>
+</div>
