@@ -4,12 +4,12 @@
   } @else if (myGroup()) {
     <div class="group-info">
       <h1 i18n="@@pages.group.group-name-error">
-        {{ myGroup()?.name ?? "Error: Group Name Unavailable" }}
+        {{ myGroup()?.name ?? 'Error: Group Name Unavailable' }}
       </h1>
 
       <div class="invite-row">
         <div class="invite-code" i18n="@@pages.group.invite-code-error">
-          {{ myGroup()?.inviteCode ?? "Error: Invite Code Unavailable" }}
+          {{ myGroup()?.inviteCode ?? 'Error: Invite Code Unavailable' }}
         </div>
         <button
           type="button"
@@ -34,7 +34,7 @@
       <h2 i18n="@@group.members-heading">
         <fa-icon [icon]="faUsers" /> Members
         <span class="count">{{
-          myGroup()?.members?.length ?? "Error: Member Count Unavailable"
+          myGroup()?.members?.length ?? 'Error: Member Count Unavailable'
         }}</span>
       </h2>
       <fg-group-members-list [members]="myGroup()?.members ?? []" />
@@ -157,7 +157,7 @@
           [disabled]="deleting()"
           (click)="deleteAccount()"
         >
-          {{ deleting() ? "Deleting…" : "Yes, delete my account" }}
+          {{ deleting() ? 'Deleting…' : 'Yes, delete my account' }}
         </button>
         <button
           type="button"

@@ -148,7 +148,6 @@ describe('ApiService getSchedule filtering', () => {
       missedShows: [],
     });
   });
-
 });
 
 describe('ApiService getSchedule filtering alternateProposals and missedShows', () => {

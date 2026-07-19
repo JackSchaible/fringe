@@ -2,7 +2,7 @@
   @for (member of members(); track member.userId) {
     <div class="member-row">
       <div class="avatar">
-        {{ (member.displayName || member.email || "?")[0] | uppercase }}
+        {{ (member.displayName || member.email || '?')[0] | uppercase }}
       </div>
       <div class="member-info">
         <span class="member-name">{{

@@ -82,6 +82,8 @@ describe("pre-sign-up handler", () => {
       email: "another@example.com",
       name: "Test User",
     };
-    await expect(handler(event, fakeContext, noopCallback)).resolves.not.toThrow();
+    await expect(
+      handler(event, fakeContext, noopCallback),
+    ).resolves.not.toThrow();
   });
 });

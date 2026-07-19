@@ -72,12 +72,10 @@ describe('ApiService getShows', () => {
         expect(error).toBeTruthy();
       },
     });
-    httpMock
-      .expectOne(`${BASE}/api/shows`)
-      .flush('Server Error', {
-        status: 500,
-        statusText: 'Internal Server Error',
-      });
+    httpMock.expectOne(`${BASE}/api/shows`).flush('Server Error', {
+      status: 500,
+      statusText: 'Internal Server Error',
+    });
   });
 });
 
@@ -248,4 +246,3 @@ describe('ApiService saveAvailability', () => {
     expect(completed).toBeTrue();
   });
 });
-

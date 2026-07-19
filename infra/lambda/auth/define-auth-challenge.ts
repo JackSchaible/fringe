@@ -8,7 +8,8 @@ const NO_PRIOR_ATTEMPTS = 0;
 const SINGLE_ATTEMPT = 1;
 const FIRST_ATTEMPT_INDEX = 0;
 
-type ChallengeAttempt = DefineAuthChallengeTriggerEvent["request"]["session"][number];
+type ChallengeAttempt =
+  DefineAuthChallengeTriggerEvent["request"]["session"][number];
 
 const resolveChallengeOutcome = (
   session: ReadonlyArray<ChallengeAttempt>,

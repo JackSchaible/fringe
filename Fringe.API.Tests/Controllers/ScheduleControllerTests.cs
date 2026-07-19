@@ -1043,6 +1043,44 @@ public sealed class ScheduleControllerTests
         Assert.False(dto.HasVotes);
     }
 
+    [Fact]
+    public async Task GetScheduleMemberRecordWithNoUserIdIsIgnoredInsteadOfThrowing()
+    {
+        // A malformed/legacy GroupMemberRecord with a missing UserId attribute used to
+        // crash ToDictionary with an ArgumentNullException on the null key. It should
+        // instead be filtered out, leaving the rest of the group's schedule intact.
+        Mock<FringeRepository> mockRepo = BuildMockRepo();
+        SetupUserInGroup(mockRepo);
+        GroupMemberRecord malformedMember = new()
+        {
+            Pk = "GROUP#grp1",
+            Sk = "MEMBER#",
+            UserId = "",
+            DisplayName = "",
+            Email = "",
+            JoinedAt = ""
+        };
+        _ = mockRepo.Setup(r => r.GetGroupMembersAsync("grp1")).ReturnsAsync(
+        [
+            MakeMember(userId),
+            malformedMember,
+        ]);
+        _ = mockRepo.Setup(r => r.GetVotesForUserAsync(userId)).ReturnsAsync([MakeVote(userId, 1, 1)]);
+        _ = mockRepo.Setup(r => r.GetAvailabilityAsync(userId)).ReturnsAsync((UserAvailabilityRecord?)null);
+
+        _ = mockRepo.Setup(r => r.GetAllShowsAsync()).ReturnsAsync([MakeShow(1, "Show", 60)]);
+        _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(1)).ReturnsAsync(
+            [MakeShowTime(1, "2025-07-15T10:00:00Z")]);
+        ScheduleController controller = BuildController(mockRepo);
+
+        ActionResult<ScheduleResponseDto> result = await controller.GetSchedule().ConfigureAwait(true);
+
+        OkObjectResult ok = Assert.IsType<OkObjectResult>(result.Result);
+        ScheduleResponseDto dto = Assert.IsType<ScheduleResponseDto>(ok.Value);
+        Assert.True(dto.HasVotes);
+        _ = Assert.Single(dto.Items);
+    }
+
     // ── Helper ────────────────────────────────────────────────────────────────
 
     private static void SetupUserInGroup(Mock<FringeRepository> mockRepo)

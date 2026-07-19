@@ -4,7 +4,7 @@
     <p i18n="@@pages.login.login.06" class="tagline">Group festival planner</p>
 
     @if (cognitoConfigured) {
-      @if (step() === "email") {
+      @if (step() === 'email') {
         <fg-login-email-step
           [captchaToken]="captchaToken()"
           [loading]="loading()"
@@ -14,7 +14,7 @@
         />
       }
 
-      @if (step() === "otp") {
+      @if (step() === 'otp') {
         <fg-login-otp-step
           [email]="email()"
           [loading]="loading()"
@@ -24,14 +24,13 @@
         />
       }
 
-      @if (step() === "username") {
+      @if (step() === 'username') {
         <fg-login-username-step
           [loading]="loading()"
           [(username)]="username"
           (save)="saveUsername()"
         />
       }
-
     } @else {
       <div class="dev-panel">
         <p i18n="@@pages.login.login.12" class="dev-label">

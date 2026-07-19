@@ -1,4 +1,4 @@
-name: Lint
+name: Format
 
 on:
   pull_request:
@@ -10,11 +10,16 @@ permissions:
   contents: read
 
 jobs:
-  lint:
+  format:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
 
       - name: Setup Node.js 24
         uses: actions/setup-node@v4
@@ -34,18 +39,24 @@ jobs:
           always-auth=true
           EOF
 
+      - name: Restore .NET packages
+        run: dotnet restore fringe.sln
+
+      - name: Verify .NET formatting
+        run: dotnet format fringe.sln --verify-no-changes --no-restore
+
       - name: Install frontend dependencies
         working-directory: fringe-client
         run: pnpm install --frozen-lockfile
 
-      - name: Run frontend lint
+      - name: Verify frontend formatting
         working-directory: fringe-client
-        run: pnpm run lint
+        run: pnpm run format:check
 
       - name: Install infra dependencies
         working-directory: infra
         run: pnpm install --frozen-lockfile
 
-      - name: Run infra lint
+      - name: Verify infra formatting
         working-directory: infra
-        run: pnpm run lint
+        run: pnpm run format:check

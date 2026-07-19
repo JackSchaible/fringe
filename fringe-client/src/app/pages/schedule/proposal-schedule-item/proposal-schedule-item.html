@@ -1,7 +1,7 @@
 <div class="proposal-item" [class.is-new]="isNew()">
   <div class="proposal-time">
-    <span class="proposal-day">{{ item().showTime | date: "EEE d" }}</span>
-    <span class="proposal-clock">{{ item().showTime | date: "h:mm a" }}</span>
+    <span class="proposal-day">{{ item().showTime | date: 'EEE d' }}</span>
+    <span class="proposal-clock">{{ item().showTime | date: 'h:mm a' }}</span>
   </div>
   <div class="proposal-title">{{ item().show.title }}</div>
   @if (isNew()) {

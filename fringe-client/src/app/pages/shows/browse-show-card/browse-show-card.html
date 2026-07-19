@@ -38,7 +38,7 @@
         [href]="fringeUrl(current.showId)"
         (click)="$event.stopPropagation()"
       >
-        {{ +current.price === emptyPrice ? "Free" : `$${current.price}` }}
+        {{ +current.price === emptyPrice ? 'Free' : `$${current.price}` }}
       </a>
       <button
         type="button"

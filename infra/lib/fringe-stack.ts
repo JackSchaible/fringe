@@ -47,7 +47,11 @@ export class FringeStack extends cdk.Stack {
     return { dynamo, auth, frontend, api };
   }
 
-  private createOutputs({ frontend, api, auth }: Readonly<StackConstructs>): void {
+  private createOutputs({
+    frontend,
+    api,
+    auth,
+  }: Readonly<StackConstructs>): void {
     new cdk.CfnOutput(this, "FrontendUrl", {
       value: `https://fringe.jackschaible.ca`,
       description:
