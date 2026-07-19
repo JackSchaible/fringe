@@ -34,8 +34,17 @@
               (remove)="removeFromRanked($event)"
             />
           } @empty {
-            <p i18n="@@pages.shows.shows.14" class="empty-hint">
+            <p
+              i18n="@@pages.shows.shows.14"
+              class="empty-hint empty-hint-mouse"
+            >
               Click a show on the right to add it to your ranking.
+            </p>
+            <p
+              i18n="@@pages.shows.shows.19"
+              class="empty-hint empty-hint-touch"
+            >
+              Tap a show on the right to add it to your ranking.
             </p>
           }
         </div>

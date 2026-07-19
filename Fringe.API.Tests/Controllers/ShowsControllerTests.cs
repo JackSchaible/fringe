@@ -58,6 +58,32 @@ public sealed class ShowsControllerTests
     }
 
     [Fact]
+    public void ToDtoVenueWithNullFieldsCoalescesToEmptyStrings()
+    {
+        // DynamoDBContext's object persistence model silently drops empty-string
+        // attributes on write (confirmed empirically against the raw DynamoDB API,
+        // which does accept them) — so a venue field the scraper recorded as ""
+        // comes back as a genuine null here, not "". ToDto must not propagate
+        // that null past the API boundary.
+        ShowRecord record = new()
+        {
+            ShowId = 1,
+            Title = "Missing Venue Fields",
+            Price = "0.00",
+            Fee = "0.00",
+            LengthInMinutes = 45,
+            Venue = new VenueData { Name = null!, Address = null!, Phone = null! },
+        };
+
+        ShowDto dto = ShowsController.ToDto(record, []);
+
+        Assert.NotNull(dto.Venue);
+        Assert.Equal("", dto.Venue!.Name);
+        Assert.Equal("", dto.Venue.Address);
+        Assert.Equal("", dto.Venue.Phone);
+    }
+
+    [Fact]
     public void ToDtoNullVenueReturnsNullVenueDto()
     {
         ShowRecord record = new()

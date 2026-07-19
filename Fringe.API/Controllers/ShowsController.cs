@@ -38,7 +38,7 @@ internal sealed class ShowsController(FringeRepository repo) : ControllerBase
             r.Price,
             r.Fee,
             r.LengthInMinutes,
-            r.Venue == null ? null : new VenueDto(r.Venue.Name, r.Venue.Address, r.Venue.Phone),
+            r.Venue == null ? null : new VenueDto(r.Venue.Name ?? "", r.Venue.Address ?? "", r.Venue.Phone ?? ""),
             r.ContentRating == null ? null : new ContentRatingDto(r.ContentRating.Name, r.ContentRating.Code, r.ContentRating.Description),
             showTimes);
     }

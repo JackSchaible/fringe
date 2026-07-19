@@ -1,6 +1,11 @@
 @let current = show();
 <div class="detail-backdrop" aria-hidden="true" (click)="dismiss.emit()"></div>
-<aside class="detail-panel">
+<aside
+  class="detail-panel"
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-label]="current.title"
+>
   <div class="detail-header">
     <span class="detail-header-title">{{ current.title }}</span>
     <button
