@@ -17,7 +17,9 @@ const ONE_ITEM = 1,
   namedConflict: TransferConflict = {
     appliedRule: 'matrix',
     availableGapMinutes: 15,
+    destinationShowTitle: 'Stand-Up Spectacular',
     destinationVenueName: 'Venue Twenty',
+    originShowTitle: 'The Comedy Hour',
     originVenueName: 'Venue Ten',
     requiredGapMinutes: 45,
     travelMode: 'walking',
@@ -51,7 +53,7 @@ describe('MissedShowsListComponent', () => {
     ).toBeNull();
   });
 
-  it('renders an item per missed show', async () => {
+  it('renders a card per missed show', async () => {
     const fixture = await build([
       {
         blockedByMembers: [],
@@ -61,7 +63,7 @@ describe('MissedShowsListComponent', () => {
       },
     ]);
     expect(
-      getNativeElement(fixture).querySelectorAll('.missed-item').length,
+      getNativeElement(fixture).querySelectorAll('.missed-card').length,
     ).toBe(ONE_ITEM);
   });
 
@@ -94,8 +96,8 @@ describe('MissedShowsListComponent', () => {
   });
 });
 
-describe('MissedShowsListComponent transfer conflict tag', () => {
-  it('does not render a transfer tag when transferConflict is null', async () => {
+describe('MissedShowsListComponent transfer conflict', () => {
+  it('does not render a transfer tag or detail when transferConflict is null', async () => {
     const fixture = await build([
       {
         blockedByMembers: [],
@@ -107,9 +109,12 @@ describe('MissedShowsListComponent transfer conflict tag', () => {
     expect(
       getNativeElement(fixture).querySelector('.missed-tag.transfer'),
     ).toBeNull();
+    expect(
+      getNativeElement(fixture).querySelector('.missed-detail'),
+    ).toBeNull();
   });
 
-  it('names both venues when both are known', async () => {
+  it('renders a compact transfer tag and a detail paragraph when transferConflict is set', async () => {
     const fixture = await build([
       {
         blockedByMembers: [],
@@ -118,21 +123,10 @@ describe('MissedShowsListComponent transfer conflict tag', () => {
         transferConflict: namedConflict,
       },
     ]);
-    const tag = getNativeElement(fixture).querySelector('.missed-tag.transfer');
-    expect(tag?.textContent).toContain('Venue Ten');
-    expect(tag?.textContent).toContain('Venue Twenty');
-  });
-
-  it('falls back to a generic message when a venue name is unknown', async () => {
-    const fixture = await build([
-      {
-        blockedByMembers: [],
-        conflictsWithScheduled: false,
-        show: show1,
-        transferConflict: { ...namedConflict, originVenueName: null },
-      },
-    ]);
-    const tag = getNativeElement(fixture).querySelector('.missed-tag.transfer');
-    expect(tag?.textContent).toContain('next venue');
+    const native = getNativeElement(fixture);
+    expect(native.querySelector('.missed-tag.transfer')).not.toBeNull();
+    const detail = native.querySelector('.missed-detail');
+    expect(detail?.textContent).toContain('Venue Ten');
+    expect(detail?.textContent).toContain('Venue Twenty');
   });
 });

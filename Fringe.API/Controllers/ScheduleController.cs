@@ -188,10 +188,10 @@ internal sealed class ScheduleController(FringeRepository repo, IScheduleBuilder
             .GroupBy(s => s.Venue?.VenueNumber ?? unknownVenueNumber)
             .ToDictionary(g => g.Key, g => g.First().Venue?.Name);
 
-        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots = [..mainSchedule.Select(i =>
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> bookedSlots = [..mainSchedule.Select(i =>
         {
             var s = DateTime.Parse(i.ShowTime, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-            return (s, s.AddMinutes(i.Show.LengthInMinutes), venueNumberByShowId.GetValueOrDefault(i.Show.ShowId, unknownVenueNumber));
+            return (s, s.AddMinutes(i.Show.LengthInMinutes), venueNumberByShowId.GetValueOrDefault(i.Show.ShowId, unknownVenueNumber), i.Show.Title);
         })];
 
         var missed = new List<MissedShowDto>();
@@ -236,7 +236,7 @@ internal sealed class ScheduleController(FringeRepository repo, IScheduleBuilder
                 }
 
                 TransferConflictDetail? detail = await scheduleBuilder
-                    .FindTransferConflictAsync(start, end, venueNumber, bookedSlots, travelMode)
+                    .FindTransferConflictAsync(start, end, venueNumber, show.Title, bookedSlots, travelMode)
                     .ConfigureAwait(false);
                 if (detail != null)
                 {
@@ -257,6 +257,8 @@ internal sealed class ScheduleController(FringeRepository repo, IScheduleBuilder
         return new TransferConflictDto(
             venueNameByNumber.GetValueOrDefault(detail.OriginVenueNumber),
             venueNameByNumber.GetValueOrDefault(detail.DestinationVenueNumber),
+            detail.OriginShowTitle,
+            detail.DestinationShowTitle,
             RoundToMinutes(detail.AvailableGap),
             RoundToMinutes(detail.RequiredGap),
             TravelModeToApiString(detail.Mode),

@@ -1146,6 +1146,8 @@ public sealed class ScheduleControllerTests
         Assert.NotNull(conflict);
         Assert.Equal("Venue Ten", conflict.OriginVenueName);
         Assert.Equal("Venue Twenty", conflict.DestinationVenueName);
+        Assert.Equal("A", conflict.OriginShowTitle);
+        Assert.Equal("B", conflict.DestinationShowTitle);
         Assert.Equal(15, conflict.AvailableGapMinutes);
         Assert.Equal(45, conflict.RequiredGapMinutes);
         Assert.Equal("walking", conflict.TravelMode);

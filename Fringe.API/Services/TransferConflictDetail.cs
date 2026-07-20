@@ -11,6 +11,8 @@ namespace Fringe.API.Services;
 internal readonly record struct TransferConflictDetail(
     int OriginVenueNumber,
     int DestinationVenueNumber,
+    string OriginShowTitle,
+    string DestinationShowTitle,
     TimeSpan AvailableGap,
     TimeSpan RequiredGap,
     TravelMode Mode,

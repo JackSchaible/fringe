@@ -89,6 +89,8 @@ export const isTravelMode = (value: unknown): value is TravelMode =>
 export interface TransferConflict {
   originVenueName: string | null;
   destinationVenueName: string | null;
+  originShowTitle: string;
+  destinationShowTitle: string;
   availableGapMinutes: number;
   requiredGapMinutes: number;
   travelMode: TravelMode;

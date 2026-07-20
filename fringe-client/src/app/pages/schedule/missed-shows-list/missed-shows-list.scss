@@ -11,46 +11,34 @@
   margin: 0 0 0.625rem;
 }
 
-.missed-item {
+.missed-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-2);
+  border-radius: 0.625rem;
+  padding: 0.7rem 0.875rem;
+  margin-bottom: 0.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.missed-header {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem;
-  padding: 0.45rem 0;
-  border-bottom: 1px solid var(--border-1);
-
-  &:last-child {
-    border-bottom: none;
-  }
+  justify-content: space-between;
 }
 
 .missed-title {
   font-size: 0.875rem;
-  color: var(--text-3);
-  font-weight: 500;
-  flex-shrink: 0;
+  color: var(--text-2);
+  font-weight: 600;
 }
 
-.missed-reasons {
+.missed-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
-}
-
-.missed-tag {
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 0.15rem 0.5rem;
-  border-radius: 0.25rem;
-  letter-spacing: 0.02em;
-
-  &.conflict {
-    background: rgba(234, 179, 8, 0.12);
-    color: #a16207;
-  }
-
-  &.blocked {
-    background: rgba(239, 68, 68, 0.1);
-    color: #b91c1c;
-  }
 }

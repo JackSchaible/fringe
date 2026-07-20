@@ -31,6 +31,8 @@ internal record MissedShowDto(
 internal record TransferConflictDto(
     string? OriginVenueName,
     string? DestinationVenueName,
+    string OriginShowTitle,
+    string DestinationShowTitle,
     int AvailableGapMinutes,
     int RequiredGapMinutes,
     string TravelMode,

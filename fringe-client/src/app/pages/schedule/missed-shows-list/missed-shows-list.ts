@@ -1,9 +1,10 @@
 import { Component, input } from '@angular/core';
 import type { Show, TransferConflict } from '../../../models';
-import { TransferConflictTagComponent } from './transfer-conflict-tag/transfer-conflict-tag';
+import { MissedShowTagsComponent } from './missed-show-tags/missed-show-tags';
+import { TransferConflictDetailComponent } from './transfer-conflict-detail/transfer-conflict-detail';
 
 @Component({
-  imports: [TransferConflictTagComponent],
+  imports: [MissedShowTagsComponent, TransferConflictDetailComponent],
   selector: 'fg-missed-shows-list',
   styleUrl: './missed-shows-list.scss',
   templateUrl: './missed-shows-list.html',

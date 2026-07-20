@@ -1040,6 +1040,30 @@
         <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;"></pc> Accept this scenario </source>
       </segment>
     </unit>
+    <unit id="pages.schedule.schedule.14">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-show-tags/missed-show-tags.html:3,6</note>
+      </notes>
+      <segment>
+        <source>Timing conflict</source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.15">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-show-tags/missed-show-tags.html:8,11</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="INTERPOLATION" disp="{{ name }}"/>&apos;s availability</source>
+      </segment>
+    </unit>
+    <unit id="schedule.missed.transfer-tag">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-show-tags/missed-show-tags.html:13,16</note>
+      </notes>
+      <segment>
+        <source>Travel time</source>
+      </segment>
+    </unit>
     <unit id="pages.schedule.schedule.13">
       <notes>
         <note category="location">src/app/pages/schedule/missed-shows-list/missed-shows-list.html:4,6</note>
@@ -1048,36 +1072,28 @@
         <source> Didn&apos;t Make the Cut </source>
       </segment>
     </unit>
-    <unit id="pages.schedule.schedule.14">
+    <unit id="schedule.missed.transfer-detail">
       <notes>
-        <note category="location">src/app/pages/schedule/missed-shows-list/missed-shows-list.html:14,17</note>
+        <note category="location">src/app/pages/schedule/missed-shows-list/transfer-conflict-detail/transfer-conflict-detail.html:3,6</note>
       </notes>
       <segment>
-        <source>Timing conflict</source>
+        <source>Not enough time to get from <ph id="0" equiv="INTERPOLATION" disp="{{ originLabel() }}"/> to <ph id="1" equiv="INTERPOLATION_1" disp="{{ destinationLabel() }}"/>.</source>
       </segment>
     </unit>
-    <unit id="pages.schedule.schedule.15">
+    <unit id="schedule.missed.transfer-gap">
       <notes>
-        <note category="location">src/app/pages/schedule/missed-shows-list/missed-shows-list.html:19,20</note>
+        <note category="location">src/app/pages/schedule/missed-shows-list/transfer-conflict-detail/transfer-conflict-detail.html:7,10</note>
       </notes>
       <segment>
-        <source><ph id="0" equiv="INTERPOLATION" disp="{{ name }}"/>&apos;s availability</source>
+        <source>Only <ph id="0" equiv="INTERPOLATION" disp="{{ conflict().availableGapMinutes }}"/> min available — need about <ph id="1" equiv="INTERPOLATION_1" disp="{{ conflict().requiredGapMinutes }}"/> min.</source>
       </segment>
     </unit>
-    <unit id="schedule.missed.transfer-named">
+    <unit id="schedule.missed.transfer-hint">
       <notes>
-        <note category="location">src/app/pages/schedule/missed-shows-list/transfer-conflict-tag/transfer-conflict-tag.html:3,6</note>
+        <note category="location">src/app/pages/schedule/missed-shows-list/transfer-conflict-detail/transfer-conflict-detail.html:11,14</note>
       </notes>
       <segment>
-        <source>Not enough time to get from <ph id="0" equiv="INTERPOLATION" disp="{{ conflict().originVenueName }}"/> to <ph id="1" equiv="INTERPOLATION_1" disp="{{ conflict().destinationVenueName }}"/></source>
-      </segment>
-    </unit>
-    <unit id="schedule.missed.transfer-unnamed">
-      <notes>
-        <note category="location">src/app/pages/schedule/missed-shows-list/transfer-conflict-tag/transfer-conflict-tag.html:8,11</note>
-      </notes>
-      <segment>
-        <source>Not enough time to get to the next venue</source>
+        <source>Try a different travel mode above to see if this fits.</source>
       </segment>
     </unit>
     <unit id="schedule.needs-change">

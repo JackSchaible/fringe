@@ -430,7 +430,7 @@ public sealed class ScheduleBuilderTests
         var builder = new ScheduleBuilder(provider.Object);
 
         TransferConflictDetail? result = await builder
-            .FindTransferConflictAsync(DateTime.UtcNow, DateTime.UtcNow.AddHours(1), 10, [], TravelMode.Walking)
+            .FindTransferConflictAsync(DateTime.UtcNow, DateTime.UtcNow.AddHours(1), 10, "Candidate Show", [], TravelMode.Walking)
             .ConfigureAwait(true);
 
         Assert.Null(result);
@@ -441,15 +441,15 @@ public sealed class ScheduleBuilderTests
     {
         DateTime previousEnd = new(2026, 7, 10, 10, 0, 0, DateTimeKind.Utc);
         DateTime candidateStart = previousEnd.AddMinutes(30);
-        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots =
-            [(previousEnd.AddHours(-1), previousEnd, 10)];
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> bookedSlots =
+            [(previousEnd.AddHours(-1), previousEnd, 10, "Earlier Show")];
 
         Mock<IVenueTransferTimeProvider> provider = MockProvider();
         SetupGap(provider, from: 10, to: 20, requiredGap: TimeSpan.FromMinutes(30));
         var builder = new ScheduleBuilder(provider.Object);
 
         TransferConflictDetail? result = await builder
-            .FindTransferConflictAsync(candidateStart, candidateStart.AddHours(1), 20, bookedSlots, TravelMode.Walking)
+            .FindTransferConflictAsync(candidateStart, candidateStart.AddHours(1), 20, "Candidate Show", bookedSlots, TravelMode.Walking)
             .ConfigureAwait(true);
 
         Assert.Null(result);
@@ -460,20 +460,22 @@ public sealed class ScheduleBuilderTests
     {
         DateTime previousEnd = new(2026, 7, 10, 10, 0, 0, DateTimeKind.Utc);
         DateTime candidateStart = previousEnd.AddMinutes(15);
-        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots =
-            [(previousEnd.AddHours(-1), previousEnd, 10)];
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> bookedSlots =
+            [(previousEnd.AddHours(-1), previousEnd, 10, "Earlier Show")];
 
         Mock<IVenueTransferTimeProvider> provider = MockProvider();
         SetupGap(provider, from: 10, to: 20, requiredGap: TimeSpan.FromMinutes(45));
         var builder = new ScheduleBuilder(provider.Object);
 
         TransferConflictDetail? result = await builder
-            .FindTransferConflictAsync(candidateStart, candidateStart.AddHours(1), 20, bookedSlots, TravelMode.Walking)
+            .FindTransferConflictAsync(candidateStart, candidateStart.AddHours(1), 20, "Candidate Show", bookedSlots, TravelMode.Walking)
             .ConfigureAwait(true);
 
         _ = Assert.NotNull(result);
         Assert.Equal(10, result.Value.OriginVenueNumber);
         Assert.Equal(20, result.Value.DestinationVenueNumber);
+        Assert.Equal("Earlier Show", result.Value.OriginShowTitle);
+        Assert.Equal("Candidate Show", result.Value.DestinationShowTitle);
         Assert.Equal(TimeSpan.FromMinutes(15), result.Value.AvailableGap);
         Assert.Equal(TimeSpan.FromMinutes(45), result.Value.RequiredGap);
         Assert.Equal(TravelMode.Walking, result.Value.Mode);
@@ -485,20 +487,22 @@ public sealed class ScheduleBuilderTests
     {
         DateTime candidateEnd = new(2026, 7, 10, 10, 0, 0, DateTimeKind.Utc);
         DateTime nextStart = candidateEnd.AddMinutes(15);
-        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots =
-            [(nextStart, nextStart.AddHours(1), 30)];
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> bookedSlots =
+            [(nextStart, nextStart.AddHours(1), 30, "Later Show")];
 
         Mock<IVenueTransferTimeProvider> provider = MockProvider();
         SetupGap(provider, from: 20, to: 30, requiredGap: TimeSpan.FromMinutes(45));
         var builder = new ScheduleBuilder(provider.Object);
 
         TransferConflictDetail? result = await builder
-            .FindTransferConflictAsync(candidateEnd.AddHours(-1), candidateEnd, 20, bookedSlots, TravelMode.Walking)
+            .FindTransferConflictAsync(candidateEnd.AddHours(-1), candidateEnd, 20, "Candidate Show", bookedSlots, TravelMode.Walking)
             .ConfigureAwait(true);
 
         _ = Assert.NotNull(result);
         Assert.Equal(20, result.Value.OriginVenueNumber);
         Assert.Equal(30, result.Value.DestinationVenueNumber);
+        Assert.Equal("Candidate Show", result.Value.OriginShowTitle);
+        Assert.Equal("Later Show", result.Value.DestinationShowTitle);
         Assert.Equal(TimeSpan.FromMinutes(15), result.Value.AvailableGap);
         Assert.Equal(TimeSpan.FromMinutes(45), result.Value.RequiredGap);
     }
@@ -512,10 +516,10 @@ public sealed class ScheduleBuilderTests
         DateTime candidateStart = previousEnd.AddMinutes(5);
         DateTime candidateEnd = candidateStart.AddHours(1);
         DateTime nextStart = candidateEnd.AddMinutes(5);
-        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots =
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> bookedSlots =
         [
-            (previousEnd.AddHours(-1), previousEnd, 10),
-            (nextStart, nextStart.AddHours(1), 30),
+            (previousEnd.AddHours(-1), previousEnd, 10, "Earlier Show"),
+            (nextStart, nextStart.AddHours(1), 30, "Later Show"),
         ];
 
         Mock<IVenueTransferTimeProvider> provider = MockProvider();
@@ -523,12 +527,13 @@ public sealed class ScheduleBuilderTests
         var builder = new ScheduleBuilder(provider.Object);
 
         TransferConflictDetail? result = await builder
-            .FindTransferConflictAsync(candidateStart, candidateEnd, 20, bookedSlots, TravelMode.Walking)
+            .FindTransferConflictAsync(candidateStart, candidateEnd, 20, "Candidate Show", bookedSlots, TravelMode.Walking)
             .ConfigureAwait(true);
 
         _ = Assert.NotNull(result);
         Assert.Equal(10, result.Value.OriginVenueNumber);
         Assert.Equal(20, result.Value.DestinationVenueNumber);
+        Assert.Equal("Earlier Show", result.Value.OriginShowTitle);
         provider.Verify(p => p.GetRequiredGapAsync(20, 30, It.IsAny<TravelMode>()), Times.Never);
     }
 
@@ -539,20 +544,22 @@ public sealed class ScheduleBuilderTests
         // that isn't met — the same-venue rule is not a free pass.
         DateTime previousEnd = new(2026, 7, 10, 10, 0, 0, DateTimeKind.Utc);
         DateTime candidateStart = previousEnd.AddMinutes(2);
-        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots =
-            [(previousEnd.AddHours(-1), previousEnd, 10)];
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> bookedSlots =
+            [(previousEnd.AddHours(-1), previousEnd, 10, "Earlier Show")];
 
         Mock<IVenueTransferTimeProvider> provider = MockProvider();
         SetupGap(provider, from: 10, to: 10, requiredGap: TimeSpan.FromMinutes(5), appliedRule: TransferRuleApplied.SameVenue);
         var builder = new ScheduleBuilder(provider.Object);
 
         TransferConflictDetail? result = await builder
-            .FindTransferConflictAsync(candidateStart, candidateStart.AddHours(1), 10, bookedSlots, TravelMode.Walking)
+            .FindTransferConflictAsync(candidateStart, candidateStart.AddHours(1), 10, "Candidate Show", bookedSlots, TravelMode.Walking)
             .ConfigureAwait(true);
 
         _ = Assert.NotNull(result);
         Assert.Equal(10, result.Value.OriginVenueNumber);
         Assert.Equal(10, result.Value.DestinationVenueNumber);
+        Assert.Equal("Earlier Show", result.Value.OriginShowTitle);
+        Assert.Equal("Candidate Show", result.Value.DestinationShowTitle);
         Assert.Equal(TransferRuleApplied.SameVenue, result.Value.AppliedRule);
     }
 
@@ -563,20 +570,22 @@ public sealed class ScheduleBuilderTests
         // reported origin/destination reflect the actual direction queried, not a fixed pair.
         DateTime candidateEnd = new(2026, 7, 10, 10, 0, 0, DateTimeKind.Utc);
         DateTime nextStart = candidateEnd.AddMinutes(10);
-        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots =
-            [(nextStart, nextStart.AddHours(1), 10)];
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> bookedSlots =
+            [(nextStart, nextStart.AddHours(1), 10, "Later Show")];
 
         Mock<IVenueTransferTimeProvider> provider = MockProvider();
         SetupGap(provider, from: 20, to: 10, requiredGap: TimeSpan.FromMinutes(45));
         var builder = new ScheduleBuilder(provider.Object);
 
         TransferConflictDetail? result = await builder
-            .FindTransferConflictAsync(candidateEnd.AddHours(-1), candidateEnd, 20, bookedSlots, TravelMode.Walking)
+            .FindTransferConflictAsync(candidateEnd.AddHours(-1), candidateEnd, 20, "Candidate Show", bookedSlots, TravelMode.Walking)
             .ConfigureAwait(true);
 
         _ = Assert.NotNull(result);
         Assert.Equal(20, result.Value.OriginVenueNumber);
         Assert.Equal(10, result.Value.DestinationVenueNumber);
+        Assert.Equal("Candidate Show", result.Value.OriginShowTitle);
+        Assert.Equal("Later Show", result.Value.DestinationShowTitle);
     }
 
     [Fact]
@@ -586,8 +595,8 @@ public sealed class ScheduleBuilderTests
         // it always resolves through the conservative missing-data fallback.
         DateTime previousEnd = new(2026, 7, 10, 10, 0, 0, DateTimeKind.Utc);
         DateTime candidateStart = previousEnd.AddMinutes(5);
-        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots =
-            [(previousEnd.AddHours(-1), previousEnd, 10)];
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> bookedSlots =
+            [(previousEnd.AddHours(-1), previousEnd, 10, "Earlier Show")];
 
         Mock<IVenueTransferTimeProvider> provider = MockProvider();
         _ = provider.Setup(p => p.GetRequiredGapAsync(10, -1, TravelMode.Walking))
@@ -602,7 +611,7 @@ public sealed class ScheduleBuilderTests
         var builder = new ScheduleBuilder(provider.Object);
 
         TransferConflictDetail? result = await builder
-            .FindTransferConflictAsync(candidateStart, candidateStart.AddHours(1), -1, bookedSlots, TravelMode.Walking)
+            .FindTransferConflictAsync(candidateStart, candidateStart.AddHours(1), -1, "Candidate Show", bookedSlots, TravelMode.Walking)
             .ConfigureAwait(true);
 
         _ = Assert.NotNull(result);

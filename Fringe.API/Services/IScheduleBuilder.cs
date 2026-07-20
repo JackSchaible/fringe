@@ -35,11 +35,15 @@ internal interface IScheduleBuilder
     /// against); otherwise the diagnostic detail for the first infeasible transition found — for
     /// missed-show diagnostics (FA-35), so a rejection reported here is guaranteed to match the
     /// reason <see cref="BuildScheduleAsync"/> would have rejected the same candidate for.
+    /// <paramref name="showTitle"/> is the candidate's own title, echoed back on whichever side of
+    /// the returned detail it occupies, so the caller never has to re-derive which side was the
+    /// candidate versus the booked neighbour.
     /// </summary>
     Task<TransferConflictDetail?> FindTransferConflictAsync(
         DateTime start,
         DateTime end,
         int venueNumber,
-        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots,
+        string showTitle,
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> bookedSlots,
         TravelMode travelMode);
 }

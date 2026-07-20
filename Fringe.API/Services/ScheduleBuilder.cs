@@ -31,7 +31,7 @@ internal sealed class ScheduleBuilder(IVenueTransferTimeProvider transferTimePro
         TravelMode travelMode)
     {
         List<ScheduleItemDto> schedule = [];
-        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots = [];
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> bookedSlots = [];
 
         var effectiveAvailability = availabilityMap
             .Where(kvp => kvp.Key != excludedUserId)
@@ -62,13 +62,13 @@ internal sealed class ScheduleBuilder(IVenueTransferTimeProvider transferTimePro
                     continue;
                 }
 
-                if (!await IsTransferFeasibleAsync(start, end, venueNumber, bookedSlots, travelMode).ConfigureAwait(false))
+                if (!await IsTransferFeasibleAsync(start, end, venueNumber, show.Title, bookedSlots, travelMode).ConfigureAwait(false))
                 {
                     continue;
                 }
 
                 schedule.Add(new ScheduleItemDto(ShowsController.ToDto(show, times), timeStr, scores[show.ShowId]));
-                bookedSlots.Add((start, end, venueNumber));
+                bookedSlots.Add((start, end, venueNumber, show.Title));
                 break;
             }
         }
@@ -86,10 +86,11 @@ internal sealed class ScheduleBuilder(IVenueTransferTimeProvider transferTimePro
         DateTime start,
         DateTime end,
         int venueNumber,
-        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots,
+        string showTitle,
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> bookedSlots,
         TravelMode travelMode)
     {
-        return await FindTransferConflictAsync(start, end, venueNumber, bookedSlots, travelMode)
+        return await FindTransferConflictAsync(start, end, venueNumber, showTitle, bookedSlots, travelMode)
             .ConfigureAwait(false) is null;
     }
 
@@ -98,34 +99,35 @@ internal sealed class ScheduleBuilder(IVenueTransferTimeProvider transferTimePro
         DateTime start,
         DateTime end,
         int venueNumber,
-        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots,
+        string showTitle,
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> bookedSlots,
         TravelMode travelMode)
     {
-        List<(DateTime Start, DateTime End, int VenueNumber)> before = [.. bookedSlots.Where(s => s.End <= start)];
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> before = [.. bookedSlots.Where(s => s.End <= start)];
         if (before.Count > 0)
         {
-            (_, DateTime previousEnd, int previousVenueNumber) = before.OrderByDescending(s => s.End).First();
+            (_, DateTime previousEnd, int previousVenueNumber, string previousShowTitle) = before.OrderByDescending(s => s.End).First();
             TransferGapResult required = await transferTimeProvider
                 .GetRequiredGapAsync(previousVenueNumber, venueNumber, travelMode)
                 .ConfigureAwait(false);
             TimeSpan availableGap = start - previousEnd;
             if (availableGap < required.RequiredGap)
             {
-                return new TransferConflictDetail(previousVenueNumber, venueNumber, availableGap, required.RequiredGap, travelMode, required.AppliedRule);
+                return new TransferConflictDetail(previousVenueNumber, venueNumber, previousShowTitle, showTitle, availableGap, required.RequiredGap, travelMode, required.AppliedRule);
             }
         }
 
-        List<(DateTime Start, DateTime End, int VenueNumber)> after = [.. bookedSlots.Where(s => s.Start >= end)];
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> after = [.. bookedSlots.Where(s => s.Start >= end)];
         if (after.Count > 0)
         {
-            (DateTime nextStart, _, int nextVenueNumber) = after.OrderBy(s => s.Start).First();
+            (DateTime nextStart, _, int nextVenueNumber, string nextShowTitle) = after.OrderBy(s => s.Start).First();
             TransferGapResult required = await transferTimeProvider
                 .GetRequiredGapAsync(venueNumber, nextVenueNumber, travelMode)
                 .ConfigureAwait(false);
             TimeSpan availableGap = nextStart - end;
             if (availableGap < required.RequiredGap)
             {
-                return new TransferConflictDetail(venueNumber, nextVenueNumber, availableGap, required.RequiredGap, travelMode, required.AppliedRule);
+                return new TransferConflictDetail(venueNumber, nextVenueNumber, showTitle, nextShowTitle, availableGap, required.RequiredGap, travelMode, required.AppliedRule);
             }
         }
 
