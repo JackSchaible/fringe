@@ -118,7 +118,7 @@ internal sealed class ScheduleController(FringeRepository repo, IScheduleBuilder
                 altItems));
         }
 
-        List<MissedShowDto> missedShows = ComputeMissedShows(votedShows, showTimesMap, mainItems, availabilityMap, memberNames);
+        List<MissedShowDto> missedShows = await ComputeMissedShowsAsync(votedShows, showTimesMap, mainItems, availabilityMap, memberNames, scheduleBuilder, travelMode).ConfigureAwait(false);
 
         return Ok(new ScheduleResponseDto(mainItems, proposals, missedShows, HasVotes: true, travelModeString));
     }
@@ -169,18 +169,29 @@ internal sealed class ScheduleController(FringeRepository repo, IScheduleBuilder
             .Select(kvp => memberNames.GetValueOrDefault(kvp.Key) ?? kvp.Key)];
     }
 
-    private static List<MissedShowDto> ComputeMissedShows(
+    private const int unknownVenueNumber = -1;
+
+    private static async Task<List<MissedShowDto>> ComputeMissedShowsAsync(
         List<ShowRecord> votedShows,
         Dictionary<int, List<string>> showTimesMap,
         List<ScheduleItemDto> mainSchedule,
         Dictionary<string, List<(DateTime Start, DateTime End)>> availabilityMap,
-        Dictionary<string, string?> memberNames)
+        Dictionary<string, string?> memberNames,
+        IScheduleBuilder scheduleBuilder,
+        TravelMode travelMode)
     {
         var scheduledIds = mainSchedule.Select(i => i.Show.ShowId).ToHashSet();
-        List<(DateTime, DateTime)> bookedSlots = [..mainSchedule.Select(i =>
+
+        var venueNumberByShowId = votedShows
+            .ToDictionary(s => s.ShowId, s => s.Venue?.VenueNumber ?? unknownVenueNumber);
+        var venueNameByNumber = votedShows
+            .GroupBy(s => s.Venue?.VenueNumber ?? unknownVenueNumber)
+            .ToDictionary(g => g.Key, g => g.First().Venue?.Name);
+
+        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots = [..mainSchedule.Select(i =>
         {
             var s = DateTime.Parse(i.ShowTime, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-            return (s, s.AddMinutes(i.Show.LengthInMinutes));
+            return (s, s.AddMinutes(i.Show.LengthInMinutes), venueNumberByShowId.GetValueOrDefault(i.Show.ShowId, unknownVenueNumber));
         })];
 
         var missed = new List<MissedShowDto>();
@@ -199,28 +210,74 @@ internal sealed class ScheduleController(FringeRepository repo, IScheduleBuilder
 
             bool conflictsWithScheduled = false;
             var allBlockers = new HashSet<string>();
+            TransferConflictDto? transferConflict = null;
+            int venueNumber = show.Venue?.VenueNumber ?? unknownVenueNumber;
 
             foreach (string timeStr in times)
             {
                 var start = DateTime.Parse(timeStr, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
                 DateTime end = start.AddMinutes(show.LengthInMinutes);
 
-                if (bookedSlots.Any(s => start < s.Item2 && end > s.Item1))
+                if (bookedSlots.Any(s => start < s.End && end > s.Start))
                 {
                     conflictsWithScheduled = true;
                     continue;
                 }
 
-                foreach (string blocker in GetBlockingMembers(start, end, availabilityMap, memberNames))
+                List<string> blockers = GetBlockingMembers(start, end, availabilityMap, memberNames);
+                foreach (string blocker in blockers)
                 {
                     _ = allBlockers.Add(blocker);
                 }
+
+                if (blockers.Count > 0 || transferConflict != null)
+                {
+                    continue;
+                }
+
+                TransferConflictDetail? detail = await scheduleBuilder
+                    .FindTransferConflictAsync(start, end, venueNumber, bookedSlots, travelMode)
+                    .ConfigureAwait(false);
+                if (detail != null)
+                {
+                    transferConflict = ToTransferConflictDto(detail.Value, venueNameByNumber);
+                }
             }
 
-            missed.Add(new MissedShowDto(ShowsController.ToDto(show, times), conflictsWithScheduled, [.. allBlockers]));
+            missed.Add(new MissedShowDto(ShowsController.ToDto(show, times), conflictsWithScheduled, [.. allBlockers], transferConflict));
         }
 
         return missed;
+    }
+
+    private static TransferConflictDto ToTransferConflictDto(
+        TransferConflictDetail detail,
+        Dictionary<int, string?> venueNameByNumber)
+    {
+        return new TransferConflictDto(
+            venueNameByNumber.GetValueOrDefault(detail.OriginVenueNumber),
+            venueNameByNumber.GetValueOrDefault(detail.DestinationVenueNumber),
+            RoundToMinutes(detail.AvailableGap),
+            RoundToMinutes(detail.RequiredGap),
+            TravelModeToApiString(detail.Mode),
+            TransferRuleAppliedToApiString(detail.AppliedRule));
+    }
+
+    private static int RoundToMinutes(TimeSpan span)
+    {
+        return (int)Math.Round(span.TotalMinutes, MidpointRounding.AwayFromZero);
+    }
+
+    private static string TransferRuleAppliedToApiString(TransferRuleApplied rule)
+    {
+        return rule switch
+        {
+            TransferRuleApplied.SameVenue => "same-venue",
+            TransferRuleApplied.DirectionalOverride => "override",
+            TransferRuleApplied.Matrix => "matrix",
+            TransferRuleApplied.MissingDataFallback => "fallback",
+            _ => "fallback",
+        };
     }
 
     private static List<(DateTime Start, DateTime End)> ParseWindows(IEnumerable<AvailabilityWindowData>? raw)

@@ -54,6 +54,7 @@ const show1: Show = {
     blockedByMembers: ['Bob'],
     conflictsWithScheduled: true,
     show: show2,
+    transferConflict: null,
   },
   FIRST_PROPOSAL = 0,
   OUT_OF_BOUNDS_INDEX = 99,

@@ -89,6 +89,18 @@ internal sealed class ScheduleBuilder(IVenueTransferTimeProvider transferTimePro
         List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots,
         TravelMode travelMode)
     {
+        return await FindTransferConflictAsync(start, end, venueNumber, bookedSlots, travelMode)
+            .ConfigureAwait(false) is null;
+    }
+
+    /// <inheritdoc/>
+    public async Task<TransferConflictDetail?> FindTransferConflictAsync(
+        DateTime start,
+        DateTime end,
+        int venueNumber,
+        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots,
+        TravelMode travelMode)
+    {
         List<(DateTime Start, DateTime End, int VenueNumber)> before = [.. bookedSlots.Where(s => s.End <= start)];
         if (before.Count > 0)
         {
@@ -96,9 +108,10 @@ internal sealed class ScheduleBuilder(IVenueTransferTimeProvider transferTimePro
             TransferGapResult required = await transferTimeProvider
                 .GetRequiredGapAsync(previousVenueNumber, venueNumber, travelMode)
                 .ConfigureAwait(false);
-            if (start - previousEnd < required.RequiredGap)
+            TimeSpan availableGap = start - previousEnd;
+            if (availableGap < required.RequiredGap)
             {
-                return false;
+                return new TransferConflictDetail(previousVenueNumber, venueNumber, availableGap, required.RequiredGap, travelMode, required.AppliedRule);
             }
         }
 
@@ -109,13 +122,14 @@ internal sealed class ScheduleBuilder(IVenueTransferTimeProvider transferTimePro
             TransferGapResult required = await transferTimeProvider
                 .GetRequiredGapAsync(venueNumber, nextVenueNumber, travelMode)
                 .ConfigureAwait(false);
-            if (nextStart - end < required.RequiredGap)
+            TimeSpan availableGap = nextStart - end;
+            if (availableGap < required.RequiredGap)
             {
-                return false;
+                return new TransferConflictDetail(venueNumber, nextVenueNumber, availableGap, required.RequiredGap, travelMode, required.AppliedRule);
             }
         }
 
-        return true;
+        return null;
     }
 
     private static bool IsAvailableForAll(

@@ -1284,6 +1284,24 @@
           <ph id="0" equiv="INTERPOLATION" disp="{{ name }}" /> : disponibilités</target>
       </segment>
     </unit>
+    <unit id="schedule.missed.transfer-named">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-shows-list.html:25,27</note>
+      </notes>
+      <segment>
+        <source>Not enough time to get from <ph id="0" equiv="INTERPOLATION" disp="{{ conflict.originVenueName }}"/> to <ph id="1" equiv="INTERPOLATION_1" disp="{{ conflict.destinationVenueName }}"/></source>
+        <target>Pas assez de temps pour se rendre de <ph id="0" equiv="INTERPOLATION" disp="{{ conflict.originVenueName }}"/> à <ph id="1" equiv="INTERPOLATION_1" disp="{{ conflict.destinationVenueName }}"/></target>
+      </segment>
+    </unit>
+    <unit id="schedule.missed.transfer-unnamed">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-shows-list.html:30,33</note>
+      </notes>
+      <segment>
+        <source>Not enough time to get to the next venue</source>
+        <target>Pas assez de temps pour se rendre à la prochaine salle</target>
+      </segment>
+    </unit>
     <unit id="schedule.needs-change">
       <notes>
         <note category="location">src/app/pages/schedule/needs-change/needs-change.html:4,9</note>

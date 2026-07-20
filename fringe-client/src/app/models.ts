@@ -74,12 +74,6 @@ export interface AlternateProposal {
   items: Array<ScheduleItem>;
 }
 
-export interface MissedShow {
-  show: Show;
-  conflictsWithScheduled: boolean;
-  blockedByMembers: Array<string>;
-}
-
 export type TravelMode = 'walking' | 'cycling' | 'driving';
 
 export const TRAVEL_MODES: ReadonlyArray<TravelMode> = [
@@ -91,6 +85,22 @@ export const TRAVEL_MODES: ReadonlyArray<TravelMode> = [
 export const isTravelMode = (value: unknown): value is TravelMode =>
   typeof value === 'string' &&
   (TRAVEL_MODES as ReadonlyArray<string>).includes(value);
+
+export interface TransferConflict {
+  originVenueName: string | null;
+  destinationVenueName: string | null;
+  availableGapMinutes: number;
+  requiredGapMinutes: number;
+  travelMode: TravelMode;
+  appliedRule: string;
+}
+
+export interface MissedShow {
+  show: Show;
+  conflictsWithScheduled: boolean;
+  blockedByMembers: Array<string>;
+  transferConflict: TransferConflict | null;
+}
 
 export interface ScheduleResponse {
   items: Array<ScheduleItem>;

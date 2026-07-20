@@ -19,6 +19,9 @@
               >{{ name }}'s availability</span
             >
           }
+          @if (missed.transferConflict; as conflict) {
+            <fg-transfer-conflict-tag [conflict]="conflict" />
+          }
         </div>
       </div>
     }

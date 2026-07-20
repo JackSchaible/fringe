@@ -1,0 +1,10 @@
+@if (conflict().originVenueName && conflict().destinationVenueName) {
+  <span i18n="@@schedule.missed.transfer-named" class="missed-tag transfer"
+    >Not enough time to get from {{ conflict().originVenueName }} to
+    {{ conflict().destinationVenueName }}</span
+  >
+} @else {
+  <span i18n="@@schedule.missed.transfer-unnamed" class="missed-tag transfer"
+    >Not enough time to get to the next venue</span
+  >
+}

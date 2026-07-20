@@ -25,4 +25,21 @@ internal interface IScheduleBuilder
         Dictionary<string, List<(DateTime Start, DateTime End)>> availabilityMap,
         string? excludedUserId,
         TravelMode travelMode);
+
+    /// <summary>
+    /// Checks a candidate performance's venue-transfer feasibility against its nearest
+    /// chronological neighbours in <paramref name="bookedSlots"/>, using the exact same
+    /// neighbour-selection and short-circuit precedence as <see cref="BuildScheduleAsync"/>
+    /// (previous-transition failures are reported before next-transition ones are even checked).
+    /// Returns <see langword="null"/> when feasible (or when there are no neighbours to check
+    /// against); otherwise the diagnostic detail for the first infeasible transition found — for
+    /// missed-show diagnostics (FA-35), so a rejection reported here is guaranteed to match the
+    /// reason <see cref="BuildScheduleAsync"/> would have rejected the same candidate for.
+    /// </summary>
+    Task<TransferConflictDetail?> FindTransferConflictAsync(
+        DateTime start,
+        DateTime end,
+        int venueNumber,
+        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots,
+        TravelMode travelMode);
 }
