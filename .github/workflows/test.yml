@@ -50,8 +50,8 @@ jobs:
 
       - name: Create CDK asset stubs
         run: |
-          mkdir -p Fringe.API/publish Fringe.Scraper/publish fringe-client/dist/client-new/browser
-          touch Fringe.API/publish/.gitkeep Fringe.Scraper/publish/.gitkeep fringe-client/dist/client-new/browser/.gitkeep
+          mkdir -p Fringe.API/publish Fringe.Scraper/publish Fringe.TransferMatrix/publish fringe-client/dist/client-new/browser/en-CA fringe-client/dist/client-new/browser/fr-CA
+          touch Fringe.API/publish/.gitkeep Fringe.Scraper/publish/.gitkeep Fringe.TransferMatrix/publish/.gitkeep fringe-client/dist/client-new/browser/en-CA/.gitkeep fringe-client/dist/client-new/browser/fr-CA/.gitkeep
 
       - name: Install infra dependencies
         working-directory: infra
