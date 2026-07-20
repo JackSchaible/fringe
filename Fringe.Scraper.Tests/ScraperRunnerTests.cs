@@ -84,6 +84,7 @@ public sealed class ScraperRunnerTests
     {
         var db = new Mock<IDynamoDBContext>();
         var repo = new Mock<FringeRepository>(db.Object) { CallBase = false };
+        _ = repo.Setup(r => r.SaveVenuesAsync(It.IsAny<IEnumerable<Venue>>())).Returns(Task.CompletedTask);
         _ = repo.Setup(r => r.SaveShowsAsync(It.IsAny<IEnumerable<Show>>())).Returns(Task.CompletedTask);
         _ = repo.Setup(r => r.SaveShowTimesAsync(It.IsAny<IEnumerable<ShowTime>>())).Returns(Task.CompletedTask);
         return repo;
@@ -122,6 +123,49 @@ public sealed class ScraperRunnerTests
         await ScraperRunner.RunAsync(repoMock.Object, FullPipelineFetcher(42)).ConfigureAwait(true);
 
         repoMock.Verify(r => r.SaveShowTimesAsync(It.IsAny<IEnumerable<ShowTime>>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RunAsyncFullPipelineCallsSaveVenuesAsyncWithScrapedVenue()
+    {
+        Mock<FringeRepository> repoMock = StubRepository();
+        await ScraperRunner.RunAsync(repoMock.Object, FullPipelineFetcher(42)).ConfigureAwait(true);
+
+        repoMock.Verify(
+            r => r.SaveVenuesAsync(It.Is<IEnumerable<Venue>>(v => v.Any(x => x.VenueNumber == 1 && x.Name == "Stage One"))),
+            Times.Once);
+    }
+
+    // ── venue enrichment wiring ───────────────────────────────────────────────
+
+    [Fact]
+    public async Task RunAsyncTwoArgOverloadSkipsVenueEnrichment()
+    {
+        Mock<FringeRepository> repoMock = StubRepository();
+        await ScraperRunner.RunAsync(repoMock.Object, FullPipelineFetcher(42)).ConfigureAwait(true);
+
+        repoMock.Verify(r => r.GetVenuesNeedingGeocodingAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task RunAsyncNullGeocodingProviderSkipsVenueEnrichment()
+    {
+        Mock<FringeRepository> repoMock = StubRepository();
+        await ScraperRunner.RunAsync(repoMock.Object, FullPipelineFetcher(42), geocodingProvider: null).ConfigureAwait(true);
+
+        repoMock.Verify(r => r.GetVenuesNeedingGeocodingAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task RunAsyncGeocodingProviderSuppliedRunsVenueEnrichment()
+    {
+        Mock<FringeRepository> repoMock = StubRepository();
+        _ = repoMock.Setup(r => r.GetVenuesNeedingGeocodingAsync()).ReturnsAsync([]);
+        var providerMock = new Mock<IGeocodingProvider>();
+
+        await ScraperRunner.RunAsync(repoMock.Object, FullPipelineFetcher(42), providerMock.Object).ConfigureAwait(true);
+
+        repoMock.Verify(r => r.GetVenuesNeedingGeocodingAsync(), Times.Once);
     }
 
     // ── early-exit: no show IDs ────────────────────────────────────────────────

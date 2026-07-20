@@ -73,6 +73,9 @@ jobs:
       - name: Publish Fringe.Scraper
         run: dotnet publish Fringe.Scraper -c Release -o Fringe.Scraper/publish
 
+      - name: Publish Fringe.TransferMatrix
+        run: dotnet publish Fringe.TransferMatrix -c Release -o Fringe.TransferMatrix/publish
+
       - name: Install frontend dependencies
         working-directory: fringe-client
         run: pnpm install --frozen-lockfile
@@ -112,6 +115,7 @@ jobs:
         working-directory: infra
         env:
           TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
+          OPENROUTESERVICE_API_KEY: ${{ secrets.OPENROUTESERVICE_API_KEY }}
         run: pnpm exec cdk deploy --all --require-approval never --outputs-file cdk-outputs.json
 
       - name: Rebuild frontend if Cognito was just created (first deploy)

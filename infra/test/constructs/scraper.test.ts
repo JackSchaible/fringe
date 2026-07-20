@@ -53,6 +53,17 @@ describe("FringeScraper", () => {
       });
     });
 
+    it("sets OPENROUTESERVICE_API_KEY environment variable", () => {
+      template.hasResourceProperties("AWS::Lambda::Function", {
+        Runtime: "dotnet10",
+        Environment: {
+          Variables: Match.objectLike({
+            OPENROUTESERVICE_API_KEY: Match.anyValue(),
+          }),
+        },
+      });
+    });
+
     it("has read/write DynamoDB IAM policy", () => {
       template.hasResourceProperties("AWS::IAM::Policy", {
         PolicyDocument: {

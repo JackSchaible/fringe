@@ -62,6 +62,69 @@ $DDB create-table \
   }]' > /dev/null
 $DDB wait table-exists --table-name "$TABLE"
 
+# ── Venues ────────────────────────────────────────────────────────────────────
+# Canonical VENUE#<num> records, independent of the embedded Venue blob on each
+# show. Deliberately seeded in three different enrichment states (see FA-33):
+#   1  Festival Hub Main Stage    — already geocoded, AddressHash matches its
+#                                   current Address/PostalCode → NOT eligible
+#                                   for re-geocoding.
+#   2  Roxy Theatre               — CoordinateSource "Manual" → NEVER eligible
+#                                   for automatic geocoding, regardless of hash.
+#   3  Northern Arts Collective   — no coordinates yet → eligible, this is the
+#                                   one a local `dotnet run` with a real
+#                                   OPENROUTESERVICE_API_KEY will actually geocode.
+
+echo "▶  Seeding venues..."
+
+put << 'EOF'
+{
+  "pk":               {"S": "VENUE#1"},
+  "sk":               {"S": "METADATA"},
+  "entityType":       {"S": "VENUE"},
+  "VenueNumber":      {"N": "1"},
+  "Name":             {"S": "Festival Hub Main Stage"},
+  "Address":          {"S": "10320 102 Ave NW"},
+  "Phone":            {"S": "780-555-0101"},
+  "PostalCode":       {"S": "T5J 2T4"},
+  "Latitude":         {"N": "53.5444"},
+  "Longitude":        {"N": "-113.4909"},
+  "AddressHash":      {"S": "3dff74facb0660a32acb7667eb7bdde4d79ec6dda9eb4a10f8d306522a8e3fdb"},
+  "CoordinateSource": {"S": "OpenRouteService"},
+  "EnrichedAt":       {"S": "2026-07-15T03:00:00.0000000Z"}
+}
+EOF
+
+put << 'EOF'
+{
+  "pk":               {"S": "VENUE#2"},
+  "sk":               {"S": "METADATA"},
+  "entityType":       {"S": "VENUE"},
+  "VenueNumber":      {"N": "2"},
+  "Name":             {"S": "Roxy Theatre"},
+  "Address":          {"S": "8529 Gateway Blvd NW"},
+  "Phone":            {"S": "780-555-0202"},
+  "PostalCode":       {"S": "T6E 4M3"},
+  "Latitude":         {"N": "53.5183"},
+  "Longitude":        {"N": "-113.4926"},
+  "AddressHash":      {"S": "70d122a620df2e4fd9cfd07c82d307b74650d95dcd76606524aaaa620f509192"},
+  "CoordinateSource": {"S": "Manual"},
+  "EnrichedAt":       {"S": "2026-06-20T09:00:00.0000000Z"}
+}
+EOF
+
+put << 'EOF'
+{
+  "pk":          {"S": "VENUE#3"},
+  "sk":          {"S": "METADATA"},
+  "entityType":  {"S": "VENUE"},
+  "VenueNumber": {"N": "3"},
+  "Name":        {"S": "Northern Arts Collective"},
+  "Address":     {"S": "11924 Jasper Ave"},
+  "Phone":       {"S": "780-555-0303"},
+  "PostalCode":  {"S": "T5K 0P6"}
+}
+EOF
+
 # ── Shows ─────────────────────────────────────────────────────────────────────
 
 echo "▶  Seeding shows..."
@@ -359,10 +422,12 @@ put << 'EOF'
 EOF
 
 echo ""
-echo "✓  Done. 32 items written to '$TABLE'."
+echo "✓  Done. 35 items written to '$TABLE'."
 echo ""
 echo "   Dev login user IDs:  user1 (Alice)  |  user2 (Bob)"
 echo "   Group invite code:   ABC123"
+echo ""
+echo "   Venues: 1 (already geocoded) · 2 (manual override) · 3 (needs geocoding)"
 echo ""
 echo "   Expected schedule (greedy by group score):"
 echo "   Jul 10  14:00  The Comedy Hour        101  (7 pts)"

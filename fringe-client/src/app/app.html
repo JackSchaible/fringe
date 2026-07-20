@@ -1,8 +1,8 @@
 @if (auth.currentUser()) {
   <nav class="nav">
     <a routerLink="/shows" class="nav-brand">
-      <span i18n="@@app.02" class="brand-full">Jack's Fringe Planner</span>
-      <span i18n="@@app.07" class="brand-short">Fringe Planner</span>
+      <span i18n="@@app.02" class="brand-full">FringeQuest</span>
+      <span i18n="@@app.07" class="brand-short">FringeQuest</span>
     </a>
     <div class="nav-links">
       <a i18n="@@app.nav.shows" routerLink="/shows" routerLinkActive="active">
@@ -30,6 +30,9 @@
         Availability
       </a>
     </div>
+    <a class="nav-lang-switch" [href]="switchLocaleHref()">
+      {{ isFrench ? 'EN' : 'FR' }}
+    </a>
     <button
       type="button"
       class="nav-signout"
@@ -57,6 +60,25 @@
   <a i18n="@@app.05" routerLink="/terms">Terms of Service</a>
   <span class="footer-sep">·</span>
   <a i18n="@@app.06" href="mailto:hello@jackschaible.ca">Contact</a>
+  <span class="footer-sep">·</span>
+  <span i18n="@@app.08" class="footer-copy"
+    >Venue locations &copy;
+    <a
+      href="https://www.openstreetmap.org/copyright"
+      target="_blank"
+      rel="noopener noreferrer"
+      i18n-rel="@@app.08.osm-link-rel"
+      >OpenStreetMap</a
+    >
+    contributors, routing via
+    <a
+      href="https://openrouteservice.org/"
+      target="_blank"
+      rel="noopener noreferrer"
+      i18n-rel="@@app.08.ors-link-rel"
+      >OpenRouteService</a
+    >.</span
+  >
 </footer>
 
 <fg-cookie-consent-drawer />

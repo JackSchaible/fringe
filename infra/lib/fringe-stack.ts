@@ -6,6 +6,7 @@ import { FringeAuth } from "./constructs/auth";
 import { FringeDynamo } from "./constructs/dynamo";
 import { FringeFrontend } from "./constructs/frontend";
 import { FringeScraper } from "./constructs/scraper";
+import { FringeTransferMatrix } from "./constructs/transfer-matrix";
 
 interface FringeStackProps extends cdk.StackProps {
   certificate: Certificate;
@@ -43,6 +44,7 @@ export class FringeStack extends cdk.Stack {
       auth,
     });
     new FringeScraper(this, "Scraper", { table: dynamo.table });
+    new FringeTransferMatrix(this, "TransferMatrix", { table: dynamo.table });
 
     return { dynamo, auth, frontend, api };
   }

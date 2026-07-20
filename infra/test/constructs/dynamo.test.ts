@@ -77,4 +77,13 @@ describe("FringeDynamo", () => {
       ]),
     });
   });
+
+  it("enables TTL on the ttl attribute (transfer-matrix version cleanup)", () => {
+    template.hasResourceProperties("AWS::DynamoDB::GlobalTable", {
+      TimeToLiveSpecification: {
+        AttributeName: "ttl",
+        Enabled: true,
+      },
+    });
+  });
 });

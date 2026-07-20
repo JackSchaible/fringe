@@ -110,13 +110,32 @@ describe("FringeFrontend", () => {
         }),
       });
     });
+
+    it("associates a viewer-request Function for locale routing", () => {
+      template.resourceCountIs("AWS::CloudFront::Function", 1);
+      template.hasResourceProperties("AWS::CloudFront::Distribution", {
+        DistributionConfig: Match.objectLike({
+          DefaultCacheBehavior: Match.objectLike({
+            FunctionAssociations: Match.arrayWith([
+              Match.objectLike({ EventType: "viewer-request" }),
+            ]),
+          }),
+        }),
+      });
+    });
   });
 
   describe("BucketDeployment", () => {
-    it("creates a BucketDeployment custom resource", () => {
+    it("creates a BucketDeployment custom resource per locale", () => {
       // BucketDeployment synthesizes as a Custom::CDKBucketDeployment resource
       const resources = template.findResources("Custom::CDKBucketDeployment");
-      expect(Object.keys(resources).length).toBeGreaterThanOrEqual(1);
+      expect(Object.keys(resources).length).toBeGreaterThanOrEqual(2);
+    });
+
+    it("deploys the fr locale under a /fr destination prefix", () => {
+      template.hasResourceProperties("Custom::CDKBucketDeployment", {
+        DestinationBucketKeyPrefix: "fr",
+      });
     });
   });
 });

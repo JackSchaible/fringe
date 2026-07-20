@@ -2,7 +2,11 @@ import * as cdk from "aws-cdk-lib";
 import {
   AllowedMethods,
   CachePolicy,
+  Function as CloudFrontFunction,
   Distribution,
+  FunctionCode,
+  FunctionEventType,
+  FunctionRuntime,
   ViewerProtocolPolicy,
 } from "aws-cdk-lib/aws-cloudfront";
 import { BlockPublicAccess, Bucket } from "aws-cdk-lib/aws-s3";
@@ -17,6 +21,40 @@ interface FrontendProps {
 
 const ERROR_RESPONSE_TTL_SECONDS = 0;
 
+/*
+ * Angular's localized build emits one full app copy per locale
+ * (dist/.../browser/<locale>/). The default locale (en-CA) deploys to the
+ * bucket root so the existing unprefixed URLs keep working — its <base href>
+ * is explicitly overridden to "/" in angular.json so it doesn't default to
+ * "/en-CA/" like the other locales. fr-CA deploys under /fr/ (also an
+ * explicit baseHref override, so the URL stays short instead of /fr-CA/).
+ * This function runs at the edge and rewrites app-route requests (no file
+ * extension) to the right locale's index.html so deep links and
+ * client-side routing resolve to the correct translation instead of
+ * always falling back to the English shell.
+ */
+const LOCALE_ROUTER_FUNCTION_CODE = `
+function handler(event) {
+  var request = event.request;
+  var uri = request.uri;
+  var lastSegment = uri.substring(uri.lastIndexOf('/') + 1);
+
+  // Static assets (js/css/images/etc.) are requested with their real path
+  // already baked in via each locale's <base href>; leave them alone.
+  if (lastSegment.indexOf('.') !== -1) {
+    return request;
+  }
+
+  if (uri === '/fr' || uri.indexOf('/fr/') === 0) {
+    request.uri = '/fr/index.html';
+  } else {
+    request.uri = '/index.html';
+  }
+
+  return request;
+}
+`;
+
 export class FringeFrontend extends Construct {
   public readonly distributionDomain: string;
 
@@ -27,21 +65,53 @@ export class FringeFrontend extends Construct {
   ) {
     super(scope, id);
 
-    const bucket = new Bucket(this, "SiteBucket", {
+    const bucket = this.createBucket();
+    const localeRouterFunction = this.createLocaleRouterFunction();
+    const distribution = this.createDistribution(
+      bucket,
+      localeRouterFunction,
+      props.certificate,
+    );
+    this.deployLocales(bucket, distribution);
+
+    this.distributionDomain = distribution.distributionDomainName;
+  }
+
+  private createBucket(): Bucket {
+    return new Bucket(this, "SiteBucket", {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
       autoDeleteObjects: false,
     });
+  }
 
-    const distribution = new Distribution(this, "Distribution", {
+  private createLocaleRouterFunction(): CloudFrontFunction {
+    return new CloudFrontFunction(this, "LocaleRouter", {
+      runtime: FunctionRuntime.JS_2_0,
+      code: FunctionCode.fromInline(LOCALE_ROUTER_FUNCTION_CODE),
+    });
+  }
+
+  private createDistribution(
+    bucket: Readonly<Bucket>,
+    localeRouterFunction: Readonly<CloudFrontFunction>,
+    certificate: Readonly<Certificate>,
+  ): Distribution {
+    return new Distribution(this, "Distribution", {
       defaultBehavior: {
         origin: S3BucketOrigin.withOriginAccessControl(bucket),
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD,
         cachePolicy: CachePolicy.CACHING_OPTIMIZED,
+        functionAssociations: [
+          {
+            function: localeRouterFunction,
+            eventType: FunctionEventType.VIEWER_REQUEST,
+          },
+        ],
       },
       domainNames: ["fringe.jackschaible.ca"],
-      certificate: props.certificate,
+      certificate,
       defaultRootObject: "index.html",
       errorResponses: [
         {
@@ -58,14 +128,32 @@ export class FringeFrontend extends Construct {
         },
       ],
     });
+  }
 
-    new BucketDeployment(this, "Deploy", {
-      sources: [Source.asset("../fringe-client/dist/client-new/browser")],
+  private deployLocales(
+    bucket: Readonly<Bucket>,
+    distribution: Readonly<Distribution>,
+  ): void {
+    /*
+     * The en-CA locale is the source locale and deploys unprefixed to the
+     * bucket root, preserving today's URLs. Pruning is disabled here so
+     * this deployment doesn't delete the other locales' objects out from
+     * under them — each locale's own deployment prunes its own prefix.
+     */
+    new BucketDeployment(this, "DeployEnCA", {
+      sources: [Source.asset("../fringe-client/dist/client-new/browser/en-CA")],
       destinationBucket: bucket,
       distribution,
       distributionPaths: ["/*"],
+      prune: false,
     });
 
-    this.distributionDomain = distribution.distributionDomainName;
+    new BucketDeployment(this, "DeployFrCA", {
+      sources: [Source.asset("../fringe-client/dist/client-new/browser/fr-CA")],
+      destinationBucket: bucket,
+      destinationKeyPrefix: "fr",
+      distribution,
+      distributionPaths: ["/fr/*"],
+    });
   }
 }

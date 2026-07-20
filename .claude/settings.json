@@ -3,7 +3,12 @@
     "allow": [
       "Bash(dotnet format *)",
       "Bash(dotnet build *)",
-      "Bash(pnpm run *)"
+      "Bash(dotnet test *)",
+      "Bash(pnpm run *)",
+      "mcp__claude_ai_Atlassian_Rovo__getAccessibleAtlassianResources",
+      "mcp__claude_ai_Atlassian_Rovo__getJiraIssue",
+      "Bash(pnpm test *)",
+      "Bash(npx prettier *)"
     ]
   }
 }

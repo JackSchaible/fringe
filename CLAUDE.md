@@ -4,14 +4,15 @@ Group Fringe-festival schedule planner. Friends log in, vote on shows, and the a
 
 ## Structure
 
-| Directory         | Role                                                              |
-| ----------------- | ----------------------------------------------------------------- |
-| `fringe-client/`  | Angular 20 SPA                                                    |
-| `Fringe.API/`     | ASP.NET Core .NET 10 Lambda — REST API                            |
-| `Fringe.Data/`    | Shared .NET 10 library — DynamoDB models + `FringeRepository`     |
-| `Fringe.Scraper/` | .NET 10 Lambda — nightly scraper (also runnable as a console app) |
-| `infra/`          | AWS CDK TypeScript — all infrastructure                           |
-| `e2e/`            | Playwright — post-deploy smoke test against the live site         |
+| Directory                | Role                                                                                      |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| `fringe-client/`         | Angular 20 SPA                                                                            |
+| `Fringe.API/`            | ASP.NET Core .NET 10 Lambda — REST API                                                    |
+| `Fringe.Data/`           | Shared .NET 10 library — DynamoDB models + `FringeRepository`                             |
+| `Fringe.Scraper/`        | .NET 10 Lambda — nightly scraper (also runnable as a console app)                         |
+| `Fringe.TransferMatrix/` | .NET 10 Lambda — nightly venue transfer-matrix generator (also runnable as a console app) |
+| `infra/`                 | AWS CDK TypeScript — all infrastructure                                                   |
+| `e2e/`                   | Playwright — post-deploy smoke test against the live site                                 |
 
 All .NET projects target **net10.0**. Lambda runtime is `DOTNET_10`.
 
@@ -22,6 +23,7 @@ Steps must run in this order — CDK reads the publish output and dist folders a
 ```bash
 dotnet publish Fringe.API -c Release -o Fringe.API/publish
 dotnet publish Fringe.Scraper -c Release -o Fringe.Scraper/publish
+dotnet publish Fringe.TransferMatrix -c Release -o Fringe.TransferMatrix/publish
 cd fringe-client && npm run build && cd ..
 cd infra && npx cdk deploy
 ```
@@ -32,18 +34,24 @@ DynamoDB on-demand, single table named `fringe`. No SQL, no migrations, no VPC.
 
 Key design: `pk` (string) / `sk` (string). Entity types:
 
-| PK          | SK                        | Entity                                 |
-| ----------- | ------------------------- | -------------------------------------- |
-| `SHOW#<id>` | `METADATA`                | Show (venue + content rating embedded) |
-| `SHOW#<id>` | `SHOWTIME#<iso-datetime>` | ShowTime                               |
-| `USER#<id>` | `PROFILE`                 | User                                   |
-| `USER#<id>` | `VOTE#SHOW#<showId>`      | UserVote                               |
+| PK                            | SK                                    | Entity                                                                  |
+| ----------------------------- | ------------------------------------- | ----------------------------------------------------------------------- |
+| `SHOW#<id>`                   | `METADATA`                            | Show (venue + content rating embedded, denormalized read model)         |
+| `SHOW#<id>`                   | `SHOWTIME#<iso-datetime>`             | ShowTime                                                                |
+| `VENUE#<num>`                 | `METADATA`                            | Venue (canonical, source-independent)                                   |
+| `TRANSFER_MATRIX#<inputHash>` | `METADATA`                            | Transfer-matrix version metadata                                        |
+| `TRANSFER_MATRIX#<inputHash>` | `FROM#<venueNumber>#TO#<venueNumber>` | Directional venue-pair transfer (walking/cycling/driving in one record) |
+| `CONFIG`                      | `ACTIVE_TRANSFER_MATRIX`              | Pointer to the currently active transfer-matrix version                 |
+| `USER#<id>`                   | `PROFILE`                             | User                                                                    |
+| `USER#<id>`                   | `VOTE#SHOW#<showId>`                  | UserVote                                                                |
 
-GSI `entity-type-index`: pk=`entityType`, sk=`pk` — used to list all shows.
+GSI `entity-type-index`: pk=`entityType`, sk=`pk` — used to list all shows and venues. Transfer-matrix and config records are never indexed on it — they're always addressed directly by partition key (a matrix version by its input hash, the active pointer by the fixed `CONFIG` key), which is what lets the whole active matrix load in a single partition query.
+
+TTL: the table has a `ttl` (epoch-seconds) attribute enabled. Only superseded transfer-matrix versions ever set it (see `FringeRepository.MarkTransferMatrixStaleAsync`) — nothing else currently opts in, so no other entity ever expires.
 
 ## Domain
 
-`fringe.jackschaible.ca` (external registrar — DNS CNAMEs are added manually after deploy).
+`fringe.jackschaible.ca` (DNS CNAMEs are added manually after deploy).
 
 ## Verification before finishing a change
 
@@ -56,7 +64,7 @@ pnpm run format    # dotnet format --verify-no-changes, prettier --check (client
 pnpm run test      # dotnet test, ng test, jest
 
 # Or per-project
-dotnet build fringe.sln && dotnet test fringe.sln   # Fringe.API / Fringe.Data / Fringe.Scraper
+dotnet build fringe.sln && dotnet test fringe.sln   # Fringe.API / Fringe.Data / Fringe.Scraper / Fringe.TransferMatrix
 cd fringe-client && pnpm run lint && pnpm run format:check && pnpm test
 cd infra && pnpm run lint && pnpm run format:check && pnpm test
 ```

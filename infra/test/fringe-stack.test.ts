@@ -51,8 +51,8 @@ describe("FringeStack", () => {
       template.resourceCountIs("AWS::ApiGateway::RestApi", 1);
     });
 
-    it("creates an EventBridge Scheduler (FringeScraper)", () => {
-      template.resourceCountIs("AWS::Scheduler::Schedule", 1);
+    it("creates an EventBridge Scheduler per scheduled Lambda (FringeScraper, FringeTransferMatrix)", () => {
+      template.resourceCountIs("AWS::Scheduler::Schedule", 2);
     });
   });
 

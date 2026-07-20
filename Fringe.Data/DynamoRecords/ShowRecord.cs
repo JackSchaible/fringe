@@ -50,7 +50,11 @@ public class ShowRecord
     /// <summary>Gets or sets the run time in minutes.</summary>
     public int LengthInMinutes { get; set; }
 
-    /// <summary>Gets or sets the embedded venue data.</summary>
+    /// <summary>
+    /// Gets or sets the embedded venue data. Deliberate read-model denormalization —
+    /// kept in sync with the canonical <see cref="VenueRecord"/> on import so show
+    /// reads never need a second lookup, independent of the venue's own record.
+    /// </summary>
     public VenueData? Venue { get; set; }
 
     /// <summary>Gets or sets the embedded content rating data.</summary>

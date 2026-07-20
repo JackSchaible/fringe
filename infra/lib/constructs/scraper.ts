@@ -31,6 +31,7 @@ export class FringeScraper extends Construct {
       memorySize: 512,
       environment: {
         DYNAMO_TABLE_NAME: props.table.tableName,
+        OPENROUTESERVICE_API_KEY: process.env.OPENROUTESERVICE_API_KEY ?? "",
       },
     });
 
