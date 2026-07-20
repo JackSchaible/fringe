@@ -1,6 +1,6 @@
 {
-  "name": "Jack's Fringe Scheduler",
-  "short_name": "Scheduler",
+  "name": "FringeQuest",
+  "short_name": "FringeQuest",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

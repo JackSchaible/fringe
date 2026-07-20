@@ -238,6 +238,16 @@ module.exports = tseslint.config(
     },
   },
   {
+    // Vendored Font Awesome Pro icon definitions (see vendor/fontawesome-icons's
+    // own note) — generated verbatim from FontAwesome's own data, not
+    // hand-written, so the usual key-order/magic-number rules don't apply.
+    files: ['**/vendor/fontawesome-icons/*.ts'],
+    rules: {
+      'sort-keys': 'off',
+      '@typescript-eslint/no-magic-numbers': 'off',
+    },
+  },
+  {
     files: ['**/*.spec.ts'],
     rules: {
       // expect(spy.method).toHaveBeenCalled() is the standard Jasmine spy

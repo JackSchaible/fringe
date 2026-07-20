@@ -1,7 +1,9 @@
 using Amazon.DynamoDBv2.DataModel;
 using Fringe.API.Controllers;
+using Fringe.API.Services;
 using Fringe.Data;
 using Fringe.Data.DynamoRecords;
+using Fringe.Data.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -12,7 +14,8 @@ namespace Fringe.API.Tests.Controllers;
 /// <summary>
 /// Exhaustive tests for ScheduleController's scheduling algorithm.
 ///
-/// Scheduling algorithm summary (BuildSchedule):
+/// Scheduling algorithm summary (BuildSchedule, now on ScheduleBuilder — see
+/// ScheduleBuilderTests for the venue-transfer-specific matrix):
 /// - Iterates voted shows in descending score order.
 /// - For each show, tries each showtime in chronological order.
 /// - Skips a showtime if it conflicts with an already-booked slot.
@@ -22,8 +25,14 @@ namespace Fringe.API.Tests.Controllers;
 ///   they are treated as never available (blocks everything).
 /// - When NO member has availability (anyoneHasAvailability=false), empty windows
 ///   means unconstrained.
-/// - First non-conflicting, available showtime wins; show is added and we move on.
+/// - First non-conflicting, available, transfer-feasible showtime wins; show is
+///   added and we move on.
 /// - Final list is sorted by ShowTime.
+///
+/// These tests wire in a real ScheduleBuilder backed by a fake IVenueTransferTimeProvider
+/// that always reports a zero required gap — i.e. transfers are always instantly feasible —
+/// so this file continues to exercise (and pin) every non-transfer behaviour unchanged from
+/// before the venue-transfer integration.
 /// </summary>
 public sealed class ScheduleControllerTests
 {
@@ -31,7 +40,7 @@ public sealed class ScheduleControllerTests
 
     private static ScheduleController BuildController(Mock<FringeRepository> mockRepo)
     {
-        return new ScheduleController(mockRepo.Object)
+        return new ScheduleController(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -49,6 +58,21 @@ public sealed class ScheduleControllerTests
         return new Mock<FringeRepository>(MockBehavior.Strict, Mock.Of<IDynamoDBContext>());
     }
 
+    private static IVenueTransferTimeProvider AlwaysFeasibleTransferProvider()
+    {
+        var mock = new Mock<IVenueTransferTimeProvider>();
+        _ = mock.Setup(p => p.GetRequiredGapAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<TravelMode>()))
+                .ReturnsAsync((int from, int to, TravelMode mode) => new TransferGapResult
+                {
+                    FromVenueNumber = from,
+                    ToVenueNumber = to,
+                    Mode = mode,
+                    AppliedRule = TransferRuleApplied.SameVenue,
+                    RequiredGap = TimeSpan.Zero
+                });
+        return mock.Object;
+    }
+
     private static ShowRecord MakeShow(int id, string title, int lengthMinutes = 60)
     {
         return new()
@@ -61,6 +85,44 @@ public sealed class ScheduleControllerTests
             Fee = "1.00",
             LengthInMinutes = lengthMinutes,
         };
+    }
+
+    private static ShowRecord MakeShowWithVenue(int id, string title, int venueNumber, string venueName, int lengthMinutes = 60)
+    {
+        ShowRecord show = MakeShow(id, title, lengthMinutes);
+        show.Venue = new VenueData { VenueNumber = venueNumber, Name = venueName, Address = "", Phone = "", PostalCode = "" };
+        return show;
+    }
+
+    /// <summary>
+    /// A transfer provider that always reports a zero, instantly-feasible gap, except for the one
+    /// (<paramref name="fromVenue"/>, <paramref name="toVenue"/>) pair, which reports
+    /// <paramref name="requiredGap"/> under <paramref name="appliedRule"/> — for tests that need
+    /// exactly one deliberately infeasible transition without hand-wiring every other call.
+    /// </summary>
+    private static IVenueTransferTimeProvider TransferProviderWithOverride(
+        int fromVenue, int toVenue, TravelMode mode, TimeSpan requiredGap, TransferRuleApplied appliedRule)
+    {
+        var mock = new Mock<IVenueTransferTimeProvider>();
+        _ = mock.Setup(p => p.GetRequiredGapAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<TravelMode>()))
+                .ReturnsAsync((int from, int to, TravelMode m) => new TransferGapResult
+                {
+                    FromVenueNumber = from,
+                    ToVenueNumber = to,
+                    Mode = m,
+                    AppliedRule = TransferRuleApplied.SameVenue,
+                    RequiredGap = TimeSpan.Zero
+                });
+        _ = mock.Setup(p => p.GetRequiredGapAsync(fromVenue, toVenue, mode))
+                .ReturnsAsync(new TransferGapResult
+                {
+                    FromVenueNumber = fromVenue,
+                    ToVenueNumber = toVenue,
+                    Mode = mode,
+                    AppliedRule = appliedRule,
+                    RequiredGap = requiredGap
+                });
+        return mock.Object;
     }
 
     private static ShowTimeRecord MakeShowTime(int showId, string iso)
@@ -162,6 +224,59 @@ public sealed class ScheduleControllerTests
         Assert.Empty(dto.Items);
         Assert.Empty(dto.AlternateProposals);
         Assert.Empty(dto.MissedShows);
+    }
+
+    // ── Travel mode (FA-37) ──────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("teleport")]
+    [InlineData("0")]
+    [InlineData(" ")]
+    public async Task GetScheduleInvalidTravelModeReturnsBadRequest(string mode)
+    {
+        Mock<FringeRepository> mockRepo = BuildMockRepo(); // no setups: rejected before any repo access
+        ScheduleController controller = BuildController(mockRepo);
+
+        ActionResult<ScheduleResponseDto> result = await controller.GetSchedule(mode).ConfigureAwait(true);
+
+        _ = Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task GetScheduleOmittedTravelModeDefaultsToWalkingAndIsReflectedInResponse()
+    {
+        Mock<FringeRepository> mockRepo = BuildMockRepo();
+        SetupUserInGroup(mockRepo);
+        _ = mockRepo.Setup(r => r.GetGroupMembersAsync("grp1")).ReturnsAsync([MakeMember(userId)]);
+        _ = mockRepo.Setup(r => r.GetVotesForUserAsync(userId)).ReturnsAsync([]);
+        _ = mockRepo.Setup(r => r.GetAvailabilityAsync(userId)).ReturnsAsync((UserAvailabilityRecord?)null);
+        ScheduleController controller = BuildController(mockRepo);
+
+        ActionResult<ScheduleResponseDto> result = await controller.GetSchedule().ConfigureAwait(true);
+
+        OkObjectResult ok = Assert.IsType<OkObjectResult>(result.Result);
+        ScheduleResponseDto dto = Assert.IsType<ScheduleResponseDto>(ok.Value);
+        Assert.Equal("walking", dto.TravelMode);
+    }
+
+    [Theory]
+    [InlineData("cycling", "cycling")]
+    [InlineData("Driving", "driving")]
+    [InlineData("WALKING", "walking")]
+    public async Task GetScheduleExplicitTravelModeIsCaseInsensitiveAndReflectedInResponse(string requested, string expected)
+    {
+        Mock<FringeRepository> mockRepo = BuildMockRepo();
+        SetupUserInGroup(mockRepo);
+        _ = mockRepo.Setup(r => r.GetGroupMembersAsync("grp1")).ReturnsAsync([MakeMember(userId)]);
+        _ = mockRepo.Setup(r => r.GetVotesForUserAsync(userId)).ReturnsAsync([]);
+        _ = mockRepo.Setup(r => r.GetAvailabilityAsync(userId)).ReturnsAsync((UserAvailabilityRecord?)null);
+        ScheduleController controller = BuildController(mockRepo);
+
+        ActionResult<ScheduleResponseDto> result = await controller.GetSchedule(requested).ConfigureAwait(true);
+
+        OkObjectResult ok = Assert.IsType<OkObjectResult>(result.Result);
+        ScheduleResponseDto dto = Assert.IsType<ScheduleResponseDto>(ok.Value);
+        Assert.Equal(expected, dto.TravelMode);
     }
 
     // ── Single member, no availability constraints ─────────────────────────────
@@ -464,7 +579,7 @@ public sealed class ScheduleControllerTests
             DisplayName = "U1",
             GroupId = "grp1"
         });
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -515,7 +630,7 @@ public sealed class ScheduleControllerTests
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(1)).ReturnsAsync(
             [MakeShowTime(1, "2025-07-15T10:00:00Z")]);
 
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -578,7 +693,7 @@ public sealed class ScheduleControllerTests
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(2)).ReturnsAsync([MakeShowTime(2, "2025-07-15T12:00:00Z")]);
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(3)).ReturnsAsync([MakeShowTime(3, "2025-07-15T14:00:00Z")]);
 
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -646,7 +761,7 @@ public sealed class ScheduleControllerTests
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(2)).ReturnsAsync(
             [MakeShowTime(2, "2025-07-15T15:00:00Z")]);
 
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -695,7 +810,7 @@ public sealed class ScheduleControllerTests
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(1)).ReturnsAsync(
             [MakeShowTime(1, "2025-07-15T10:00:00Z")]);
 
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -756,7 +871,7 @@ public sealed class ScheduleControllerTests
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(2)).ReturnsAsync([MakeShowTime(2, "2025-07-15T14:00:00Z")]);
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(3)).ReturnsAsync([MakeShowTime(3, "2025-07-15T20:00:00Z")]);
 
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -867,7 +982,7 @@ public sealed class ScheduleControllerTests
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(1)).ReturnsAsync(
             [MakeShowTime(1, "2025-07-15T10:00:00Z")]);
 
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -930,7 +1045,7 @@ public sealed class ScheduleControllerTests
             MakeShowTime(2, "2025-07-15T13:00:00Z"),  // Bob unavailable
         ]);
 
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -978,6 +1093,196 @@ public sealed class ScheduleControllerTests
         OkObjectResult ok = Assert.IsType<OkObjectResult>(result.Result);
         ScheduleResponseDto dto = Assert.IsType<ScheduleResponseDto>(ok.Value);
         Assert.DoesNotContain(dto.MissedShows, m => m.Show.Title == "Unvoted Show");
+    }
+
+    // ── Transfer conflict diagnostics (FA-35) ───────────────────────────────────
+
+    [Fact]
+    public async Task GetScheduleMissedShowTransferConflictPopulatedWithVenuePairAndGaps()
+    {
+        Mock<FringeRepository> mockRepo = BuildMockRepo();
+        SetupUserInGroup(mockRepo);
+        _ = mockRepo.Setup(r => r.GetGroupMembersAsync("grp1")).ReturnsAsync([MakeMember(userId)]);
+        _ = mockRepo.Setup(r => r.GetVotesForUserAsync(userId)).ReturnsAsync(
+        [
+            MakeVote(userId, 1, 1),
+            MakeVote(userId, 2, 2),
+        ]);
+        _ = mockRepo.Setup(r => r.GetAvailabilityAsync(userId)).ReturnsAsync((UserAvailabilityRecord?)null);
+
+        // Show 1 (venue 10) ends 10:00. Show 2 (venue 20) starts 10:15 — a 15 minute gap, no raw
+        // overlap — but the fake provider requires 45 minutes for venue 10 -> venue 20.
+        _ = mockRepo.Setup(r => r.GetAllShowsAsync()).ReturnsAsync(
+        [
+            MakeShowWithVenue(1, "A", 10, "Venue Ten", 60),
+            MakeShowWithVenue(2, "B", 20, "Venue Twenty", 60),
+        ]);
+        _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(1)).ReturnsAsync([MakeShowTime(1, "2025-07-15T09:00:00Z")]);
+        _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(2)).ReturnsAsync([MakeShowTime(2, "2025-07-15T10:15:00Z")]);
+
+        IVenueTransferTimeProvider provider = TransferProviderWithOverride(
+            10, 20, TravelMode.Walking, TimeSpan.FromMinutes(45), TransferRuleApplied.Matrix);
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(provider))
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity([new Claim("sub", userId)], "test"))
+                }
+            }
+        };
+
+        ActionResult<ScheduleResponseDto> result = await controller.GetSchedule().ConfigureAwait(true);
+
+        OkObjectResult ok = Assert.IsType<OkObjectResult>(result.Result);
+        ScheduleResponseDto dto = Assert.IsType<ScheduleResponseDto>(ok.Value);
+        _ = Assert.Single(dto.Items);
+        _ = Assert.Single(dto.MissedShows);
+        MissedShowDto missed = dto.MissedShows[0];
+        Assert.False(missed.ConflictsWithScheduled);
+        Assert.Empty(missed.BlockedByMembers);
+        TransferConflictDto? conflict = missed.TransferConflict;
+        Assert.NotNull(conflict);
+        Assert.Equal("Venue Ten", conflict.OriginVenueName);
+        Assert.Equal("Venue Twenty", conflict.DestinationVenueName);
+        Assert.Equal("A", conflict.OriginShowTitle);
+        Assert.Equal("B", conflict.DestinationShowTitle);
+        Assert.Equal(15, conflict.AvailableGapMinutes);
+        Assert.Equal(45, conflict.RequiredGapMinutes);
+        Assert.Equal("walking", conflict.TravelMode);
+        Assert.Equal("matrix", conflict.AppliedRule);
+    }
+
+    [Fact]
+    public async Task GetScheduleMissedShowTimeConflictTakesPrecedenceOverTransferDiagnostics()
+    {
+        Mock<FringeRepository> mockRepo = BuildMockRepo();
+        SetupUserInGroup(mockRepo);
+        _ = mockRepo.Setup(r => r.GetGroupMembersAsync("grp1")).ReturnsAsync([MakeMember(userId)]);
+        _ = mockRepo.Setup(r => r.GetVotesForUserAsync(userId)).ReturnsAsync(
+        [
+            MakeVote(userId, 1, 1),
+            MakeVote(userId, 2, 2),
+        ]);
+        _ = mockRepo.Setup(r => r.GetAvailabilityAsync(userId)).ReturnsAsync((UserAvailabilityRecord?)null);
+
+        // Show 2 raw-overlaps show 1 in time — the transfer check must never even run for it.
+        _ = mockRepo.Setup(r => r.GetAllShowsAsync()).ReturnsAsync(
+        [
+            MakeShowWithVenue(1, "A", 10, "Venue Ten", 60),
+            MakeShowWithVenue(2, "B", 20, "Venue Twenty", 60),
+        ]);
+        _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(1)).ReturnsAsync([MakeShowTime(1, "2025-07-15T09:00:00Z")]);
+        _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(2)).ReturnsAsync([MakeShowTime(2, "2025-07-15T09:30:00Z")]);
+
+        // Strict with no setups: any call proves the transfer check ran when it must not have.
+        var strictProvider = new Mock<IVenueTransferTimeProvider>(MockBehavior.Strict);
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(strictProvider.Object))
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity([new Claim("sub", userId)], "test"))
+                }
+            }
+        };
+
+        ActionResult<ScheduleResponseDto> result = await controller.GetSchedule().ConfigureAwait(true);
+
+        OkObjectResult ok = Assert.IsType<OkObjectResult>(result.Result);
+        ScheduleResponseDto dto = Assert.IsType<ScheduleResponseDto>(ok.Value);
+        _ = Assert.Single(dto.MissedShows);
+        Assert.True(dto.MissedShows[0].ConflictsWithScheduled);
+        Assert.Null(dto.MissedShows[0].TransferConflict);
+    }
+
+    [Fact]
+    public async Task GetScheduleMissedShowAvailabilityBlockTakesPrecedenceOverTransferDiagnostics()
+    {
+        Mock<FringeRepository> mockRepo = BuildMockRepo();
+        List<GroupMemberRecord> members =
+        [
+            MakeMember("u1", "Alice"),
+            MakeMember("u2", "Bob")
+        ];
+        _ = mockRepo.Setup(r => r.GetUserAsync("u1")).ReturnsAsync(new UserRecord
+        {
+            Pk = "USER#u1",
+            Email = "u1@test.com",
+            DisplayName = "Alice",
+            GroupId = "grp1"
+        });
+        _ = mockRepo.Setup(r => r.GetGroupMembersAsync("grp1")).ReturnsAsync(members);
+        _ = mockRepo.Setup(r => r.GetVotesForUserAsync("u1")).ReturnsAsync([MakeVote("u1", 1, 1)]);
+        _ = mockRepo.Setup(r => r.GetVotesForUserAsync("u2")).ReturnsAsync([]);
+
+        _ = mockRepo.Setup(r => r.GetAvailabilityAsync("u1")).ReturnsAsync(
+            MakeAvailability("u1", ("2025-07-15T09:00:00Z", "2025-07-15T20:00:00Z")));
+        // Bob is never free during the show — an availability block, not a transfer conflict.
+        _ = mockRepo.Setup(r => r.GetAvailabilityAsync("u2")).ReturnsAsync(
+            MakeAvailability("u2", ("2025-07-15T14:00:00Z", "2025-07-15T20:00:00Z")));
+
+        _ = mockRepo.Setup(r => r.GetAllShowsAsync()).ReturnsAsync(
+            [MakeShowWithVenue(1, "Morning Show", 10, "Venue Ten", 60)]);
+        _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(1)).ReturnsAsync(
+            [MakeShowTime(1, "2025-07-15T10:00:00Z")]);
+
+        // Strict with no setups: any call proves the transfer check ran when it must not have —
+        // there's only one voted show, so there are no booked neighbours to check against anyway,
+        // but this also guards against a future regression that checks transfer feasibility before
+        // availability.
+        var strictProvider = new Mock<IVenueTransferTimeProvider>(MockBehavior.Strict);
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(strictProvider.Object))
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity([new Claim("sub", "u1")], "test"))
+                }
+            }
+        };
+
+        ActionResult<ScheduleResponseDto> result = await controller.GetSchedule().ConfigureAwait(true);
+
+        OkObjectResult ok = Assert.IsType<OkObjectResult>(result.Result);
+        ScheduleResponseDto dto = Assert.IsType<ScheduleResponseDto>(ok.Value);
+        _ = Assert.Single(dto.MissedShows);
+        Assert.Contains("Bob", dto.MissedShows[0].BlockedByMembers);
+        Assert.Null(dto.MissedShows[0].TransferConflict);
+    }
+
+    [Fact]
+    public async Task GetScheduleMissedShowWithNoTransferConflictHasNullTransferConflict()
+    {
+        Mock<FringeRepository> mockRepo = BuildMockRepo();
+        SetupUserInGroup(mockRepo);
+        _ = mockRepo.Setup(r => r.GetGroupMembersAsync("grp1")).ReturnsAsync([MakeMember(userId)]);
+        _ = mockRepo.Setup(r => r.GetVotesForUserAsync(userId)).ReturnsAsync(
+        [
+            MakeVote(userId, 1, 1),
+            MakeVote(userId, 2, 2),
+        ]);
+        _ = mockRepo.Setup(r => r.GetAvailabilityAsync(userId)).ReturnsAsync((UserAvailabilityRecord?)null);
+
+        // Raw time conflict, same venue for both shows — feasible transfer isn't even the reason.
+        _ = mockRepo.Setup(r => r.GetAllShowsAsync()).ReturnsAsync(
+        [
+            MakeShowWithVenue(1, "A", 10, "Venue Ten", 60),
+            MakeShowWithVenue(2, "B", 10, "Venue Ten", 60),
+        ]);
+        _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(1)).ReturnsAsync([MakeShowTime(1, "2025-07-15T10:00:00Z")]);
+        _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(2)).ReturnsAsync([MakeShowTime(2, "2025-07-15T10:00:00Z")]);
+        ScheduleController controller = BuildController(mockRepo);
+
+        ActionResult<ScheduleResponseDto> result = await controller.GetSchedule().ConfigureAwait(true);
+
+        OkObjectResult ok = Assert.IsType<OkObjectResult>(result.Result);
+        ScheduleResponseDto dto = Assert.IsType<ScheduleResponseDto>(ok.Value);
+        _ = Assert.Single(dto.MissedShows);
+        Assert.Null(dto.MissedShows[0].TransferConflict);
     }
 
     // ── GroupScore in schedule items ──────────────────────────────────────────

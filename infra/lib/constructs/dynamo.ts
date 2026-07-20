@@ -22,6 +22,7 @@ export class FringeDynamo extends Construct {
       ],
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
       removalPolicy: cdk.RemovalPolicy.RETAIN,
+      timeToLiveAttribute: "ttl",
     });
   }
 }

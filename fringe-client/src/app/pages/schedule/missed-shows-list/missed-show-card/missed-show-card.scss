@@ -1,0 +1,44 @@
+.missed-card {
+  background: var(--surface-card);
+  border: 1.5px solid var(--border-3);
+  border-radius: 0.625rem;
+  padding: 0.7rem 0.875rem;
+  transition: border-color 0.15s;
+
+  &.has-reason {
+    border-color: rgba(239, 68, 68, 0.45);
+  }
+}
+
+.missed-header {
+  display: flex;
+  align-items: center;
+}
+
+.missed-title {
+  font-size: 0.875rem;
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+.missed-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+}
+
+.missed-details {
+  margin-top: 0.5rem;
+}
+
+.missed-line {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-4);
+  line-height: 1.5;
+
+  & + & {
+    margin-top: 0.15rem;
+  }
+}

@@ -1,0 +1,30 @@
+<div class="missed-card" [class.has-reason]="primaryReason()">
+  <div class="missed-header">
+    <span class="missed-title">{{ show().title }}</span>
+  </div>
+  <div class="missed-tags">
+    <fg-missed-show-tags
+      [conflictsWithScheduled]="conflictsWithScheduled()"
+      [blockedByMembers]="blockedByMembers()"
+      [hasTransferConflict]="!!transferConflict()"
+    />
+  </div>
+
+  @if (primaryReason()) {
+    <div class="missed-details">
+      @if (conflictsWithScheduled()) {
+        <p i18n="@@schedule.missed.conflict-detail" class="missed-line">
+          Overlaps with a show already in your schedule.
+        </p>
+      }
+      @for (name of blockedByMembers(); track name) {
+        <p i18n="@@schedule.missed.blocked-detail" class="missed-line">
+          {{ name }} isn't available for any of this show's times.
+        </p>
+      }
+      @if (transferConflict(); as conflict) {
+        <fg-transfer-conflict-detail [conflict]="conflict" />
+      }
+    </div>
+  }
+</div>

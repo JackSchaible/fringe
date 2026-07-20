@@ -2,10 +2,10 @@ import { Component, input, model, output } from '@angular/core';
 import {
   faArrowLeft,
   faArrowRightToBracket,
-} from '@fortawesome/pro-solid-svg-icons';
+} from '../../../vendor/fontawesome-icons/solid';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
-import { faKey } from '@fortawesome/pro-regular-svg-icons';
+import { faKey } from '../../../vendor/fontawesome-icons/regular';
 
 @Component({
   imports: [FormsModule, FaIconComponent],

@@ -1,0 +1,37 @@
+.travel-mode-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-2);
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.mode-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: var(--text-4);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+
+  &:hover {
+    color: var(--text-2);
+  }
+
+  &.active {
+    background: var(--surface-accent);
+    color: var(--accent-light);
+  }
+}

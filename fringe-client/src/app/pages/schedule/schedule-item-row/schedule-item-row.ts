@@ -1,9 +1,12 @@
 import { Component, computed, input } from '@angular/core';
 import { DatePipe, NgOptimizedImage } from '@angular/common';
-import { faClock, faLocationDot } from '@fortawesome/pro-light-svg-icons';
+import {
+  faClock,
+  faLocationDot,
+} from '../../../vendor/fontawesome-icons/light';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import type { ScheduleItem } from '../../../models';
-import { faArrowUpRightFromSquare } from '@fortawesome/pro-solid-svg-icons';
+import { faArrowUpRightFromSquare } from '../../../vendor/fontawesome-icons/solid';
 import { venueDisplayName } from '../../../venue-display';
 
 const fringeUrl = (showId: number): string =>

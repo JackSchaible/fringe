@@ -1,3 +1,9 @@
+import {
+  ActivatedRoute,
+  Router,
+  convertToParamMap,
+  provideRouter,
+} from '@angular/router';
 import type {
   AlternateProposal,
   MissedShow,
@@ -9,7 +15,6 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { SchedulePage } from './schedule';
-import { provideRouter } from '@angular/router';
 import { provideZonelessChangeDetection } from '@angular/core';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -49,6 +54,7 @@ const show1: Show = {
     blockedByMembers: ['Bob'],
     conflictsWithScheduled: true,
     show: show2,
+    transferConflict: null,
   },
   FIRST_PROPOSAL = 0,
   OUT_OF_BOUNDS_INDEX = 99,
@@ -58,14 +64,17 @@ const show1: Show = {
       hasVotes: true,
       items: [item1],
       missedShows: [missedShow1],
+      travelMode: 'walking',
     },
   ): jasmine.SpyObj<ApiService> => {
     const spy = jasmine.createSpyObj<ApiService>('ApiService', ['getSchedule']);
     spy.getSchedule.and.returnValue(of(scheduleResponse));
     return spy;
   },
+  navigateSpies = new WeakMap<ComponentFixture<SchedulePage>, jasmine.Spy>(),
   buildComponent = async (
     api: jasmine.SpyObj<ApiService>,
+    queryParams: Readonly<Record<string, string>> = {},
   ): Promise<ComponentFixture<SchedulePage>> => {
     TestBed.configureTestingModule({
       imports: [SchedulePage],
@@ -73,10 +82,20 @@ const show1: Show = {
         provideZonelessChangeDetection(),
         provideRouter([]),
         { provide: ApiService, useValue: api },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { queryParamMap: convertToParamMap(queryParams) },
+          },
+        },
       ],
     });
     await TestBed.compileComponents();
-    const fixture = TestBed.createComponent(SchedulePage);
+    const fixture = TestBed.createComponent(SchedulePage),
+      navigateSpy = spyOn(TestBed.inject(Router), 'navigate').and.returnValue(
+        Promise.resolve(true),
+      );
+    navigateSpies.set(fixture, navigateSpy);
     fixture.detectChanges();
     return fixture;
   };
@@ -162,6 +181,7 @@ describe('SchedulePage activeSchedule', () => {
         hasVotes: true,
         items: [item1],
         missedShows: [],
+        travelMode: 'walking',
       }),
     );
 
@@ -197,5 +217,71 @@ describe('SchedulePage resetToMain', () => {
     component.acceptProposal(FIRST_PROPOSAL);
     component.resetToMain();
     expect(component.activeProposalIndex()).toBeNull();
+  });
+});
+
+describe('SchedulePage initial travel mode', () => {
+  it('defaults to walking when no mode query param is present', async () => {
+    const apiSpy = makeApiSpy();
+    await buildComponent(apiSpy);
+    expect(apiSpy.getSchedule).toHaveBeenCalledWith('walking');
+  });
+
+  it('reads the mode from the query params when present', async () => {
+    const apiSpy = makeApiSpy({
+      alternateProposals: [],
+      hasVotes: true,
+      items: [item1],
+      missedShows: [],
+      travelMode: 'cycling',
+    });
+    await buildComponent(apiSpy, { mode: 'cycling' });
+    expect(apiSpy.getSchedule).toHaveBeenCalledWith('cycling');
+  });
+
+  it('falls back to walking for an unrecognized mode query param', async () => {
+    const apiSpy = makeApiSpy();
+    await buildComponent(apiSpy, { mode: 'teleporting' });
+    expect(apiSpy.getSchedule).toHaveBeenCalledWith('walking');
+  });
+
+  it('reflects the mode confirmed by the response', async () => {
+    const apiSpy = makeApiSpy({
+      alternateProposals: [],
+      hasVotes: true,
+      items: [item1],
+      missedShows: [],
+      travelMode: 'cycling',
+    });
+    const { componentInstance: component } = await buildComponent(apiSpy, {
+      mode: 'cycling',
+    });
+    expect(component.travelMode()).toBe('cycling');
+  });
+});
+
+describe('SchedulePage setTravelMode', () => {
+  it('refetches the schedule with the new mode', async () => {
+    const apiSpy = makeApiSpy();
+    const { componentInstance: component } = await buildComponent(apiSpy);
+    component.setTravelMode('driving');
+    expect(apiSpy.getSchedule).toHaveBeenCalledWith('driving');
+  });
+
+  it('updates the router query params', async () => {
+    const apiSpy = makeApiSpy(),
+      fixture = await buildComponent(apiSpy),
+      navigateSpy = navigateSpies.get(fixture);
+    navigateSpy?.calls.reset();
+    fixture.componentInstance.setTravelMode('driving');
+    expect(navigateSpy).toHaveBeenCalled();
+  });
+
+  it('does nothing when the requested mode already matches the current mode', async () => {
+    const apiSpy = makeApiSpy();
+    const { componentInstance: component } = await buildComponent(apiSpy);
+    apiSpy.getSchedule.calls.reset();
+    component.setTravelMode('walking');
+    expect(apiSpy.getSchedule).not.toHaveBeenCalled();
   });
 });

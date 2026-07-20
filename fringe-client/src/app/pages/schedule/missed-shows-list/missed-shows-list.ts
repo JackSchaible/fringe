@@ -1,20 +1,14 @@
 import { Component, input } from '@angular/core';
-import type { Show } from '../../../models';
+import type { MissedShow } from '../../../models';
+import { MissedShowCardComponent } from './missed-show-card/missed-show-card';
 
 @Component({
-  imports: [],
+  imports: [MissedShowCardComponent],
   selector: 'fg-missed-shows-list',
   styleUrl: './missed-shows-list.scss',
   templateUrl: './missed-shows-list.html',
 })
 export class MissedShowsListComponent {
-  public readonly missedShows = input.required<
-    ReadonlyArray<
-      Readonly<{
-        show: Show;
-        conflictsWithScheduled: boolean;
-        blockedByMembers: ReadonlyArray<string>;
-      }>
-    >
-  >();
+  public readonly missedShows =
+    input.required<ReadonlyArray<Readonly<MissedShow>>>();
 }

@@ -1,6 +1,8 @@
 using System.Globalization;
+using Fringe.API.Services;
 using Fringe.Data;
 using Fringe.Data.DynamoRecords;
+using Fringe.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,12 +12,23 @@ namespace Fringe.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-internal sealed class ScheduleController(FringeRepository repo) : ControllerBase
+internal sealed class ScheduleController(FringeRepository repo, IScheduleBuilder scheduleBuilder) : ControllerBase
 {
     /// <summary>Returns the computed schedule for the current user's group.</summary>
+    /// <param name="mode">
+    /// The group travel mode to assume for every transfer check in this schedule — "walking",
+    /// "cycling", or "driving" (case-insensitive). Omitted or empty is treated as "walking".
+    /// The scheduler applies exactly one mode uniformly; it never mixes modes to find a faster
+    /// transition (FA-37).
+    /// </param>
     [HttpGet]
-    public async Task<ActionResult<ScheduleResponseDto>> GetSchedule()
+    public async Task<ActionResult<ScheduleResponseDto>> GetSchedule([FromQuery] string? mode = null)
     {
+        if (!TryParseTravelMode(mode, out TravelMode travelMode))
+        {
+            return BadRequest($"Invalid travel mode '{mode}'. Supported values: walking, cycling, driving.");
+        }
+
         string userId = GetUserId();
         UserRecord? user = await repo.GetUserAsync(userId).ConfigureAwait(false);
         if (user?.GroupId == null)
@@ -55,9 +68,11 @@ internal sealed class ScheduleController(FringeRepository repo) : ControllerBase
             }
         }
 
+        string travelModeString = TravelModeToApiString(travelMode);
+
         if (scores.Count == 0)
         {
-            return Ok(new ScheduleResponseDto([], [], [], HasVotes: false));
+            return Ok(new ScheduleResponseDto([], [], [], HasVotes: false, travelModeString));
         }
 
         List<ShowRecord> allShows = await repo.GetAllShowsAsync().ConfigureAwait(false);
@@ -77,7 +92,7 @@ internal sealed class ScheduleController(FringeRepository repo) : ControllerBase
 
         var memberNames = members.ToDictionary(m => m.UserId, m => (string?)(m.DisplayName ?? m.Email));
 
-        List<ScheduleItemDto> mainItems = BuildSchedule(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: null);
+        List<ScheduleItemDto> mainItems = await scheduleBuilder.BuildScheduleAsync(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: null, travelMode).ConfigureAwait(false);
 
         var proposals = new List<AlternateProposalDto>();
         foreach (GroupMemberRecord member in members)
@@ -87,7 +102,7 @@ internal sealed class ScheduleController(FringeRepository repo) : ControllerBase
                 continue;
             }
 
-            List<ScheduleItemDto> altItems = BuildSchedule(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: member.UserId);
+            List<ScheduleItemDto> altItems = await scheduleBuilder.BuildScheduleAsync(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: member.UserId, travelMode).ConfigureAwait(false);
             int extra = altItems.Count - mainItems.Count;
             if (extra <= 0)
             {
@@ -103,66 +118,41 @@ internal sealed class ScheduleController(FringeRepository repo) : ControllerBase
                 altItems));
         }
 
-        List<MissedShowDto> missedShows = ComputeMissedShows(votedShows, showTimesMap, mainItems, availabilityMap, memberNames);
+        List<MissedShowDto> missedShows = await ComputeMissedShowsAsync(votedShows, showTimesMap, mainItems, availabilityMap, memberNames, scheduleBuilder, travelMode).ConfigureAwait(false);
 
-        return Ok(new ScheduleResponseDto(mainItems, proposals, missedShows, HasVotes: true));
+        return Ok(new ScheduleResponseDto(mainItems, proposals, missedShows, HasVotes: true, travelModeString));
     }
 
-    private static List<ScheduleItemDto> BuildSchedule(
-        List<ShowRecord> votedShows,
-        Dictionary<int, List<string>> showTimesMap,
-        Dictionary<int, int> scores,
-        Dictionary<string, List<(DateTime Start, DateTime End)>> availabilityMap,
-        string? excludedUserId)
+    private static bool TryParseTravelMode(string? raw, out TravelMode mode)
     {
-        var schedule = new List<ScheduleItemDto>();
-        var bookedSlots = new List<(DateTime Start, DateTime End)>();
-
-        var effectiveAvailability = availabilityMap
-            .Where(kvp => kvp.Key != excludedUserId)
-            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-        foreach (ShowRecord show in votedShows)
+        if (string.IsNullOrEmpty(raw))
         {
-            if (!showTimesMap.TryGetValue(show.ShowId, out List<string>? times))
+            mode = TravelMode.Walking;
+            return true;
+        }
+
+        foreach (TravelMode candidate in Enum.GetValues<TravelMode>())
+        {
+            if (string.Equals(raw, candidate.ToString(), StringComparison.OrdinalIgnoreCase))
             {
-                continue;
-            }
-
-            foreach (string timeStr in times)
-            {
-                var start = DateTime.Parse(timeStr, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-                DateTime end = start.AddMinutes(show.LengthInMinutes);
-
-                bool conflicts = bookedSlots.Any(s => start < s.End && end > s.Start);
-                if (conflicts)
-                {
-                    continue;
-                }
-
-                if (!IsAvailableForAll(start, end, effectiveAvailability))
-                {
-                    continue;
-                }
-
-                schedule.Add(new ScheduleItemDto(ShowsController.ToDto(show, times), timeStr, scores[show.ShowId]));
-                bookedSlots.Add((start, end));
-                break;
+                mode = candidate;
+                return true;
             }
         }
 
-        return [.. schedule.OrderBy(s => s.ShowTime)];
+        mode = default;
+        return false;
     }
 
-    private static bool IsAvailableForAll(
-        DateTime start, DateTime end,
-        Dictionary<string, List<(DateTime Start, DateTime End)>> availabilityMap)
+    private static string TravelModeToApiString(TravelMode mode)
     {
-        return availabilityMap.All(kvp =>
+        return mode switch
         {
-            List<(DateTime Start, DateTime End)> windows = kvp.Value;
-            return windows.Count == 0 || windows.Any(w => w.Start <= start && w.End >= end);
-        });
+            TravelMode.Walking => "walking",
+            TravelMode.Cycling => "cycling",
+            TravelMode.Driving => "driving",
+            _ => "walking",
+        };
     }
 
     private static List<string> GetBlockingMembers(
@@ -179,18 +169,29 @@ internal sealed class ScheduleController(FringeRepository repo) : ControllerBase
             .Select(kvp => memberNames.GetValueOrDefault(kvp.Key) ?? kvp.Key)];
     }
 
-    private static List<MissedShowDto> ComputeMissedShows(
+    private const int unknownVenueNumber = -1;
+
+    private static async Task<List<MissedShowDto>> ComputeMissedShowsAsync(
         List<ShowRecord> votedShows,
         Dictionary<int, List<string>> showTimesMap,
         List<ScheduleItemDto> mainSchedule,
         Dictionary<string, List<(DateTime Start, DateTime End)>> availabilityMap,
-        Dictionary<string, string?> memberNames)
+        Dictionary<string, string?> memberNames,
+        IScheduleBuilder scheduleBuilder,
+        TravelMode travelMode)
     {
         var scheduledIds = mainSchedule.Select(i => i.Show.ShowId).ToHashSet();
-        List<(DateTime, DateTime)> bookedSlots = [..mainSchedule.Select(i =>
+
+        var venueNumberByShowId = votedShows
+            .ToDictionary(s => s.ShowId, s => s.Venue?.VenueNumber ?? unknownVenueNumber);
+        var venueNameByNumber = votedShows
+            .GroupBy(s => s.Venue?.VenueNumber ?? unknownVenueNumber)
+            .ToDictionary(g => g.Key, g => g.First().Venue?.Name);
+
+        List<(DateTime Start, DateTime End, int VenueNumber, string ShowTitle)> bookedSlots = [..mainSchedule.Select(i =>
         {
             var s = DateTime.Parse(i.ShowTime, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-            return (s, s.AddMinutes(i.Show.LengthInMinutes));
+            return (s, s.AddMinutes(i.Show.LengthInMinutes), venueNumberByShowId.GetValueOrDefault(i.Show.ShowId, unknownVenueNumber), i.Show.Title);
         })];
 
         var missed = new List<MissedShowDto>();
@@ -209,28 +210,76 @@ internal sealed class ScheduleController(FringeRepository repo) : ControllerBase
 
             bool conflictsWithScheduled = false;
             var allBlockers = new HashSet<string>();
+            TransferConflictDto? transferConflict = null;
+            int venueNumber = show.Venue?.VenueNumber ?? unknownVenueNumber;
 
             foreach (string timeStr in times)
             {
                 var start = DateTime.Parse(timeStr, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
                 DateTime end = start.AddMinutes(show.LengthInMinutes);
 
-                if (bookedSlots.Any(s => start < s.Item2 && end > s.Item1))
+                if (bookedSlots.Any(s => start < s.End && end > s.Start))
                 {
                     conflictsWithScheduled = true;
                     continue;
                 }
 
-                foreach (string blocker in GetBlockingMembers(start, end, availabilityMap, memberNames))
+                List<string> blockers = GetBlockingMembers(start, end, availabilityMap, memberNames);
+                foreach (string blocker in blockers)
                 {
                     _ = allBlockers.Add(blocker);
                 }
+
+                if (blockers.Count > 0 || transferConflict != null)
+                {
+                    continue;
+                }
+
+                TransferConflictDetail? detail = await scheduleBuilder
+                    .FindTransferConflictAsync(start, end, venueNumber, show.Title, bookedSlots, travelMode)
+                    .ConfigureAwait(false);
+                if (detail != null)
+                {
+                    transferConflict = ToTransferConflictDto(detail.Value, venueNameByNumber);
+                }
             }
 
-            missed.Add(new MissedShowDto(ShowsController.ToDto(show, times), conflictsWithScheduled, [.. allBlockers]));
+            missed.Add(new MissedShowDto(ShowsController.ToDto(show, times), conflictsWithScheduled, [.. allBlockers], transferConflict));
         }
 
         return missed;
+    }
+
+    private static TransferConflictDto ToTransferConflictDto(
+        TransferConflictDetail detail,
+        Dictionary<int, string?> venueNameByNumber)
+    {
+        return new TransferConflictDto(
+            venueNameByNumber.GetValueOrDefault(detail.OriginVenueNumber),
+            venueNameByNumber.GetValueOrDefault(detail.DestinationVenueNumber),
+            detail.OriginShowTitle,
+            detail.DestinationShowTitle,
+            RoundToMinutes(detail.AvailableGap),
+            RoundToMinutes(detail.RequiredGap),
+            TravelModeToApiString(detail.Mode),
+            TransferRuleAppliedToApiString(detail.AppliedRule));
+    }
+
+    private static int RoundToMinutes(TimeSpan span)
+    {
+        return (int)Math.Round(span.TotalMinutes, MidpointRounding.AwayFromZero);
+    }
+
+    private static string TransferRuleAppliedToApiString(TransferRuleApplied rule)
+    {
+        return rule switch
+        {
+            TransferRuleApplied.SameVenue => "same-venue",
+            TransferRuleApplied.DirectionalOverride => "override",
+            TransferRuleApplied.Matrix => "matrix",
+            TransferRuleApplied.MissingDataFallback => "fallback",
+            _ => "fallback",
+        };
     }
 
     private static List<(DateTime Start, DateTime End)> ParseWindows(IEnumerable<AvailabilityWindowData>? raw)

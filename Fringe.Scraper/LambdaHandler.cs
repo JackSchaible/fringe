@@ -2,6 +2,7 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.Lambda.Core;
 using Fringe.Data;
+using FringeScraper.Services;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -39,7 +40,12 @@ internal sealed class LambdaHandler : IDisposable
             return;
         }
 
+        string? openRouteServiceApiKey = Environment.GetEnvironmentVariable("OPENROUTESERVICE_API_KEY");
+        IGeocodingProvider? geocodingProvider = string.IsNullOrWhiteSpace(openRouteServiceApiKey)
+            ? null
+            : new OpenRouteServiceGeocodingProvider(openRouteServiceApiKey);
+
         context.Logger.LogInformation($"Fringe Scraper Lambda invoked. Table: {tableName}");
-        await ScraperRunner.RunAsync(repository).ConfigureAwait(false);
+        await ScraperRunner.RunAsync(repository, new Fetcher(), geocodingProvider).ConfigureAwait(false);
     }
 }

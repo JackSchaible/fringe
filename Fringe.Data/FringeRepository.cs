@@ -65,6 +65,254 @@ public class FringeRepository(IDynamoDBContext db)
           .GetRemainingAsync();
     }
 
+    // ── Venues ───────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Saves or updates a batch of canonical venues. Imports own only the festival-provided
+    /// fields (name, address, phone, postal code); a separate enrichment process owns
+    /// everything else on <see cref="VenueRecord"/> (e.g. <see cref="VenueRecord.Latitude"/>/
+    /// <see cref="VenueRecord.Longitude"/>). To avoid clobbering enrichment-owned attributes
+    /// via DynamoDB's whole-item PutItem semantics, an existing record is mutated in place
+    /// rather than replaced wholesale, and venues whose festival-owned fields are unchanged
+    /// are skipped entirely so shows changing doesn't cause churn on unrelated venues.
+    /// </summary>
+    public virtual async Task SaveVenuesAsync(IEnumerable<Venue> venues)
+    {
+        foreach (Venue venue in venues.DistinctBy(v => v.VenueNumber))
+        {
+            VenueRecord? existing = await GetVenueAsync(venue.VenueNumber).ConfigureAwait(false);
+            if (existing != null && !FestivalFieldsChanged(existing, venue))
+            {
+                continue;
+            }
+
+            VenueRecord record = existing ?? new VenueRecord
+            {
+                Pk = $"VENUE#{venue.VenueNumber}",
+                Sk = "METADATA",
+                EntityType = "VENUE"
+            };
+            record.VenueNumber = venue.VenueNumber;
+            record.Name = venue.Name;
+            record.Address = venue.Address;
+            record.Phone = venue.Phone;
+            record.PostalCode = venue.PostalCode;
+
+            await db.SaveAsync(record).ConfigureAwait(false);
+        }
+    }
+
+    private static bool FestivalFieldsChanged(VenueRecord existing, Venue venue)
+    {
+        return !string.Equals(existing.Name, venue.Name, StringComparison.Ordinal)
+            || !string.Equals(existing.Address, venue.Address, StringComparison.Ordinal)
+            || !string.Equals(existing.Phone, venue.Phone, StringComparison.Ordinal)
+            || !string.Equals(existing.PostalCode, venue.PostalCode, StringComparison.Ordinal);
+    }
+
+    /// <summary>Returns all venues from the entity-type GSI.</summary>
+    public virtual Task<List<VenueRecord>> GetAllVenuesAsync()
+    {
+        return db.FromQueryAsync<VenueRecord>(new QueryOperationConfig
+        {
+            IndexName = "entity-type-index",
+            KeyExpression = new Expression
+            {
+                ExpressionStatement = "entityType = :et",
+                ExpressionAttributeValues = { [":et"] = new Primitive("VENUE") }
+            }
+        }).GetRemainingAsync();
+    }
+
+    /// <summary>Returns a single venue by number, or <see langword="null"/> if not found.</summary>
+    public virtual async Task<VenueRecord?> GetVenueAsync(int venueNumber)
+    {
+        return await db.LoadAsync<VenueRecord>($"VENUE#{venueNumber}", "METADATA").ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// The <see cref="VenueRecord.CoordinateSource"/> value for a human-confirmed coordinate
+    /// override. Once set, automatic geocoding must never overwrite it.
+    /// </summary>
+    public const string ManualCoordinateSource = "Manual";
+
+    /// <summary>
+    /// Returns venues eligible for (re-)geocoding: those with no coordinates yet, and those
+    /// whose routing-relevant address fields (see <see cref="VenueAddressHasher"/>) have
+    /// changed since they were last geocoded. Venues with a manually confirmed coordinate
+    /// are never eligible, and an unchanged venue is never returned, so re-importing shows
+    /// or unrelated venue fields (name, phone) does not trigger geocoding.
+    /// </summary>
+    public virtual async Task<List<VenueRecord>> GetVenuesNeedingGeocodingAsync()
+    {
+        List<VenueRecord> venues = await GetAllVenuesAsync().ConfigureAwait(false);
+        return [.. venues.Where(NeedsGeocoding)];
+    }
+
+    private static bool NeedsGeocoding(VenueRecord venue)
+    {
+        if (string.Equals(venue.CoordinateSource, ManualCoordinateSource, StringComparison.Ordinal))
+        {
+            return false;
+        }
+        if (venue.Latitude == null || venue.Longitude == null)
+        {
+            return true;
+        }
+        string currentHash = VenueAddressHasher.ComputeHash(venue.VenueNumber, venue.Address, venue.PostalCode);
+        return !string.Equals(venue.AddressHash, currentHash, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Sets a venue's coordinates and marks them as sourced from <paramref name="coordinateSource"/>
+    /// (a geocoding provider name, or <see cref="ManualCoordinateSource"/> for a human override).
+    /// The address hash is recomputed from the venue's current address fields at save time, so it
+    /// always reflects what was actually geocoded. Returns <see langword="false"/> without writing
+    /// if the venue doesn't exist, or if it already carries a manual override and
+    /// <paramref name="coordinateSource"/> is not itself <see cref="ManualCoordinateSource"/> —
+    /// automatic geocoding must never overwrite a manually confirmed coordinate.
+    /// </summary>
+    public virtual async Task<bool> UpdateVenueCoordinatesAsync(int venueNumber, double latitude, double longitude, string coordinateSource, DateTime enrichedAt)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(coordinateSource);
+
+        VenueRecord? existing = await GetVenueAsync(venueNumber).ConfigureAwait(false);
+        if (existing == null)
+        {
+            return false;
+        }
+        if (string.Equals(existing.CoordinateSource, ManualCoordinateSource, StringComparison.Ordinal)
+            && !string.Equals(coordinateSource, ManualCoordinateSource, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        existing.Latitude = latitude;
+        existing.Longitude = longitude;
+        existing.AddressHash = VenueAddressHasher.ComputeHash(existing.VenueNumber, existing.Address, existing.PostalCode);
+        existing.CoordinateSource = coordinateSource;
+        existing.EnrichedAt = enrichedAt.ToString("O", CultureInfo.InvariantCulture);
+        await db.SaveAsync(existing).ConfigureAwait(false);
+        return true;
+    }
+
+    // ── Transfer Matrix ─────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Saves a fully validated transfer-matrix version's metadata and pair records under
+    /// <c>TRANSFER_MATRIX#&lt;inputHash&gt;</c>. Does not touch the active pointer — a version
+    /// only becomes visible to readers once <see cref="SetActiveTransferMatrixAsync"/> is called,
+    /// so a caller can validate before promoting without ever exposing partial data.
+    /// </summary>
+    public virtual async Task SaveTransferMatrixAsync(TransferMatrixVersion version)
+    {
+        ArgumentNullException.ThrowIfNull(version);
+        string pk = $"TRANSFER_MATRIX#{version.InputHash}";
+
+        await db.SaveAsync(new TransferMatrixMetadataRecord
+        {
+            Pk = pk,
+            Sk = "METADATA",
+            InputHash = version.InputHash,
+            VenueCount = version.VenueCount,
+            PairCount = version.Pairs.Count,
+            GeneratedAt = version.GeneratedAt.ToString("O", CultureInfo.InvariantCulture),
+            Source = version.Source
+        }).ConfigureAwait(false);
+
+        IBatchWrite<TransferMatrixPairRecord> batch = db.CreateBatchWrite<TransferMatrixPairRecord>();
+        foreach (TransferPair pair in version.Pairs)
+        {
+            batch.AddPutItem(new TransferMatrixPairRecord
+            {
+                Pk = pk,
+                Sk = $"FROM#{pair.FromVenueNumber}#TO#{pair.ToVenueNumber}",
+                FromVenueNumber = pair.FromVenueNumber,
+                ToVenueNumber = pair.ToVenueNumber,
+                WalkingDurationSeconds = pair.WalkingDurationSeconds,
+                WalkingDistanceMeters = pair.WalkingDistanceMeters,
+                CyclingDurationSeconds = pair.CyclingDurationSeconds,
+                CyclingDistanceMeters = pair.CyclingDistanceMeters,
+                DrivingDurationSeconds = pair.DrivingDurationSeconds,
+                DrivingDistanceMeters = pair.DrivingDistanceMeters,
+                Source = pair.Source
+            });
+        }
+        await batch.ExecuteAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Returns every directional pair for a matrix version in a single partition query — the
+    /// complete active matrix can always be loaded in one round trip.
+    /// </summary>
+    public virtual async Task<List<TransferMatrixPairRecord>> GetTransferMatrixPairsAsync(string inputHash)
+    {
+        List<TransferMatrixPairRecord> items = await db.FromQueryAsync<TransferMatrixPairRecord>(new QueryOperationConfig
+        {
+            KeyExpression = new Expression
+            {
+                ExpressionStatement = "pk = :pk",
+                ExpressionAttributeValues = { [":pk"] = new Primitive($"TRANSFER_MATRIX#{inputHash}") }
+            }
+        }).GetRemainingAsync().ConfigureAwait(false);
+
+        // The partition also contains one METADATA item, which deserializes into this type with
+        // default/garbage pair fields — excluded here so callers only ever see real pairs.
+        return [.. items.Where(i => i.Sk.StartsWith("FROM#", StringComparison.Ordinal))];
+    }
+
+    /// <summary>Returns a matrix version's metadata, or <see langword="null"/> if that version doesn't exist.</summary>
+    public virtual async Task<TransferMatrixMetadataRecord?> GetTransferMatrixMetadataAsync(string inputHash)
+    {
+        return await db.LoadAsync<TransferMatrixMetadataRecord>($"TRANSFER_MATRIX#{inputHash}", "METADATA").ConfigureAwait(false);
+    }
+
+    /// <summary>Returns the active transfer-matrix pointer, or <see langword="null"/> if no version has ever been published.</summary>
+    public virtual async Task<ActiveTransferMatrixRecord?> GetActiveTransferMatrixPointerAsync()
+    {
+        return await db.LoadAsync<ActiveTransferMatrixRecord>("CONFIG", "ACTIVE_TRANSFER_MATRIX").ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Publishes a matrix version as active. This is the entire "promotion" — a single item write —
+    /// and callers must only invoke it after <see cref="SaveTransferMatrixAsync"/> has fully
+    /// succeeded for that version, so a reader can never observe a partially written matrix as active.
+    /// </summary>
+    public virtual async Task SetActiveTransferMatrixAsync(string inputHash, DateTime promotedAt)
+    {
+        await db.SaveAsync(new ActiveTransferMatrixRecord
+        {
+            InputHash = inputHash,
+            PromotedAt = promotedAt.ToString("O", CultureInfo.InvariantCulture)
+        }).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Marks a superseded matrix version's metadata and pair records with a DynamoDB TTL so they
+    /// become eligible for automatic cleanup at <paramref name="expiresAt"/>, without deleting them
+    /// immediately — keeping a recently retired version around briefly is a cheap safety net.
+    /// </summary>
+    public virtual async Task MarkTransferMatrixStaleAsync(string inputHash, DateTime expiresAt)
+    {
+        long ttl = ((DateTimeOffset)DateTime.SpecifyKind(expiresAt, DateTimeKind.Utc)).ToUnixTimeSeconds();
+
+        TransferMatrixMetadataRecord? metadata = await GetTransferMatrixMetadataAsync(inputHash).ConfigureAwait(false);
+        if (metadata != null)
+        {
+            metadata.Ttl = ttl;
+            await db.SaveAsync(metadata).ConfigureAwait(false);
+        }
+
+        List<TransferMatrixPairRecord> pairs = await GetTransferMatrixPairsAsync(inputHash).ConfigureAwait(false);
+        IBatchWrite<TransferMatrixPairRecord> batch = db.CreateBatchWrite<TransferMatrixPairRecord>();
+        foreach (TransferMatrixPairRecord pair in pairs)
+        {
+            pair.Ttl = ttl;
+            batch.AddPutItem(pair);
+        }
+        await batch.ExecuteAsync().ConfigureAwait(false);
+    }
+
     // ── Votes ────────────────────────────────────────────────────────────────
 
     /// <summary>Creates or updates a vote for a show.</summary>

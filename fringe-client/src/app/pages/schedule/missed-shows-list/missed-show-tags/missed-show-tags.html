@@ -1,0 +1,15 @@
+@if (conflictsWithScheduled()) {
+  <span i18n="@@pages.schedule.schedule.14" class="missed-tag conflict"
+    >Timing conflict</span
+  >
+}
+@for (name of blockedByMembers(); track name) {
+  <span i18n="@@pages.schedule.schedule.15" class="missed-tag blocked"
+    >{{ name }}'s availability</span
+  >
+}
+@if (hasTransferConflict()) {
+  <span i18n="@@schedule.missed.transfer-tag" class="missed-tag transfer"
+    >Travel time</span
+  >
+}

@@ -11,14 +11,32 @@ internal record ScheduleResponseDto(
     IReadOnlyList<ScheduleItemDto> Items,
     IReadOnlyList<AlternateProposalDto> AlternateProposals,
     IReadOnlyList<MissedShowDto> MissedShows,
-    bool HasVotes
+    bool HasVotes,
+    string TravelMode
 );
 
 /// <summary>DTO for a show that could not be scheduled.</summary>
 internal record MissedShowDto(
     ShowDto Show,
     bool ConflictsWithScheduled,
-    IReadOnlyList<string> BlockedByMembers
+    IReadOnlyList<string> BlockedByMembers,
+    TransferConflictDto? TransferConflict
+);
+
+/// <summary>
+/// DTO for why a show was missed specifically because the group couldn't feasibly transfer
+/// between venues (FA-35) — a concise, storage-detail-free summary of the venue pair and timing
+/// that made a showtime infeasible, not a dump of the underlying matrix/override record.
+/// </summary>
+internal record TransferConflictDto(
+    string? OriginVenueName,
+    string? DestinationVenueName,
+    string OriginShowTitle,
+    string DestinationShowTitle,
+    int AvailableGapMinutes,
+    int RequiredGapMinutes,
+    string TravelMode,
+    string AppliedRule
 );
 
 /// <summary>DTO for an alternate schedule proposal that excludes one member's constraints.</summary>

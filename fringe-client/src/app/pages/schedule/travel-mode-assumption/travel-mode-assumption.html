@@ -1,0 +1,21 @@
+<p class="mode-assumption">
+  @switch (mode()) {
+    @case ('walking') {
+      <span i18n="@@schedule.assumption.walking"
+        >Schedule generated assuming the group travels by walking.</span
+      >
+    }
+    @case ('cycling') {
+      <span i18n="@@schedule.assumption.cycling"
+        >Schedule generated assuming the group travels by bicycle or
+        scooter.</span
+      >
+    }
+    @case ('driving') {
+      <span i18n="@@schedule.assumption.driving"
+        >Schedule generated assuming the group travels by car. Driving time
+        includes an estimate for parking and getting to the venue.</span
+      >
+    }
+  }
+</p>

@@ -1,6 +1,6 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
+import type { Show, TransferConflict } from '../../../models';
 import { MissedShowsListComponent } from './missed-shows-list';
-import type { Show } from '../../../models';
 import { getNativeElement } from '../../../../testing/native-element';
 import { provideZonelessChangeDetection } from '@angular/core';
 
@@ -14,12 +14,23 @@ const ONE_ITEM = 1,
     showTimes: ['2025-08-01T19:00:00Z'],
     title: 'Show One',
   },
+  namedConflict: TransferConflict = {
+    appliedRule: 'matrix',
+    availableGapMinutes: 15,
+    destinationShowTitle: 'Stand-Up Spectacular',
+    destinationVenueName: 'Venue Twenty',
+    originShowTitle: 'The Comedy Hour',
+    originVenueName: 'Venue Ten',
+    requiredGapMinutes: 45,
+    travelMode: 'walking',
+  },
   build = async (
     missedShows: ReadonlyArray<
       Readonly<{
         show: Show;
         conflictsWithScheduled: boolean;
         blockedByMembers: ReadonlyArray<string>;
+        transferConflict: Readonly<TransferConflict> | null;
       }>
     >,
   ): Promise<ComponentFixture<MissedShowsListComponent>> => {
@@ -42,18 +53,28 @@ describe('MissedShowsListComponent', () => {
     ).toBeNull();
   });
 
-  it('renders an item per missed show', async () => {
+  it('renders a card per missed show', async () => {
     const fixture = await build([
-      { blockedByMembers: [], conflictsWithScheduled: false, show: show1 },
+      {
+        blockedByMembers: [],
+        conflictsWithScheduled: false,
+        show: show1,
+        transferConflict: null,
+      },
     ]);
     expect(
-      getNativeElement(fixture).querySelectorAll('.missed-item').length,
+      getNativeElement(fixture).querySelectorAll('.missed-card').length,
     ).toBe(ONE_ITEM);
   });
 
   it('shows a conflict tag when conflictsWithScheduled is true', async () => {
     const fixture = await build([
-      { blockedByMembers: [], conflictsWithScheduled: true, show: show1 },
+      {
+        blockedByMembers: [],
+        conflictsWithScheduled: true,
+        show: show1,
+        transferConflict: null,
+      },
     ]);
     expect(
       getNativeElement(fixture).querySelector('.missed-tag.conflict'),
@@ -62,10 +83,50 @@ describe('MissedShowsListComponent', () => {
 
   it('shows a blocked tag per blocking member', async () => {
     const fixture = await build([
-      { blockedByMembers: ['Bob'], conflictsWithScheduled: false, show: show1 },
+      {
+        blockedByMembers: ['Bob'],
+        conflictsWithScheduled: false,
+        show: show1,
+        transferConflict: null,
+      },
     ]);
     expect(
       getNativeElement(fixture).querySelectorAll('.missed-tag.blocked').length,
     ).toBe(ONE_TAG);
+  });
+});
+
+describe('MissedShowsListComponent transfer conflict', () => {
+  it('does not render a transfer tag or detail when transferConflict is null', async () => {
+    const fixture = await build([
+      {
+        blockedByMembers: [],
+        conflictsWithScheduled: false,
+        show: show1,
+        transferConflict: null,
+      },
+    ]);
+    expect(
+      getNativeElement(fixture).querySelector('.missed-tag.transfer'),
+    ).toBeNull();
+    expect(
+      getNativeElement(fixture).querySelector('.missed-detail'),
+    ).toBeNull();
+  });
+
+  it('renders a compact transfer tag and a detail paragraph when transferConflict is set', async () => {
+    const fixture = await build([
+      {
+        blockedByMembers: [],
+        conflictsWithScheduled: false,
+        show: show1,
+        transferConflict: namedConflict,
+      },
+    ]);
+    const native = getNativeElement(fixture);
+    expect(native.querySelector('.missed-tag.transfer')).not.toBeNull();
+    const detail = native.querySelector('.missed-detail');
+    expect(detail?.textContent).toContain('Venue Ten');
+    expect(detail?.textContent).toContain('Venue Twenty');
   });
 });

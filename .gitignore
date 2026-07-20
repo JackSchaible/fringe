@@ -26,6 +26,7 @@ trust.json
 
 # Local scraper config (contains DynamoDB endpoint + festival dates)
 Fringe.Scraper/.env
+Fringe.TransferMatrix/.env
 
 # pnpm is used in fringe-client and infra; npm generated these alongside it
 fringe-client/package-lock.json

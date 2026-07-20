@@ -371,6 +371,417 @@ public sealed class FringeRepositoryTests
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // SaveVenuesAsync
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private static Venue MakeVenue(int venueNumber, string name = "Main Stage")
+    {
+        return new Venue
+        {
+            VenueNumber = venueNumber,
+            Name = name,
+            Address = "123 Street",
+            Phone = "555-0000",
+            PostalCode = "T0T 0T0"
+        };
+    }
+
+    [Fact]
+    public async Task SaveVenuesAsyncNewVenueSavesRecord()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        _ = mockDb.Setup(db => db.LoadAsync<VenueRecord>(It.IsAny<string>(), It.IsAny<string>(), default))
+                  .Returns(Task.FromResult<VenueRecord>(null!));
+        VenueRecord? saved = null;
+        _ = mockDb.Setup(db => db.SaveAsync(It.IsAny<VenueRecord>(), default))
+                  .Callback<VenueRecord, CancellationToken>((r, _) => saved = r)
+                  .Returns(Task.CompletedTask);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        await repo.SaveVenuesAsync([MakeVenue(1)]).ConfigureAwait(true);
+
+        Assert.NotNull(saved);
+        Assert.Equal("VENUE#1", saved!.Pk);
+        Assert.Equal("METADATA", saved.Sk);
+        Assert.Equal("VENUE", saved.EntityType);
+        Assert.Equal(1, saved.VenueNumber);
+        Assert.Equal("Main Stage", saved.Name);
+    }
+
+    [Fact]
+    public async Task SaveVenuesAsyncDuplicateVenueNumbersDeduplicatesBeforeSave()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        _ = mockDb.Setup(db => db.LoadAsync<VenueRecord>(It.IsAny<string>(), It.IsAny<string>(), default))
+                  .Returns(Task.FromResult<VenueRecord>(null!));
+        var savedRecords = new List<VenueRecord>();
+        _ = mockDb.Setup(db => db.SaveAsync(It.IsAny<VenueRecord>(), default))
+                  .Callback<VenueRecord, CancellationToken>((r, _) => savedRecords.Add(r))
+                  .Returns(Task.CompletedTask);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        await repo.SaveVenuesAsync([MakeVenue(1, "First"), MakeVenue(1, "Duplicate")]).ConfigureAwait(true);
+
+        _ = Assert.Single(savedRecords);
+        Assert.Equal("First", savedRecords[0].Name);
+    }
+
+    [Fact]
+    public async Task SaveVenuesAsyncNoExistingRecordEnrichmentFieldsAreNull()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        _ = mockDb.Setup(db => db.LoadAsync<VenueRecord>(It.IsAny<string>(), It.IsAny<string>(), default))
+                  .Returns(Task.FromResult<VenueRecord>(null!));
+        VenueRecord? saved = null;
+        _ = mockDb.Setup(db => db.SaveAsync(It.IsAny<VenueRecord>(), default))
+                  .Callback<VenueRecord, CancellationToken>((r, _) => saved = r)
+                  .Returns(Task.CompletedTask);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        await repo.SaveVenuesAsync([MakeVenue(1)]).ConfigureAwait(true);
+
+        Assert.Null(saved!.Latitude);
+        Assert.Null(saved.Longitude);
+    }
+
+    [Fact]
+    public async Task SaveVenuesAsyncExistingRecordPreservesEnrichmentFields()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        var existing = new VenueRecord
+        {
+            Pk = "VENUE#1",
+            VenueNumber = 1,
+            Name = "Old Name",
+            Address = "Old Address",
+            Phone = "000",
+            PostalCode = "T0T 0T0",
+            Latitude = 53.5461,
+            Longitude = -113.4938
+        };
+        _ = mockDb.Setup(db => db.LoadAsync<VenueRecord>("VENUE#1", "METADATA", default))
+                  .Returns(Task.FromResult(existing));
+        VenueRecord? saved = null;
+        _ = mockDb.Setup(db => db.SaveAsync(It.IsAny<VenueRecord>(), default))
+                  .Callback<VenueRecord, CancellationToken>((r, _) => saved = r)
+                  .Returns(Task.CompletedTask);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        await repo.SaveVenuesAsync([MakeVenue(1, "New Name")]).ConfigureAwait(true);
+
+        Assert.NotNull(saved);
+        Assert.Equal("New Name", saved!.Name);
+        Assert.Equal(53.5461, saved.Latitude);
+        Assert.Equal(-113.4938, saved.Longitude);
+    }
+
+    [Fact]
+    public async Task SaveVenuesAsyncUnchangedFestivalFieldsSkipsWrite()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        var existing = new VenueRecord
+        {
+            Pk = "VENUE#1",
+            VenueNumber = 1,
+            Name = "Main Stage",
+            Address = "123 Street",
+            Phone = "555-0000",
+            PostalCode = "T0T 0T0",
+            Latitude = 53.5461,
+            Longitude = -113.4938
+        };
+        _ = mockDb.Setup(db => db.LoadAsync<VenueRecord>("VENUE#1", "METADATA", default))
+                  .Returns(Task.FromResult(existing));
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        // Same festival-owned fields as `existing` — simulates a show changing while its venue does not.
+        await repo.SaveVenuesAsync([MakeVenue(1)]).ConfigureAwait(true);
+
+        mockDb.Verify(db => db.SaveAsync(It.IsAny<VenueRecord>(), default), Times.Never);
+    }
+
+    [Fact]
+    public async Task SaveVenuesAsyncChangedFestivalFieldSavesUpdatedRecordAndPreservesEnrichment()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        var existing = new VenueRecord
+        {
+            Pk = "VENUE#1",
+            VenueNumber = 1,
+            Name = "Main Stage",
+            Address = "Old Address",
+            Phone = "555-0000",
+            PostalCode = "T0T 0T0",
+            Latitude = 53.5461,
+            Longitude = -113.4938
+        };
+        _ = mockDb.Setup(db => db.LoadAsync<VenueRecord>("VENUE#1", "METADATA", default))
+                  .Returns(Task.FromResult(existing));
+        VenueRecord? saved = null;
+        _ = mockDb.Setup(db => db.SaveAsync(It.IsAny<VenueRecord>(), default))
+                  .Callback<VenueRecord, CancellationToken>((r, _) => saved = r)
+                  .Returns(Task.CompletedTask);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        Venue venue = MakeVenue(1);
+        venue.Address = "New Address";
+        await repo.SaveVenuesAsync([venue]).ConfigureAwait(true);
+
+        mockDb.Verify(db => db.SaveAsync(It.IsAny<VenueRecord>(), default), Times.Once);
+        Assert.NotNull(saved);
+        Assert.Equal("New Address", saved!.Address);
+        Assert.Equal(53.5461, saved.Latitude);
+        Assert.Equal(-113.4938, saved.Longitude);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GetVenueAsync
+    // ─────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetVenueAsyncExistingVenueReturnsRecord()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        var record = new VenueRecord { Pk = "VENUE#1", VenueNumber = 1, Name = "Main Stage", Address = "", Phone = "", PostalCode = "" };
+        _ = mockDb.Setup(db => db.LoadAsync<VenueRecord>("VENUE#1", "METADATA", default))
+                  .Returns(Task.FromResult(record));
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        VenueRecord? result = await repo.GetVenueAsync(1).ConfigureAwait(true);
+
+        Assert.NotNull(result);
+        Assert.Equal(1, result!.VenueNumber);
+    }
+
+    [Fact]
+    public async Task GetVenueAsyncNonExistentVenueReturnsNull()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        _ = mockDb.Setup(db => db.LoadAsync<VenueRecord>(It.IsAny<string>(), It.IsAny<string>(), default))
+                  .Returns(Task.FromResult<VenueRecord>(null!));
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        VenueRecord? result = await repo.GetVenueAsync(999).ConfigureAwait(true);
+
+        Assert.Null(result);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GetAllVenuesAsync
+    // ─────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetAllVenuesAsyncReturnsAllVenues()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        var venues = new List<VenueRecord>
+        {
+            new() { Pk = "VENUE#1", VenueNumber = 1, Name = "A", Address = "", Phone = "", PostalCode = "" },
+            new() { Pk = "VENUE#2", VenueNumber = 2, Name = "B", Address = "", Phone = "", PostalCode = "" },
+        };
+        _ = SetupSearch(mockDb, venues, viaFromQuery: true);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        List<VenueRecord> result = await repo.GetAllVenuesAsync().ConfigureAwait(true);
+
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
+    public async Task GetAllVenuesAsyncQueriesEntityTypeIndex()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        QueryOperationConfig? capturedConfig = null;
+        var mockSearch = new Mock<IAsyncSearch<VenueRecord>>();
+        _ = mockSearch.Setup(s => s.GetRemainingAsync(default)).ReturnsAsync([]);
+        _ = mockDb.Setup(db => db.FromQueryAsync<VenueRecord>(It.IsAny<QueryOperationConfig>()))
+                  .Callback<QueryOperationConfig>(cfg => capturedConfig = cfg)
+                  .Returns(mockSearch.Object);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        _ = await repo.GetAllVenuesAsync().ConfigureAwait(true);
+
+        Assert.NotNull(capturedConfig);
+        Assert.Equal("entity-type-index", capturedConfig!.IndexName);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GetVenuesNeedingGeocodingAsync
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private static VenueRecord MakeVenueRecord(int venueNumber, string address = "123 Street", string postalCode = "T0T 0T0",
+        string name = "Main Stage", string phone = "555-0000", double? latitude = null, double? longitude = null,
+        string? coordinateSource = null, bool matchingHash = true)
+    {
+        return new VenueRecord
+        {
+            Pk = $"VENUE#{venueNumber}",
+            VenueNumber = venueNumber,
+            Name = name,
+            Address = address,
+            Phone = phone,
+            PostalCode = postalCode,
+            Latitude = latitude,
+            Longitude = longitude,
+            CoordinateSource = coordinateSource,
+            AddressHash = matchingHash ? VenueAddressHasher.ComputeHash(venueNumber, address, postalCode) : "stale-hash"
+        };
+    }
+
+    [Fact]
+    public async Task GetVenuesNeedingGeocodingAsyncNoCoordinatesIsEligible()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        VenueRecord venue = MakeVenueRecord(1, latitude: null, longitude: null);
+        _ = SetupSearch(mockDb, [venue], viaFromQuery: true);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        List<VenueRecord> result = await repo.GetVenuesNeedingGeocodingAsync().ConfigureAwait(true);
+
+        _ = Assert.Single(result);
+    }
+
+    [Fact]
+    public async Task GetVenuesNeedingGeocodingAsyncUnchangedAddressHashIsNotEligible()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        VenueRecord venue = MakeVenueRecord(1, latitude: 53.5, longitude: -113.5, coordinateSource: "OpenRouteService", matchingHash: true);
+        _ = SetupSearch(mockDb, [venue], viaFromQuery: true);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        List<VenueRecord> result = await repo.GetVenuesNeedingGeocodingAsync().ConfigureAwait(true);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetVenuesNeedingGeocodingAsyncChangedAddressHashIsEligible()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        // AddressHash on the stored record doesn't match what Address/PostalCode hash to now —
+        // simulates the street address or postal code changing since the venue was last geocoded.
+        VenueRecord venue = MakeVenueRecord(1, latitude: 53.5, longitude: -113.5, coordinateSource: "OpenRouteService", matchingHash: false);
+        _ = SetupSearch(mockDb, [venue], viaFromQuery: true);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        List<VenueRecord> result = await repo.GetVenuesNeedingGeocodingAsync().ConfigureAwait(true);
+
+        _ = Assert.Single(result);
+    }
+
+    [Fact]
+    public async Task GetVenuesNeedingGeocodingAsyncNameOrPhoneChangeAloneDoesNotAffectEligibility()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        // Hash is computed from venue number + address + postal code only; Name/Phone here
+        // differ from what a fresh import would carry, but the hash still matches because
+        // MakeVenueRecord hashes off Address/PostalCode regardless of Name/Phone.
+        VenueRecord venue = MakeVenueRecord(1, name: "Renamed Venue", phone: "999-9999", latitude: 53.5, longitude: -113.5,
+            coordinateSource: "OpenRouteService", matchingHash: true);
+        _ = SetupSearch(mockDb, [venue], viaFromQuery: true);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        List<VenueRecord> result = await repo.GetVenuesNeedingGeocodingAsync().ConfigureAwait(true);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetVenuesNeedingGeocodingAsyncManualSourceIsNeverEligibleEvenWithChangedHash()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        VenueRecord venue = MakeVenueRecord(1, latitude: 53.5, longitude: -113.5,
+            coordinateSource: FringeRepository.ManualCoordinateSource, matchingHash: false);
+        _ = SetupSearch(mockDb, [venue], viaFromQuery: true);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        List<VenueRecord> result = await repo.GetVenuesNeedingGeocodingAsync().ConfigureAwait(true);
+
+        Assert.Empty(result);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // UpdateVenueCoordinatesAsync
+    // ─────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task UpdateVenueCoordinatesAsyncVenueNotFoundReturnsFalseAndDoesNotWrite()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        _ = mockDb.Setup(db => db.LoadAsync<VenueRecord>(It.IsAny<string>(), It.IsAny<string>(), default))
+                  .Returns(Task.FromResult<VenueRecord>(null!));
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        bool result = await repo.UpdateVenueCoordinatesAsync(999, 53.5, -113.5, "OpenRouteService", DateTime.UtcNow).ConfigureAwait(true);
+
+        Assert.False(result);
+        mockDb.Verify(db => db.SaveAsync(It.IsAny<VenueRecord>(), default), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateVenueCoordinatesAsyncNewCoordinatesSavesLatitudeLongitudeHashSourceAndTimestamp()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        VenueRecord existing = MakeVenueRecord(1, latitude: null, longitude: null, coordinateSource: null);
+        _ = mockDb.Setup(db => db.LoadAsync<VenueRecord>("VENUE#1", "METADATA", default))
+                  .Returns(Task.FromResult(existing));
+        VenueRecord? saved = null;
+        _ = mockDb.Setup(db => db.SaveAsync(It.IsAny<VenueRecord>(), default))
+                  .Callback<VenueRecord, CancellationToken>((r, _) => saved = r)
+                  .Returns(Task.CompletedTask);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        var enrichedAt = new DateTime(2026, 7, 19, 12, 0, 0, DateTimeKind.Utc);
+        bool result = await repo.UpdateVenueCoordinatesAsync(1, 53.5461, -113.4938, "OpenRouteService", enrichedAt).ConfigureAwait(true);
+
+        Assert.True(result);
+        Assert.NotNull(saved);
+        Assert.Equal(53.5461, saved!.Latitude);
+        Assert.Equal(-113.4938, saved.Longitude);
+        Assert.Equal("OpenRouteService", saved.CoordinateSource);
+        Assert.Equal(enrichedAt.ToString("O"), saved.EnrichedAt);
+        Assert.Equal(VenueAddressHasher.ComputeHash(1, existing.Address, existing.PostalCode), saved.AddressHash);
+    }
+
+    [Fact]
+    public async Task UpdateVenueCoordinatesAsyncAutomaticSourceCannotOverwriteManualCoordinate()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        VenueRecord existing = MakeVenueRecord(1, latitude: 53.1, longitude: -113.1, coordinateSource: FringeRepository.ManualCoordinateSource);
+        _ = mockDb.Setup(db => db.LoadAsync<VenueRecord>("VENUE#1", "METADATA", default))
+                  .Returns(Task.FromResult(existing));
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        bool result = await repo.UpdateVenueCoordinatesAsync(1, 53.9, -113.9, "OpenRouteService", DateTime.UtcNow).ConfigureAwait(true);
+
+        Assert.False(result);
+        mockDb.Verify(db => db.SaveAsync(It.IsAny<VenueRecord>(), default), Times.Never);
+        Assert.Equal(53.1, existing.Latitude);
+        Assert.Equal(-113.1, existing.Longitude);
+    }
+
+    [Fact]
+    public async Task UpdateVenueCoordinatesAsyncManualSourceCanOverwriteAutomaticCoordinate()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        VenueRecord existing = MakeVenueRecord(1, latitude: 53.1, longitude: -113.1, coordinateSource: "OpenRouteService");
+        _ = mockDb.Setup(db => db.LoadAsync<VenueRecord>("VENUE#1", "METADATA", default))
+                  .Returns(Task.FromResult(existing));
+        VenueRecord? saved = null;
+        _ = mockDb.Setup(db => db.SaveAsync(It.IsAny<VenueRecord>(), default))
+                  .Callback<VenueRecord, CancellationToken>((r, _) => saved = r)
+                  .Returns(Task.CompletedTask);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        bool result = await repo.UpdateVenueCoordinatesAsync(1, 53.9, -113.9, FringeRepository.ManualCoordinateSource, DateTime.UtcNow).ConfigureAwait(true);
+
+        Assert.True(result);
+        Assert.NotNull(saved);
+        Assert.Equal(53.9, saved!.Latitude);
+        Assert.Equal(FringeRepository.ManualCoordinateSource, saved.CoordinateSource);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // GetShowTimesForShowAsync
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -1055,5 +1466,274 @@ public sealed class FringeRepositoryTests
         Assert.NotNull(saved);
         Assert.StartsWith("SHOWTIME#", saved!.Sk, StringComparison.Ordinal);
         Assert.Contains(dt.ToString("O"), saved.Sk, StringComparison.Ordinal);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SaveTransferMatrixAsync
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private static TransferMatrixVersion MakeMatrixVersion(string inputHash = "hash-1", int pairCount = 2)
+    {
+        TransferMatrixVersion version = new()
+        {
+            InputHash = inputHash,
+            VenueCount = 2,
+            GeneratedAt = new DateTime(2026, 7, 19, 3, 0, 0, DateTimeKind.Utc),
+            Source = "OpenRouteService"
+        };
+        for (int i = 0; i < pairCount; i++)
+        {
+            version.Pairs.Add(new TransferPair
+            {
+                FromVenueNumber = i + 1,
+                ToVenueNumber = i + 2,
+                WalkingDurationSeconds = 300,
+                WalkingDistanceMeters = 400,
+                CyclingDurationSeconds = 120,
+                CyclingDistanceMeters = 400,
+                DrivingDurationSeconds = 90,
+                DrivingDistanceMeters = 500,
+                Source = "OpenRouteService"
+            });
+        }
+        return version;
+    }
+
+    [Fact]
+    public async Task SaveTransferMatrixAsyncSavesMetadataRecord()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        TransferMatrixMetadataRecord? saved = null;
+        _ = mockDb.Setup(db => db.SaveAsync(It.IsAny<TransferMatrixMetadataRecord>(), default))
+                  .Callback<TransferMatrixMetadataRecord, CancellationToken>((r, _) => saved = r)
+                  .Returns(Task.CompletedTask);
+        Mock<IBatchWrite<TransferMatrixPairRecord>> mockBatch = SetupBatchWrite<TransferMatrixPairRecord>(mockDb);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        await repo.SaveTransferMatrixAsync(MakeMatrixVersion("hash-1", pairCount: 2)).ConfigureAwait(true);
+
+        Assert.NotNull(saved);
+        Assert.Equal("TRANSFER_MATRIX#hash-1", saved!.Pk);
+        Assert.Equal("METADATA", saved.Sk);
+        Assert.Equal("hash-1", saved.InputHash);
+        Assert.Equal(2, saved.VenueCount);
+        Assert.Equal(2, saved.PairCount);
+        Assert.Equal("OpenRouteService", saved.Source);
+        mockBatch.Verify(b => b.ExecuteAsync(default), Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveTransferMatrixAsyncSavesOnePairRecordPerPairViaBatch()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        _ = mockDb.Setup(db => db.SaveAsync(It.IsAny<TransferMatrixMetadataRecord>(), default)).Returns(Task.CompletedTask);
+        var putItems = new List<TransferMatrixPairRecord>();
+        var mockBatch = new Mock<IBatchWrite<TransferMatrixPairRecord>>();
+        _ = mockBatch.Setup(b => b.AddPutItem(It.IsAny<TransferMatrixPairRecord>()))
+                     .Callback<TransferMatrixPairRecord>(putItems.Add);
+        _ = mockBatch.Setup(b => b.ExecuteAsync(default)).Returns(Task.CompletedTask);
+        _ = mockDb.Setup(db => db.CreateBatchWrite<TransferMatrixPairRecord>()).Returns(mockBatch.Object);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        await repo.SaveTransferMatrixAsync(MakeMatrixVersion("hash-1", pairCount: 3)).ConfigureAwait(true);
+
+        Assert.Equal(3, putItems.Count);
+        Assert.All(putItems, p => Assert.Equal("TRANSFER_MATRIX#hash-1", p.Pk));
+        Assert.Contains(putItems, p => p.Sk == "FROM#1#TO#2" && p.FromVenueNumber == 1 && p.ToVenueNumber == 2);
+        Assert.Contains(putItems, p => p.WalkingDurationSeconds == 300 && p.DrivingDistanceMeters == 500);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GetTransferMatrixPairsAsync
+    // ─────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetTransferMatrixPairsAsyncQueriesByPartitionKey()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        QueryOperationConfig? capturedConfig = null;
+        var mockSearch = new Mock<IAsyncSearch<TransferMatrixPairRecord>>();
+        _ = mockSearch.Setup(s => s.GetRemainingAsync(default)).ReturnsAsync([]);
+        _ = mockDb.Setup(db => db.FromQueryAsync<TransferMatrixPairRecord>(It.IsAny<QueryOperationConfig>()))
+                  .Callback<QueryOperationConfig>(cfg => capturedConfig = cfg)
+                  .Returns(mockSearch.Object);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        _ = await repo.GetTransferMatrixPairsAsync("hash-1").ConfigureAwait(true);
+
+        Assert.NotNull(capturedConfig);
+        Assert.Equal("TRANSFER_MATRIX#hash-1", ((Primitive)capturedConfig!.KeyExpression.ExpressionAttributeValues[":pk"]).Value);
+    }
+
+    [Fact]
+    public async Task GetTransferMatrixPairsAsyncExcludesMetadataItem()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        var items = new List<TransferMatrixPairRecord>
+        {
+            new() { Pk = "TRANSFER_MATRIX#hash-1", Sk = "METADATA" },
+            new() { Pk = "TRANSFER_MATRIX#hash-1", Sk = "FROM#1#TO#2", FromVenueNumber = 1, ToVenueNumber = 2, Source = "OpenRouteService" },
+            new() { Pk = "TRANSFER_MATRIX#hash-1", Sk = "FROM#2#TO#1", FromVenueNumber = 2, ToVenueNumber = 1, Source = "OpenRouteService" }
+        };
+        _ = SetupSearch(mockDb, items, viaFromQuery: true);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        List<TransferMatrixPairRecord> result = await repo.GetTransferMatrixPairsAsync("hash-1").ConfigureAwait(true);
+
+        Assert.Equal(2, result.Count);
+        Assert.All(result, p => Assert.StartsWith("FROM#", p.Sk, StringComparison.Ordinal));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GetTransferMatrixMetadataAsync
+    // ─────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetTransferMatrixMetadataAsyncExistingVersionReturnsRecord()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        var record = new TransferMatrixMetadataRecord { Pk = "TRANSFER_MATRIX#hash-1", InputHash = "hash-1", GeneratedAt = "", Source = "OpenRouteService" };
+        _ = mockDb.Setup(db => db.LoadAsync<TransferMatrixMetadataRecord>("TRANSFER_MATRIX#hash-1", "METADATA", default))
+                  .Returns(Task.FromResult(record));
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        TransferMatrixMetadataRecord? result = await repo.GetTransferMatrixMetadataAsync("hash-1").ConfigureAwait(true);
+
+        Assert.NotNull(result);
+        Assert.Equal("hash-1", result!.InputHash);
+    }
+
+    [Fact]
+    public async Task GetTransferMatrixMetadataAsyncMissingVersionReturnsNull()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        _ = mockDb.Setup(db => db.LoadAsync<TransferMatrixMetadataRecord>(It.IsAny<string>(), It.IsAny<string>(), default))
+                  .Returns(Task.FromResult<TransferMatrixMetadataRecord>(null!));
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        TransferMatrixMetadataRecord? result = await repo.GetTransferMatrixMetadataAsync("missing").ConfigureAwait(true);
+
+        Assert.Null(result);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GetActiveTransferMatrixPointerAsync / SetActiveTransferMatrixAsync
+    // ─────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetActiveTransferMatrixPointerAsyncLoadsConfigKey()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        _ = mockDb.Setup(db => db.LoadAsync<ActiveTransferMatrixRecord>(It.IsAny<string>(), It.IsAny<string>(), default))
+                  .Returns(Task.FromResult<ActiveTransferMatrixRecord>(null!));
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        _ = await repo.GetActiveTransferMatrixPointerAsync().ConfigureAwait(true);
+
+        mockDb.Verify(db => db.LoadAsync<ActiveTransferMatrixRecord>("CONFIG", "ACTIVE_TRANSFER_MATRIX", default), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetActiveTransferMatrixPointerAsyncNoVersionEverPublishedReturnsNull()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        _ = mockDb.Setup(db => db.LoadAsync<ActiveTransferMatrixRecord>(It.IsAny<string>(), It.IsAny<string>(), default))
+                  .Returns(Task.FromResult<ActiveTransferMatrixRecord>(null!));
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        ActiveTransferMatrixRecord? result = await repo.GetActiveTransferMatrixPointerAsync().ConfigureAwait(true);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task SetActiveTransferMatrixAsyncSavesPointerWithHashAndTimestamp()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        ActiveTransferMatrixRecord? saved = null;
+        _ = mockDb.Setup(db => db.SaveAsync(It.IsAny<ActiveTransferMatrixRecord>(), default))
+                  .Callback<ActiveTransferMatrixRecord, CancellationToken>((r, _) => saved = r)
+                  .Returns(Task.CompletedTask);
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        var promotedAt = new DateTime(2026, 7, 19, 4, 0, 0, DateTimeKind.Utc);
+        await repo.SetActiveTransferMatrixAsync("hash-2", promotedAt).ConfigureAwait(true);
+
+        Assert.NotNull(saved);
+        Assert.Equal("CONFIG", saved!.Pk);
+        Assert.Equal("ACTIVE_TRANSFER_MATRIX", saved.Sk);
+        Assert.Equal("hash-2", saved.InputHash);
+        Assert.Equal(promotedAt.ToString("O"), saved.PromotedAt);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // MarkTransferMatrixStaleAsync
+    // ─────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task MarkTransferMatrixStaleAsyncSetsTtlOnMetadataAndAllPairs()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        var metadata = new TransferMatrixMetadataRecord { Pk = "TRANSFER_MATRIX#hash-1", InputHash = "hash-1", GeneratedAt = "", Source = "OpenRouteService" };
+        _ = mockDb.Setup(db => db.LoadAsync<TransferMatrixMetadataRecord>("TRANSFER_MATRIX#hash-1", "METADATA", default))
+                  .Returns(Task.FromResult(metadata));
+
+        var pairs = new List<TransferMatrixPairRecord>
+        {
+            new() { Pk = "TRANSFER_MATRIX#hash-1", Sk = "FROM#1#TO#2", FromVenueNumber = 1, ToVenueNumber = 2, Source = "OpenRouteService" },
+            new() { Pk = "TRANSFER_MATRIX#hash-1", Sk = "FROM#2#TO#1", FromVenueNumber = 2, ToVenueNumber = 1, Source = "OpenRouteService" }
+        };
+        _ = SetupSearch(mockDb, pairs, viaFromQuery: true);
+
+        TransferMatrixMetadataRecord? savedMetadata = null;
+        _ = mockDb.Setup(db => db.SaveAsync(It.IsAny<TransferMatrixMetadataRecord>(), default))
+                  .Callback<TransferMatrixMetadataRecord, CancellationToken>((r, _) => savedMetadata = r)
+                  .Returns(Task.CompletedTask);
+
+        var savedPairs = new List<TransferMatrixPairRecord>();
+        var mockBatch = new Mock<IBatchWrite<TransferMatrixPairRecord>>();
+        _ = mockBatch.Setup(b => b.AddPutItem(It.IsAny<TransferMatrixPairRecord>()))
+                     .Callback<TransferMatrixPairRecord>(savedPairs.Add);
+        _ = mockBatch.Setup(b => b.ExecuteAsync(default)).Returns(Task.CompletedTask);
+        _ = mockDb.Setup(db => db.CreateBatchWrite<TransferMatrixPairRecord>()).Returns(mockBatch.Object);
+
+        FringeRepository repo = BuildRepo(mockDb.Object);
+        var expiresAt = new DateTime(2026, 8, 18, 3, 0, 0, DateTimeKind.Utc);
+
+        await repo.MarkTransferMatrixStaleAsync("hash-1", expiresAt).ConfigureAwait(true);
+
+        long expectedTtl = ((DateTimeOffset)expiresAt).ToUnixTimeSeconds();
+        Assert.NotNull(savedMetadata);
+        Assert.Equal(expectedTtl, savedMetadata!.Ttl);
+        Assert.Equal(2, savedPairs.Count);
+        Assert.All(savedPairs, p => Assert.Equal(expectedTtl, p.Ttl));
+    }
+
+    [Fact]
+    public async Task MarkTransferMatrixStaleAsyncMissingMetadataStillMarksPairs()
+    {
+        Mock<IDynamoDBContext> mockDb = BuildMockDb();
+        _ = mockDb.Setup(db => db.LoadAsync<TransferMatrixMetadataRecord>(It.IsAny<string>(), It.IsAny<string>(), default))
+                  .Returns(Task.FromResult<TransferMatrixMetadataRecord>(null!));
+
+        var pairs = new List<TransferMatrixPairRecord>
+        {
+            new() { Pk = "TRANSFER_MATRIX#hash-1", Sk = "FROM#1#TO#2", FromVenueNumber = 1, ToVenueNumber = 2, Source = "OpenRouteService" }
+        };
+        _ = SetupSearch(mockDb, pairs, viaFromQuery: true);
+
+        var savedPairs = new List<TransferMatrixPairRecord>();
+        var mockBatch = new Mock<IBatchWrite<TransferMatrixPairRecord>>();
+        _ = mockBatch.Setup(b => b.AddPutItem(It.IsAny<TransferMatrixPairRecord>()))
+                     .Callback<TransferMatrixPairRecord>(savedPairs.Add);
+        _ = mockBatch.Setup(b => b.ExecuteAsync(default)).Returns(Task.CompletedTask);
+        _ = mockDb.Setup(db => db.CreateBatchWrite<TransferMatrixPairRecord>()).Returns(mockBatch.Object);
+
+        FringeRepository repo = BuildRepo(mockDb.Object);
+
+        await repo.MarkTransferMatrixStaleAsync("hash-1", DateTime.UtcNow.AddDays(30)).ConfigureAwait(true);
+
+        mockDb.Verify(db => db.SaveAsync(It.IsAny<TransferMatrixMetadataRecord>(), default), Times.Never);
+        _ = Assert.Single(savedPairs);
     }
 }

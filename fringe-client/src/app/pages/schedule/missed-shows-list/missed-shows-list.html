@@ -4,23 +4,12 @@
       Didn't Make the Cut
     </h3>
     @for (missed of missedShows(); track missed.show.showId) {
-      <div class="missed-item">
-        <span class="missed-title">{{ missed.show.title }}</span>
-        <div class="missed-reasons">
-          @if (missed.conflictsWithScheduled) {
-            <span
-              i18n="@@pages.schedule.schedule.14"
-              class="missed-tag conflict"
-              >Timing conflict</span
-            >
-          }
-          @for (name of missed.blockedByMembers; track name) {
-            <span i18n="@@pages.schedule.schedule.15" class="missed-tag blocked"
-              >{{ name }}'s availability</span
-            >
-          }
-        </div>
-      </div>
+      <fg-missed-show-card
+        [show]="missed.show"
+        [conflictsWithScheduled]="missed.conflictsWithScheduled"
+        [blockedByMembers]="missed.blockedByMembers"
+        [transferConflict]="missed.transferConflict"
+      />
     }
   </section>
 }

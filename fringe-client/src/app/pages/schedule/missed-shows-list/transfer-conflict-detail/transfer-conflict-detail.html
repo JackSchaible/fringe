@@ -1,0 +1,13 @@
+<p class="missed-detail">
+  <span i18n="@@schedule.missed.transfer-detail"
+    >Not enough time to get from {{ originLabel() }} to
+    {{ destinationLabel() }}.</span
+  >
+  <span i18n="@@schedule.missed.transfer-gap" class="missed-gap"
+    >Only {{ conflict().availableGapMinutes }} min available — need about
+    {{ conflict().requiredGapMinutes }} min.</span
+  >
+  <span i18n="@@schedule.missed.transfer-hint" class="missed-hint"
+    >Try a different travel mode above to see if this fits.</span
+  >
+</p>

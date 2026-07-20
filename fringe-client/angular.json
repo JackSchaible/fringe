@@ -13,6 +13,18 @@
       "root": "",
       "sourceRoot": "src",
       "prefix": "ch",
+      "i18n": {
+        "sourceLocale": {
+          "code": "en-CA",
+          "baseHref": "/"
+        },
+        "locales": {
+          "fr-CA": {
+            "translation": "src/locale/messages.fr-CA.xlf",
+            "baseHref": "/fr/"
+          }
+        }
+      },
       "architect": {
         "build": {
           "builder": "@angular/build:application",
@@ -49,7 +61,8 @@
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.prod.ts"
                 }
-              ]
+              ],
+              "localize": true
             },
             "development": {
               "optimization": false,
@@ -72,7 +85,11 @@
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
-          "builder": "@angular/build:extract-i18n"
+          "builder": "@angular/build:extract-i18n",
+          "options": {
+            "outputPath": "src/locale",
+            "format": "xlf2"
+          }
         },
         "test": {
           "builder": "@angular/build:karma",

@@ -10,6 +10,7 @@ The CDK reads build artifacts at deploy time. Build them first:
 # From repo root:
 dotnet publish Fringe.API -c Release -o Fringe.API/publish
 dotnet publish Fringe.Scraper -c Release -o Fringe.Scraper/publish
+dotnet publish Fringe.TransferMatrix -c Release -o Fringe.TransferMatrix/publish
 cd fringe-client && npm run build && cd ..
 ```
 
@@ -23,13 +24,14 @@ npx cdk deploy
 
 ## Construct layout
 
-| File                     | What it creates                                                         |
-| ------------------------ | ----------------------------------------------------------------------- |
-| `constructs/dynamo.ts`   | DynamoDB `TableV2` (on-demand) + `entity-type-index` GSI                |
-| `constructs/api.ts`      | Lambda (Fringe.API) + REST API Gateway + custom domain                  |
-| `constructs/scraper.ts`  | Lambda (Fringe.Scraper) + nightly EventBridge rule                      |
-| `constructs/frontend.ts` | S3 bucket + CloudFront OAC distribution + ACM cert + `BucketDeployment` |
-| `lib/fringe-stack.ts`    | Root stack — wires constructs, provisions cert, outputs DNS values      |
+| File                            | What it creates                                                                                                                                                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `constructs/dynamo.ts`          | DynamoDB `TableV2` (on-demand) + `entity-type-index` GSI                                                                                                                                                                       |
+| `constructs/api.ts`             | Lambda (Fringe.API) + REST API Gateway + custom domain                                                                                                                                                                         |
+| `constructs/scraper.ts`         | Lambda (Fringe.Scraper) + nightly EventBridge rule                                                                                                                                                                             |
+| `constructs/transfer-matrix.ts` | Lambda (Fringe.TransferMatrix) + nightly EventBridge rule, an hour after the scraper's; `reservedConcurrentExecutions: 1`                                                                                                      |
+| `constructs/frontend.ts`        | S3 bucket + CloudFront OAC distribution + ACM cert + a `BucketDeployment` per locale (en-CA at bucket root, others under `/<url-locale>/`) + a CloudFront Function that routes app requests to the right locale's `index.html` |
+| `lib/fringe-stack.ts`           | Root stack — wires constructs, provisions cert, outputs DNS values                                                                                                                                                             |
 
 ## ACM certificate
 
@@ -48,6 +50,8 @@ After `cdk deploy`, add these records at the registrar for `jackschaible.ca`:
 ## Table removal policy
 
 The DynamoDB table uses `RemovalPolicy.RETAIN` — `cdk destroy` will not delete the table or its data.
+
+TTL is enabled on the `ttl` attribute (`timeToLiveAttribute: "ttl"` in `constructs/dynamo.ts`). Only superseded transfer-matrix versions currently set it, so this is otherwise inert — don't assume any other item type auto-expires.
 
 ## CI/CD — one-time AWS setup (OIDC)
 
@@ -97,3 +101,15 @@ In the `JackSchaible/fringe` repo → Settings → Secrets → Actions:
 - `AWS_DEPLOY_ROLE_ARN` = `arn:aws:iam::<ACCOUNT_ID>:role/fringe-github-deploy`
 
 That's it. Every push to `main` will now deploy automatically.
+
+## Other GitHub secrets read by the deploy workflow
+
+Same Settings → Secrets → Actions page as above:
+
+| Secret                     | Consumed by                                                                                                                | Purpose                                                                                                                                                                                                                                |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TURNSTILE_SITE_KEY`       | `environment.prod.ts` (frontend build step)                                                                                | Cloudflare Turnstile client-side site key                                                                                                                                                                                              |
+| `TURNSTILE_SECRET_KEY`     | `constructs/api.ts` (Fringe.API Lambda env)                                                                                | Cloudflare Turnstile server-side verification                                                                                                                                                                                          |
+| `OPENROUTESERVICE_API_KEY` | `constructs/scraper.ts` (Fringe.Scraper Lambda env) and `constructs/transfer-matrix.ts` (Fringe.TransferMatrix Lambda env) | OpenRouteService geocoding (FA-33) and matrix (FA-34) key, shared by both Lambdas. Unset means the Lambda env var is an empty string, so venue enrichment / matrix generation is skipped at runtime — deploy still succeeds either way |
+
+`OPENROUTESERVICE_API_KEY` isn't provisioned anywhere by this repo — get a free-tier key from [openrouteservice.org/dev/#/signup](https://openrouteservice.org/dev/#/signup) and add it as a secret manually.

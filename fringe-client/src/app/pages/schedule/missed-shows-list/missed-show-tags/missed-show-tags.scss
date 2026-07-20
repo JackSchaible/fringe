@@ -1,0 +1,27 @@
+:host {
+  display: contents;
+}
+
+.missed-tag {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.25rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+
+  &.conflict {
+    background: rgba(234, 179, 8, 0.12);
+    color: #a16207;
+  }
+
+  &.blocked {
+    background: rgba(239, 68, 68, 0.1);
+    color: #b91c1c;
+  }
+
+  &.transfer {
+    background: rgba(59, 130, 246, 0.1);
+    color: #1d4ed8;
+  }
+}

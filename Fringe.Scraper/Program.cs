@@ -3,6 +3,7 @@ using Amazon.DynamoDBv2.DataModel;
 using DotNetEnv;
 using Fringe.Data;
 using FringeScraper;
+using FringeScraper.Services;
 using Microsoft.Extensions.Configuration;
 
 // Load .env — check CWD first (dotnet run from Fringe.Scraper/),
@@ -49,4 +50,14 @@ IDynamoDBContext dynamoContext = new DynamoDBContextBuilder()
     .Build();
 FringeRepository repository = new(dynamoContext);
 
-await ScraperRunner.RunAsync(repository).ConfigureAwait(false);
+string? openRouteServiceApiKey = config["OpenRouteServiceApiKey"]
+    ?? Environment.GetEnvironmentVariable("OPENROUTESERVICE_API_KEY");
+IGeocodingProvider? geocodingProvider = string.IsNullOrWhiteSpace(openRouteServiceApiKey)
+    ? null
+    : new OpenRouteServiceGeocodingProvider(openRouteServiceApiKey);
+if (geocodingProvider == null)
+{
+    ScraperLogger.Log("⚠️  OPENROUTESERVICE_API_KEY is not set. Venue coordinate enrichment will be skipped.");
+}
+
+await ScraperRunner.RunAsync(repository, new Fetcher(), geocodingProvider).ConfigureAwait(false);

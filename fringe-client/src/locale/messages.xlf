@@ -1,0 +1,1954 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0" srcLang="en-CA">
+  <file id="ngi18n" original="ng.template">
+    <unit id="app.02">
+      <notes>
+        <note category="location">src/app/app.html:4,5</note>
+      </notes>
+      <segment>
+        <source>FringeQuest</source>
+      </segment>
+    </unit>
+    <unit id="app.07">
+      <notes>
+        <note category="location">src/app/app.html:5,7</note>
+      </notes>
+      <segment>
+        <source>FringeQuest</source>
+      </segment>
+    </unit>
+    <unit id="app.nav.shows">
+      <notes>
+        <note category="location">src/app/app.html:9,12</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faFilm&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faFilm&quot; /&gt;"></pc> Shows </source>
+      </segment>
+    </unit>
+    <unit id="app.nav.schedule">
+      <notes>
+        <note category="location">src/app/app.html:17,20</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCalendarDays&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCalendarDays&quot; /&gt;"></pc> Schedule </source>
+      </segment>
+    </unit>
+    <unit id="app.nav.group">
+      <notes>
+        <note category="location">src/app/app.html:21,24</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faUsers&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faUsers&quot; /&gt;"></pc> Group </source>
+      </segment>
+    </unit>
+    <unit id="app.nav.availability">
+      <notes>
+        <note category="location">src/app/app.html:29,32</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faClock&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faClock&quot; /&gt;"></pc> Availability </source>
+      </segment>
+    </unit>
+    <unit id="app.01.title">
+      <notes>
+        <note category="location">src/app/app.html:39,40</note>
+      </notes>
+      <segment>
+        <source>Sign out</source>
+      </segment>
+    </unit>
+    <unit id="app.03">
+      <notes>
+        <note category="location">src/app/app.html:54,57</note>
+      </notes>
+      <segment>
+        <source>© <ph id="0" equiv="INTERPOLATION" disp="{{ year }}"/> Cactus Studios. Independent project. Not affiliated with Fringe Theatre Adventures.</source>
+      </segment>
+    </unit>
+    <unit id="app.04">
+      <notes>
+        <note category="location">src/app/app.html:58,59</note>
+      </notes>
+      <segment>
+        <source>Privacy Policy</source>
+      </segment>
+    </unit>
+    <unit id="app.05">
+      <notes>
+        <note category="location">src/app/app.html:60,61</note>
+      </notes>
+      <segment>
+        <source>Terms of Service</source>
+      </segment>
+    </unit>
+    <unit id="app.06">
+      <notes>
+        <note category="location">src/app/app.html:62,63</note>
+      </notes>
+      <segment>
+        <source>Contact</source>
+      </segment>
+    </unit>
+    <unit id="app.08">
+      <notes>
+        <note category="location">src/app/app.html:65,82</note>
+      </notes>
+      <segment>
+        <source>Venue locations © <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a
+      href=&quot;https://www.openstreetmap.org/copyright&quot;
+      target=&quot;_blank&quot;
+      rel=&quot;noopener noreferrer&quot;
+      i18n-rel=&quot;@@app.08.osm-link-rel&quot;
+      &gt;" dispEnd="&lt;/a
+    &gt;">OpenStreetMap</pc> contributors, routing via <pc id="1" equivStart="START_LINK_1" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a
+      href=&quot;https://openrouteservice.org/&quot;
+      target=&quot;_blank&quot;
+      rel=&quot;noopener noreferrer&quot;
+      i18n-rel=&quot;@@app.08.ors-link-rel&quot;
+      &gt;" dispEnd="&lt;/a
+    &gt;">OpenRouteService</pc>.</source>
+      </segment>
+    </unit>
+    <unit id="app.08.osm-link-rel">
+      <notes>
+        <note category="location">src/app/app.html:69,70</note>
+      </notes>
+      <segment>
+        <source>noopener noreferrer</source>
+      </segment>
+    </unit>
+    <unit id="app.08.ors-link-rel">
+      <notes>
+        <note category="location">src/app/app.html:77,78</note>
+      </notes>
+      <segment>
+        <source>noopener noreferrer</source>
+      </segment>
+    </unit>
+    <unit id="components.cookie_consent_drawer.cookie_consent_drawer.01.aria_label">
+      <notes>
+        <note category="location">src/app/components/cookie-consent-drawer/cookie-consent-drawer.html:6,8</note>
+      </notes>
+      <segment>
+        <source>Cookie consent</source>
+      </segment>
+    </unit>
+    <unit id="components.cookie_consent_drawer.cookie_consent_drawer.02">
+      <notes>
+        <note category="location">src/app/components/cookie-consent-drawer/cookie-consent-drawer.html:13,16</note>
+      </notes>
+      <segment>
+        <source>This site uses cookies</source>
+      </segment>
+    </unit>
+    <unit id="cookie-consent.body">
+      <notes>
+        <note category="location">src/app/components/cookie-consent-drawer/cookie-consent-drawer.html:16,20</note>
+      </notes>
+      <segment>
+        <source> Sign-in and security cookies are always active. With your consent we also load Google Fonts and Google Analytics. <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a routerLink=&quot;/privacy&quot;&gt;" dispEnd="&lt;/a&gt;">Privacy policy</pc></source>
+      </segment>
+    </unit>
+    <unit id="components.cookie_consent_drawer.cookie_consent_drawer.04">
+      <notes>
+        <note category="location">src/app/components/cookie-consent-drawer/cookie-consent-drawer.html:28,32</note>
+      </notes>
+      <segment>
+        <source> Reject all </source>
+      </segment>
+    </unit>
+    <unit id="components.cookie_consent_drawer.cookie_consent_drawer.05">
+      <notes>
+        <note category="location">src/app/components/cookie-consent-drawer/cookie-consent-drawer.html:36,42</note>
+      </notes>
+      <segment>
+        <source> Accept all </source>
+      </segment>
+    </unit>
+    <unit id="auth-callback.redirecting">
+      <notes>
+        <note category="location">src/app/pages/auth-callback/auth-callback.html:1,2</note>
+      </notes>
+      <segment>
+        <source>Redirecting…</source>
+      </segment>
+    </unit>
+    <unit id="pages.availability.availability.01">
+      <notes>
+        <note category="location">src/app/pages/availability/availability.html:3,4</note>
+      </notes>
+      <segment>
+        <source>My Availability</source>
+      </segment>
+    </unit>
+    <unit id="pages.availability.availability.02">
+      <notes>
+        <note category="location">src/app/pages/availability/availability.html:5,10</note>
+      </notes>
+      <segment>
+        <source> Click a day, then drag to mark the hours you&apos;re free. The calendar will only show days and times where there are shows happening. </source>
+      </segment>
+    </unit>
+    <unit id="pages.availability.availability.03">
+      <notes>
+        <note category="location">src/app/pages/availability/availability.html:11,14</note>
+      </notes>
+      <segment>
+        <source>Loading…</source>
+      </segment>
+    </unit>
+    <unit id="pages.availability.availability.04">
+      <notes>
+        <note category="location">src/app/pages/availability/availability.html:33,35</note>
+      </notes>
+      <segment>
+        <source> ← Select a festival day </source>
+      </segment>
+    </unit>
+    <unit id="pages.availability.availability.05">
+      <notes>
+        <note category="location">src/app/pages/availability/availability.html:41,44</note>
+      </notes>
+      <segment>
+        <source>Drag to add · click to remove</source>
+      </segment>
+    </unit>
+    <unit id="pages.availability.availability.06">
+      <notes>
+        <note category="location">src/app/pages/availability/availability.html:49,51</note>
+      </notes>
+      <segment>
+        <source> Clear </source>
+      </segment>
+    </unit>
+    <unit id="pages.availability.availability.07">
+      <notes>
+        <note category="location">src/app/pages/availability/availability.html:65,73</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_BLOCK_IF" equivEnd="CLOSE_BLOCK_IF" type="other" dispStart="@if (saving()) {" dispEnd="}"> Saving… </pc><pc id="1" equivStart="START_BLOCK_ELSE_IF" equivEnd="CLOSE_BLOCK_ELSE_IF" type="other" dispStart="@else if (saved()) {" dispEnd="}"><pc id="2" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;"></pc> Saved </pc><pc id="3" equivStart="START_BLOCK_ELSE" equivEnd="CLOSE_BLOCK_ELSE" type="other" dispStart="@else {" dispEnd="}"> Save Availability </pc></source>
+      </segment>
+    </unit>
+    <unit id="pages.availability.availability.08">
+      <notes>
+        <note category="location">src/app/pages/availability/availability.html:76,81</note>
+      </notes>
+      <segment>
+        <source> Members with no availability set are treated as always free. Once you save, only your marked windows will be used for scheduling. </source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.06">
+      <notes>
+        <note category="location">src/app/pages/group/group-members-list/group-members-list.html:16,18</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="INTERPOLATION" disp="{{ member.voteCount }}"/> ranked</source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.07">
+      <notes>
+        <note category="location">src/app/pages/group/group-members-list/group-members-list.html:21,25</note>
+      </notes>
+      <segment>
+        <source> No members yet. Go invite some friends! </source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.03">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:3,5</note>
+      </notes>
+      <segment>
+        <source>Loading…</source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group-name-error">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:7,10</note>
+      </notes>
+      <segment>
+        <source> <ph id="0" equiv="INTERPOLATION" disp="{{ myGroup()?.name ?? &apos;Error: Group Name Unavailable&apos; }}"/> </source>
+      </segment>
+    </unit>
+    <unit id="pages.group.invite-code-error">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:12,14</note>
+      </notes>
+      <segment>
+        <source> <ph id="0" equiv="INTERPOLATION" disp="{{ myGroup()?.inviteCode ?? &apos;Error: Invite Code Unavailable&apos; }}"/> </source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.04">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:20,28</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_BLOCK_IF" equivEnd="CLOSE_BLOCK_IF" type="other" dispStart="@if (copied()) {" dispEnd="}"><pc id="1" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCopy&quot; /&gt;"></pc> Copied </pc><pc id="2" equivStart="START_BLOCK_ELSE" equivEnd="CLOSE_BLOCK_ELSE" type="other" dispStart="@else {" dispEnd="}"><pc id="3" equivStart="START_TAG_FA_ICON_1" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCopy&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCopy&quot; /&gt;"></pc> Copy code </pc></source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.05">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:31,34</note>
+      </notes>
+      <segment>
+        <source> Share this code with friends so they can join your group. </source>
+      </segment>
+    </unit>
+    <unit id="group.members-heading">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:35,40</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faUsers&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faUsers&quot; /&gt;"></pc> Members <pc id="1" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;count&quot;&gt;" dispEnd="&lt;/span&gt;"><ph id="2" equiv="INTERPOLATION" disp="{{
+          myGroup()?.members?.length ?? &apos;Error: Member Count Unavailable&apos;
+        }}"/></pc></source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.08">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:44,45</note>
+      </notes>
+      <segment>
+        <source>Join your group</source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.09">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:46,49</note>
+      </notes>
+      <segment>
+        <source> Create a group and invite friends, or enter a code to join one. </source>
+      </segment>
+    </unit>
+    <unit id="group.create-heading">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:56,58</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCirclePlus&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCirclePlus&quot; /&gt;"></pc> Create a group </source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.01.placeholder">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:60,61</note>
+      </notes>
+      <segment>
+        <source>Group name (e.g. Fringe 2026)</source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.10">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:72,74</note>
+      </notes>
+      <segment>
+        <source> Create </source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.11">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:77,78</note>
+      </notes>
+      <segment>
+        <source>or</source>
+      </segment>
+    </unit>
+    <unit id="group.join-heading">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:80,82</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faTicket&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faTicket&quot; /&gt;"></pc> Join with a code </source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.12">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:96,98</note>
+      </notes>
+      <segment>
+        <source> Join </source>
+      </segment>
+    </unit>
+    <unit id="group.display-name-heading">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:105,107</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faUser&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faUser&quot; /&gt;"></pc> Display name </source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.13">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:108,110</note>
+      </notes>
+      <segment>
+        <source> This is how your name appears to group members and in the schedule. </source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.02.placeholder">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:113,114</note>
+      </notes>
+      <segment>
+        <source>Your display name</source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.14">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:126,134</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_BLOCK_IF" equivEnd="CLOSE_BLOCK_IF" type="other" dispStart="@if (usernameSaved()) {" dispEnd="}"><pc id="1" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;"></pc> Saved </pc><pc id="2" equivStart="START_BLOCK_ELSE_IF" equivEnd="CLOSE_BLOCK_ELSE_IF" type="other" dispStart="@else if (savingUsername()) {" dispEnd="}"> Saving… </pc><pc id="3" equivStart="START_BLOCK_ELSE" equivEnd="CLOSE_BLOCK_ELSE" type="other" dispStart="@else {" dispEnd="}"> Save </pc></source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.15">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:138,139</note>
+      </notes>
+      <segment>
+        <source>Danger zone</source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.16">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:146,148</note>
+      </notes>
+      <segment>
+        <source> Delete my account </source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.17">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:150,153</note>
+      </notes>
+      <segment>
+        <source> This will permanently delete your account, votes, and group membership. This cannot be undone. </source>
+      </segment>
+    </unit>
+    <unit id="pages.group.group.18">
+      <notes>
+        <note category="location">src/app/pages/group/group.html:169,171</note>
+      </notes>
+      <segment>
+        <source> Cancel </source>
+      </segment>
+    </unit>
+    <unit id="login.email-hint">
+      <notes>
+        <note category="location">src/app/pages/login/email-step/email-step.html:3,7</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon class=&quot;hint-icon&quot; [icon]=&quot;faEnvelope&quot; /&gt;" dispEnd="&lt;fa-icon class=&quot;hint-icon&quot; [icon]=&quot;faEnvelope&quot; /&gt;"></pc> Enter your email to receive a sign-in code. </source>
+      </segment>
+    </unit>
+    <unit id="pages.login.login.01.placeholder">
+      <notes>
+        <note category="location">src/app/pages/login/email-step/email-step.html:8,9</note>
+      </notes>
+      <segment>
+        <source>Email address</source>
+      </segment>
+    </unit>
+    <unit id="login.terms-check">
+      <notes>
+        <note category="location">src/app/pages/login/email-step/email-step.html:17,26</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="TAG_INPUT" disp="&lt;input
+      type=&quot;checkbox&quot;
+      [ngModel]=&quot;agreedToTerms()&quot;
+      (ngModelChange)=&quot;agreedToTerms.set($event)&quot;
+    /&gt;"/> I have read and agree to the <pc id="1" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a routerLink=&quot;/terms&quot; target=&quot;_blank&quot;&gt;" dispEnd="&lt;/a&gt;">Terms of Service</pc> and <pc id="2" equivStart="START_LINK_1" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a routerLink=&quot;/privacy&quot; target=&quot;_blank&quot;&gt;" dispEnd="&lt;/a&gt;">Privacy Policy</pc></source>
+      </segment>
+    </unit>
+    <unit id="pages.login.login.09">
+      <notes>
+        <note category="location">src/app/pages/login/email-step/email-step.html:34,42</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_BLOCK_IF" equivEnd="CLOSE_BLOCK_IF" type="other" dispStart="@if (loading()) {" dispEnd="}"> Sending… </pc><pc id="1" equivStart="START_BLOCK_ELSE" equivEnd="CLOSE_BLOCK_ELSE" type="other" dispStart="@else {" dispEnd="}"><pc id="2" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faPaperPlane&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faPaperPlane&quot; /&gt;"></pc> Send code </pc></source>
+      </segment>
+    </unit>
+    <unit id="pages.login.login.05">
+      <notes>
+        <note category="location">src/app/pages/login/login.html:3,4</note>
+      </notes>
+      <segment>
+        <source>FringeQuest</source>
+      </segment>
+    </unit>
+    <unit id="pages.login.login.06">
+      <notes>
+        <note category="location">src/app/pages/login/login.html:4,6</note>
+      </notes>
+      <segment>
+        <source>Group festival planner</source>
+      </segment>
+    </unit>
+    <unit id="pages.login.login.12">
+      <notes>
+        <note category="location">src/app/pages/login/login.html:37,39</note>
+      </notes>
+      <segment>
+        <source> Dev mode — enter any user ID </source>
+      </segment>
+    </unit>
+    <unit id="pages.login.login.04.placeholder">
+      <notes>
+        <note category="location">src/app/pages/login/login.html:43</note>
+      </notes>
+      <segment>
+        <source>user-id</source>
+      </segment>
+    </unit>
+    <unit id="pages.login.login.13">
+      <notes>
+        <note category="location">src/app/pages/login/login.html:54,56</note>
+      </notes>
+      <segment>
+        <source> Go </source>
+      </segment>
+    </unit>
+    <unit id="login.otp-hint">
+      <notes>
+        <note category="location">src/app/pages/login/otp-step/otp-step.html:3,8</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon class=&quot;hint-icon&quot; [icon]=&quot;faKey&quot; /&gt;" dispEnd="&lt;fa-icon class=&quot;hint-icon&quot; [icon]=&quot;faKey&quot; /&gt;"></pc> Code sent to <pc id="1" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong
+    &gt;"><ph id="2" equiv="INTERPOLATION" disp="{{ email() }}"/></pc>.<ph id="3" equiv="LINE_BREAK" type="fmt" disp="&lt;br /&gt;"/> Check your inbox. If you don&apos;t see it, check your spam folder. </source>
+      </segment>
+    </unit>
+    <unit id="pages.login.login.02.inputmode">
+      <notes>
+        <note category="location">src/app/pages/login/otp-step/otp-step.html:11</note>
+      </notes>
+      <segment>
+        <source>numeric</source>
+      </segment>
+    </unit>
+    <unit id="pages.login.login.10">
+      <notes>
+        <note category="location">src/app/pages/login/otp-step/otp-step.html:27,34</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_BLOCK_IF" equivEnd="CLOSE_BLOCK_IF" type="other" dispStart="@if (loading()) {" dispEnd="}"> Verifying… </pc><pc id="1" equivStart="START_BLOCK_ELSE" equivEnd="CLOSE_BLOCK_ELSE" type="other" dispStart="@else {" dispEnd="}"><pc id="2" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faArrowRightToBracket&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faArrowRightToBracket&quot; /&gt;"></pc> Sign in </pc></source>
+      </segment>
+    </unit>
+    <unit id="login.back-btn">
+      <notes>
+        <note category="location">src/app/pages/login/otp-step/otp-step.html:41,44</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faArrowLeft&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faArrowLeft&quot; /&gt;"></pc> Use a different email </source>
+      </segment>
+    </unit>
+    <unit id="login.username-hint">
+      <notes>
+        <note category="location">src/app/pages/login/username-step/username-step.html:3,7</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon class=&quot;hint-icon&quot; [icon]=&quot;faUser&quot; /&gt;" dispEnd="&lt;fa-icon class=&quot;hint-icon&quot; [icon]=&quot;faUser&quot; /&gt;"></pc> Choose a display name so your friends know who you are. </source>
+      </segment>
+    </unit>
+    <unit id="pages.login.login.03.placeholder">
+      <notes>
+        <note category="location">src/app/pages/login/username-step/username-step.html:8,9</note>
+      </notes>
+      <segment>
+        <source>Display name (optional)</source>
+      </segment>
+    </unit>
+    <unit id="pages.login.login.11">
+      <notes>
+        <note category="location">src/app/pages/login/username-step/username-step.html:22,30</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_BLOCK_IF" equivEnd="CLOSE_BLOCK_IF" type="other" dispStart="@if (loading()) {" dispEnd="}"> Saving… </pc><pc id="1" equivStart="START_BLOCK_ELSE" equivEnd="CLOSE_BLOCK_ELSE" type="other" dispStart="@else {" dispEnd="}"><pc id="2" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faArrowRightToBracket&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faArrowRightToBracket&quot; /&gt;"></pc> <ph id="3" equiv="INTERPOLATION" disp="{{ username().trim() ? &apos;Save &amp; continue&apos; : &apos;Skip&apos; }}"/> </pc></source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.03">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:4,7</note>
+      </notes>
+      <segment>
+        <source>← Back</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.04">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:7,9</note>
+      </notes>
+      <segment>
+        <source>Privacy Policy</source>
+      </segment>
+    </unit>
+    <unit id="privacy.last-updated">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:10,13</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Last updated:</pc> July 1, 2026 </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.06">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:13,15</note>
+      </notes>
+      <segment>
+        <source>Introduction</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.07">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:16,22</note>
+      </notes>
+      <segment>
+        <source> FringeQuest (&quot;the Service&quot;) is an independent scheduling tool created to help attendees plan their experience at the 2026 Edmonton International Fringe Festival. FringeQuest is not affiliated with or endorsed by the Edmonton International Fringe Theatre Festival. </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.08">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:23,27</note>
+      </notes>
+      <segment>
+        <source> This Privacy Policy explains what information we collect, why we collect it, and how we use it. </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.09">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:27,29</note>
+      </notes>
+      <segment>
+        <source>Information We Collect</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.10">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:29,31</note>
+      </notes>
+      <segment>
+        <source>Information You Provide</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.11">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:32,36</note>
+      </notes>
+      <segment>
+        <source> When you create an account, we collect: </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.12">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:36,37</note>
+      </notes>
+      <segment>
+        <source>Your email address</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.13">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:38,40</note>
+      </notes>
+      <segment>
+        <source> Your saved show schedule and preferences </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.14">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:41,45</note>
+      </notes>
+      <segment>
+        <source> Account settings related to your use of the Service </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.15">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:46,49</note>
+      </notes>
+      <segment>
+        <source> Information Collected Automatically </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.16">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:50,55</note>
+      </notes>
+      <segment>
+        <source> Like most websites, we collect limited technical information necessary to operate and improve the Service. This may include: </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.17">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:55,56</note>
+      </notes>
+      <segment>
+        <source>IP address</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.18">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:56,57</note>
+      </notes>
+      <segment>
+        <source>Browser type and version</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.19">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:57,58</note>
+      </notes>
+      <segment>
+        <source>Device information</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.20">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:58,59</note>
+      </notes>
+      <segment>
+        <source>Pages visited</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.21">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:59,62</note>
+      </notes>
+      <segment>
+        <source>Date and time of requests</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.22">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:63,67</note>
+      </notes>
+      <segment>
+        <source> Some of this information is collected by third-party services described below. </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.23">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:67,69</note>
+      </notes>
+      <segment>
+        <source>How We Use Your Information</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.24">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:69,72</note>
+      </notes>
+      <segment>
+        <source>We use your information only to:</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.25">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:73,75</note>
+      </notes>
+      <segment>
+        <source> Provide and maintain your account </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.26">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:76,78</note>
+      </notes>
+      <segment>
+        <source> Save your schedule and preferences </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.27">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:79,82</note>
+      </notes>
+      <segment>
+        <source> Send transactional emails, such as account verification, one-time passcodes for login, and important account notifications </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.28">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:83,85</note>
+      </notes>
+      <segment>
+        <source> Understand how the Service is used so it can be improved </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.29">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:86,90</note>
+      </notes>
+      <segment>
+        <source> Protect the Service from spam and abuse </source>
+      </segment>
+    </unit>
+    <unit id="privacy.no-sell">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:91,94</note>
+      </notes>
+      <segment>
+        <source> We do <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">not</pc> sell your personal information. </source>
+      </segment>
+    </unit>
+    <unit id="privacy.no-marketing">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:95,99</note>
+      </notes>
+      <segment>
+        <source> We do <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">not</pc> use your personal information for marketing or advertising. </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.32">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:99,101</note>
+      </notes>
+      <segment>
+        <source>Third-Party Services</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.33">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:101,103</note>
+      </notes>
+      <segment>
+        <source>Google Analytics</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.34">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:104,110</note>
+      </notes>
+      <segment>
+        <source> We use Google Analytics to understand how visitors use the Service. Google Analytics may collect information such as pages visited, device information, browser information, and approximate location derived from IP address. </source>
+      </segment>
+    </unit>
+    <unit id="privacy.google-policy">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:111,121</note>
+      </notes>
+      <segment>
+        <source> For more information, see Google&apos;s Privacy Policy:<ph id="0" equiv="LINE_BREAK" type="fmt" disp="&lt;br /&gt;"/><pc id="1" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a
+        href=&quot;https://policies.google.com/privacy&quot;
+        target=&quot;_blank&quot;
+        rel=&quot;noopener noreferrer&quot;
+        i18n-rel=&quot;@@privacy.google-link-rel&quot;
+        &gt;" dispEnd="&lt;/a
+      &gt;">https://policies.google.com/privacy</pc></source>
+      </segment>
+    </unit>
+    <unit id="privacy.google-link-rel">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:115,116</note>
+      </notes>
+      <segment>
+        <source>noopener noreferrer</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.36">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:121,123</note>
+      </notes>
+      <segment>
+        <source>Cloudflare Turnstile</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.37">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:124,130</note>
+      </notes>
+      <segment>
+        <source> We use Cloudflare Turnstile to help protect the Service from automated abuse and spam. Turnstile may process technical information such as browser characteristics, IP address, and other signals necessary to determine whether a visitor is likely to be human. </source>
+      </segment>
+    </unit>
+    <unit id="privacy.cloudflare-policy">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:131,141</note>
+      </notes>
+      <segment>
+        <source> For more information, see Cloudflare&apos;s Privacy Policy:<ph id="0" equiv="LINE_BREAK" type="fmt" disp="&lt;br /&gt;"/><pc id="1" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a
+        href=&quot;https://www.cloudflare.com/privacypolicy/&quot;
+        target=&quot;_blank&quot;
+        rel=&quot;noopener noreferrer&quot;
+        i18n-rel=&quot;@@privacy.cloudflare-link-rel&quot;
+        &gt;" dispEnd="&lt;/a
+      &gt;">https://www.cloudflare.com/privacypolicy/</pc></source>
+      </segment>
+    </unit>
+    <unit id="privacy.cloudflare-link-rel">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:135,136</note>
+      </notes>
+      <segment>
+        <source>noopener noreferrer</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.39">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:141,143</note>
+      </notes>
+      <segment>
+        <source>Data Retention</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.40">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:144,148</note>
+      </notes>
+      <segment>
+        <source> We retain your account information and saved schedule for as long as your account exists or as needed to provide the Service. </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.41">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:149,154</note>
+      </notes>
+      <segment>
+        <source> If you delete your account, we will delete or anonymize your personal information within a reasonable period, except where we are required to retain information for legal or operational purposes. </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.42">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:154,156</note>
+      </notes>
+      <segment>
+        <source>Data Security</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.43">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:157,163</note>
+      </notes>
+      <segment>
+        <source> We take reasonable measures to protect your information from unauthorized access, disclosure, alteration, or destruction. However, no method of storing or transmitting information over the Internet is completely secure, and we cannot guarantee absolute security. </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.44">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:163,165</note>
+      </notes>
+      <segment>
+        <source>Your Choices</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.45">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:165,168</note>
+      </notes>
+      <segment>
+        <source>You may:</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.46">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:169,171</note>
+      </notes>
+      <segment>
+        <source> Update your account information at any time. </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.47">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:172,174</note>
+      </notes>
+      <segment>
+        <source> Request deletion of your account and associated personal information. </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.48">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:175,180</note>
+      </notes>
+      <segment>
+        <source> Disable cookies through your browser, although doing so may affect some functionality. </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.49">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:180,182</note>
+      </notes>
+      <segment>
+        <source>Children&apos;s Privacy</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.50">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:183,187</note>
+      </notes>
+      <segment>
+        <source> The Service is not directed toward children under the age of 13, and we do not knowingly collect personal information from children. </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.51">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:187,189</note>
+      </notes>
+      <segment>
+        <source>Changes to This Policy</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.52">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:190,194</note>
+      </notes>
+      <segment>
+        <source> We may update this Privacy Policy from time to time. The &quot;Last updated&quot; date at the top of this page will indicate when changes were made. </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.53">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:194,196</note>
+      </notes>
+      <segment>
+        <source>Contact</source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.54">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:197,202</note>
+      </notes>
+      <segment>
+        <source> If you have questions about this Privacy Policy, you may contact: </source>
+      </segment>
+    </unit>
+    <unit id="pages.privacy.privacy.55">
+      <notes>
+        <note category="location">src/app/pages/privacy/privacy.html:206,208</note>
+      </notes>
+      <segment>
+        <source> hello@jackschaible.ca </source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.16">
+      <notes>
+        <note category="location">src/app/pages/schedule/alternate-proposals/alternate-proposals.html:4,6</note>
+      </notes>
+      <segment>
+        <source> Alternate Proposals </source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.17">
+      <notes>
+        <note category="location">src/app/pages/schedule/alternate-proposals/alternate-proposals.html:33,35</note>
+      </notes>
+      <segment>
+        <source> Full alternate schedule: </source>
+      </segment>
+    </unit>
+    <unit id="schedule.accept-btn">
+      <notes>
+        <note category="location">src/app/pages/schedule/alternate-proposals/alternate-proposals.html:49,51</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;"></pc> Accept this scenario </source>
+      </segment>
+    </unit>
+    <unit id="schedule.missed.conflict-detail">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-show-card/missed-show-card.html:22,25</note>
+      </notes>
+      <segment>
+        <source> Overlaps with a show already in your schedule. </source>
+      </segment>
+    </unit>
+    <unit id="schedule.missed.blocked-detail">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-show-card/missed-show-card.html:27,29</note>
+      </notes>
+      <segment>
+        <source> <ph id="0" equiv="INTERPOLATION" disp="{{ name }}"/> isn&apos;t available for any of this show&apos;s times. </source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.14">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-show-tags/missed-show-tags.html:3,6</note>
+      </notes>
+      <segment>
+        <source>Timing conflict</source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.15">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-show-tags/missed-show-tags.html:8,11</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="INTERPOLATION" disp="{{ name }}"/>&apos;s availability</source>
+      </segment>
+    </unit>
+    <unit id="schedule.missed.transfer-tag">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-show-tags/missed-show-tags.html:13,16</note>
+      </notes>
+      <segment>
+        <source>Travel time</source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.13">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-shows-list.html:4,6</note>
+      </notes>
+      <segment>
+        <source> Didn&apos;t Make the Cut </source>
+      </segment>
+    </unit>
+    <unit id="schedule.missed.transfer-detail">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/transfer-conflict-detail/transfer-conflict-detail.html:3,6</note>
+      </notes>
+      <segment>
+        <source>Not enough time to get from <ph id="0" equiv="INTERPOLATION" disp="{{ originLabel() }}"/> to <ph id="1" equiv="INTERPOLATION_1" disp="{{ destinationLabel() }}"/>.</source>
+      </segment>
+    </unit>
+    <unit id="schedule.missed.transfer-gap">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/transfer-conflict-detail/transfer-conflict-detail.html:7,10</note>
+      </notes>
+      <segment>
+        <source>Only <ph id="0" equiv="INTERPOLATION" disp="{{ conflict().availableGapMinutes }}"/> min available — need about <ph id="1" equiv="INTERPOLATION_1" disp="{{ conflict().requiredGapMinutes }}"/> min.</source>
+      </segment>
+    </unit>
+    <unit id="schedule.missed.transfer-hint">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/transfer-conflict-detail/transfer-conflict-detail.html:11,14</note>
+      </notes>
+      <segment>
+        <source>Try a different travel mode above to see if this fits.</source>
+      </segment>
+    </unit>
+    <unit id="schedule.needs-change">
+      <notes>
+        <note category="location">src/app/pages/schedule/needs-change/needs-change.html:4,9</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCircleInfo&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCircleInfo&quot; /&gt;"></pc> For <ph id="1" equiv="INTERPOLATION" disp="{{ excludedMemberName() }}"/> to unlock <ph id="2" equiv="INTERPOLATION_1" disp="{{ newShows().length === 1 ? &apos;this show&apos; : &apos;these shows&apos; }}"/>, they need availability at: </source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.19">
+      <notes>
+        <note category="location">src/app/pages/schedule/needs-change/needs-change.html:12,16</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="INTERPOLATION" disp="{{ item.showTime | date: &apos;EEE MMM d, h:mm&apos; }}"/>–<ph id="1" equiv="INTERPOLATION_1" disp="{{
+            showEndTime(item) | date: &apos;h:mm a&apos;
+          }}"/></source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.18">
+      <notes>
+        <note category="location">src/app/pages/schedule/proposal-schedule-item/proposal-schedule-item.html:8,11</note>
+      </notes>
+      <segment>
+        <source>new</source>
+      </segment>
+    </unit>
+    <unit id="schedule.duration">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule-item-row/schedule-item-row.html:7,10</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faClock&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faClock&quot; /&gt;"></pc> <ph id="1" equiv="INTERPOLATION" disp="{{ show.lengthInMinutes }}"/> min </source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.01.rel">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule-item-row/schedule-item-row.html:39,40</note>
+      </notes>
+      <segment>
+        <source>noopener noreferrer</source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.12">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule-item-row/schedule-item-row.html:51,54</note>
+      </notes>
+      <segment>
+        <source>pts</source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.02">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:2,4</note>
+      </notes>
+      <segment>
+        <source>Group Schedule</source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.03">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:14,16</note>
+      </notes>
+      <segment>
+        <source> Computing schedule… </source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.04">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:19,21</note>
+      </notes>
+      <segment>
+        <source>You&apos;re not in a group yet.</source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.05">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:24,27</note>
+      </notes>
+      <segment>
+        <source>Create or join a group</source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.06">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:31,34</note>
+      </notes>
+      <segment>
+        <source> No schedule yet: your group hasn&apos;t ranked any shows. </source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.07">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:37,40</note>
+      </notes>
+      <segment>
+        <source>Go rate shows</source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.08">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:47,49</note>
+      </notes>
+      <segment>
+        <source> No shows fit everyone&apos;s availability </source>
+      </segment>
+    </unit>
+    <unit id="schedule.blocked-sub">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:50,54</note>
+      </notes>
+      <segment>
+        <source> Your group has rated shows, but no showtimes fall within a window when everyone is free. <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a routerLink=&quot;/availability&quot;&gt;" dispEnd="&lt;/a&gt;">Update your availability</pc> or see the proposals below. </source>
+      </segment>
+    </unit>
+    <unit id="schedule.proposals-subtitle-empty">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:64,65</note>
+      </notes>
+      <segment>
+        <source>Here&apos;s what fits if someone adjusts their availability or is excluded from scheduling.</source>
+      </segment>
+    </unit>
+    <unit id="schedule.active-banner">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:75,83</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;"></pc> Viewing alternate — <ph id="1" equiv="INTERPOLATION" disp="{{ proposals()[activeIndex].excludedMemberName }}"/>&apos;s constraints removed <pc id="2" equivStart="START_TAG_BUTTON" equivEnd="CLOSE_TAG_BUTTON" type="other" dispStart="&lt;button type=&quot;button&quot; class=&quot;btn-reset&quot; (click)=&quot;resetToMain()&quot;&gt;" dispEnd="&lt;/button&gt;"> Back to main schedule </pc></source>
+      </segment>
+    </unit>
+    <unit id="pages.schedule.schedule.11">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:85,88</note>
+      </notes>
+      <segment>
+        <source> <ph id="0" equiv="INTERPOLATION" disp="{{ activeSchedule().length }}"/> shows selected from group votes </source>
+      </segment>
+    </unit>
+    <unit id="schedule.proposals-subtitle-full">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:104,105</note>
+      </notes>
+      <segment>
+        <source>More shows could fit if someone adjusts their availability or is excluded from scheduling.</source>
+      </segment>
+    </unit>
+    <unit id="schedule.assumption.walking">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-assumption/travel-mode-assumption.html:5,8</note>
+      </notes>
+      <segment>
+        <source>Schedule generated assuming the group travels by walking.</source>
+      </segment>
+    </unit>
+    <unit id="schedule.assumption.cycling">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-assumption/travel-mode-assumption.html:10,14</note>
+      </notes>
+      <segment>
+        <source>Schedule generated assuming the group travels by bicycle or scooter.</source>
+      </segment>
+    </unit>
+    <unit id="schedule.assumption.driving">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-assumption/travel-mode-assumption.html:16,22</note>
+      </notes>
+      <segment>
+        <source>Schedule generated assuming the group travels by car. Driving time includes an estimate for parking and getting to the venue.</source>
+      </segment>
+    </unit>
+    <unit id="schedule.travel-mode.group-label">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-selector/travel-mode-selector.html:4,5</note>
+      </notes>
+      <segment>
+        <source>Travel mode</source>
+      </segment>
+    </unit>
+    <unit id="schedule.travel-mode.walking">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-selector/travel-mode-selector.html:14,17</note>
+      </notes>
+      <segment>
+        <source>Walking</source>
+      </segment>
+    </unit>
+    <unit id="schedule.travel-mode.cycling">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-selector/travel-mode-selector.html:23,26</note>
+      </notes>
+      <segment>
+        <source>Bicycle or scooter</source>
+      </segment>
+    </unit>
+    <unit id="schedule.travel-mode.driving">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-selector/travel-mode-selector.html:32,35</note>
+      </notes>
+      <segment>
+        <source>Driving</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.08.rel">
+      <notes>
+        <note category="location">src/app/pages/shows/browse-show-card/browse-show-card.html:34,35</note>
+      </notes>
+      <segment>
+        <source>noopener noreferrer</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.09.title">
+      <notes>
+        <note category="location">src/app/pages/shows/browse-show-card/browse-show-card.html:36,37</note>
+      </notes>
+      <segment>
+        <source>Buy tickets</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.10.title">
+      <notes>
+        <note category="location">src/app/pages/shows/browse-show-card/browse-show-card.html:46,47</note>
+      </notes>
+      <segment>
+        <source>Show details</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.03.rel">
+      <notes>
+        <note category="location">src/app/pages/shows/ranked-show-item/ranked-show-item.html:27,28</note>
+      </notes>
+      <segment>
+        <source>noopener noreferrer</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.04.title">
+      <notes>
+        <note category="location">src/app/pages/shows/ranked-show-item/ranked-show-item.html:29,30</note>
+      </notes>
+      <segment>
+        <source>Buy tickets</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.05.title">
+      <notes>
+        <note category="location">src/app/pages/shows/ranked-show-item/ranked-show-item.html:38,39</note>
+      </notes>
+      <segment>
+        <source>Show details</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.06.title">
+      <notes>
+        <note category="location">src/app/pages/shows/ranked-show-item/ranked-show-item.html:48</note>
+      </notes>
+      <segment>
+        <source>Remove</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.11.title">
+      <notes>
+        <note category="location">src/app/pages/shows/show-detail-panel/show-detail-panel.html:15</note>
+      </notes>
+      <segment>
+        <source>Close</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.19.showprice__0__free__show">
+      <notes>
+        <note category="location">src/app/pages/shows/show-detail-panel/show-detail-panel.html:46,49</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="INTERPOLATION" disp="{{
+          +current.price === emptyPrice ? &apos;Free&apos; : `$${current.price}`
+        }}"/></source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.12.rel">
+      <notes>
+        <note category="location">src/app/pages/shows/show-detail-panel/show-detail-panel.html:62,63</note>
+      </notes>
+      <segment>
+        <source>noopener noreferrer</source>
+      </segment>
+    </unit>
+    <unit id="shows.book-tickets">
+      <notes>
+        <note category="location">src/app/pages/shows/show-detail-panel/show-detail-panel.html:67,70</note>
+      </notes>
+      <segment>
+        <source>Book tickets</source>
+      </segment>
+    </unit>
+    <unit id="shows.duration-stat">
+      <notes>
+        <note category="location">src/app/pages/shows/show-detail-stats/show-detail-stats.html:4,8</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faClock&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faClock&quot; /&gt;"></pc> <ph id="1" equiv="INTERPOLATION" disp="{{ show().lengthInMinutes }}"/> min </source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.27">
+      <notes>
+        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:9,10</note>
+      </notes>
+      <segment>
+        <source>Filters</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.20">
+      <notes>
+        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:23,24</note>
+      </notes>
+      <segment>
+        <source>Genre</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.21">
+      <notes>
+        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:30</note>
+      </notes>
+      <segment>
+        <source>Rating</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.22">
+      <notes>
+        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:36,37</note>
+      </notes>
+      <segment>
+        <source>Location</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.23">
+      <notes>
+        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:46,47</note>
+      </notes>
+      <segment>
+        <source>Price</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.24">
+      <notes>
+        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:55,56</note>
+      </notes>
+      <segment>
+        <source>Duration</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.26">
+      <notes>
+        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:58</note>
+      </notes>
+      <segment>
+        <source> min</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.25">
+      <notes>
+        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:73,77</note>
+      </notes>
+      <segment>
+        <source> Clear filters </source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.13">
+      <notes>
+        <note category="location">src/app/pages/shows/shows.html:3,5</note>
+      </notes>
+      <segment>
+        <source>Loading shows…</source>
+      </segment>
+    </unit>
+    <unit id="shows.ranking-heading">
+      <notes>
+        <note category="location">src/app/pages/shows/shows.html:10,12</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faListOl&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faListOl&quot; /&gt;"></pc> Your Ranking </source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.01.animation">
+      <notes>
+        <note category="location">src/app/pages/shows/shows.html:14</note>
+      </notes>
+      <segment>
+        <source>spin</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.02.title">
+      <notes>
+        <note category="location">src/app/pages/shows/shows.html:17</note>
+      </notes>
+      <segment>
+        <source>Saving…</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.14">
+      <notes>
+        <note category="location">src/app/pages/shows/shows.html:41,43</note>
+      </notes>
+      <segment>
+        <source> Click a show on the right to add it to your ranking. </source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.19">
+      <notes>
+        <note category="location">src/app/pages/shows/shows.html:47,49</note>
+      </notes>
+      <segment>
+        <source> Tap a show on the right to add it to your ranking. </source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.15">
+      <notes>
+        <note category="location">src/app/pages/shows/shows.html:56,58</note>
+      </notes>
+      <segment>
+        <source>Browse Shows</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.07.placeholder">
+      <notes>
+        <note category="location">src/app/pages/shows/shows.html:61</note>
+      </notes>
+      <segment>
+        <source>Search…</source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.16">
+      <notes>
+        <note category="location">src/app/pages/shows/shows.html:94,96</note>
+      </notes>
+      <segment>
+        <source> No shows yet — the scraper hasn&apos;t run. Check back soon. </source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.17">
+      <notes>
+        <note category="location">src/app/pages/shows/shows.html:98,99</note>
+      </notes>
+      <segment>
+        <source> No shows match &quot;<ph id="0" equiv="INTERPOLATION" disp="{{ searchQuery() }}"/>&quot;. </source>
+      </segment>
+    </unit>
+    <unit id="pages.shows.shows.18">
+      <notes>
+        <note category="location">src/app/pages/shows/shows.html:102,104</note>
+      </notes>
+      <segment>
+        <source> You&apos;ve ranked all the shows! </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.01">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:3,4</note>
+      </notes>
+      <segment>
+        <source>← Back</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.02">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:4,6</note>
+      </notes>
+      <segment>
+        <source>Terms of Service</source>
+      </segment>
+    </unit>
+    <unit id="terms.last-updated">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:7,10</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Last updated:</pc> July 1, 2026 </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.04">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:10,12</note>
+      </notes>
+      <segment>
+        <source>Welcome</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.05">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:13,18</note>
+      </notes>
+      <segment>
+        <source> Welcome to FringeQuest (&quot;the Service&quot;), an independent web application designed to help users plan and schedule their experience at the Edmonton International Fringe Theatre Festival. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.06">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:20,24</note>
+      </notes>
+      <segment>
+        <source>FringeQuest is an independent project and is not affiliated with, endorsed by, sponsored by, or operated by the Edmonton International Fringe Theatre Festival.</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.07">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:27,31</note>
+      </notes>
+      <segment>
+        <source> By creating an account or using the Service, you agree to these Terms of Service. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.08">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:31,33</note>
+      </notes>
+      <segment>
+        <source>Use of the Service</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.09">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:34,38</note>
+      </notes>
+      <segment>
+        <source> You may use the Service for personal, non-commercial purposes in accordance with these Terms. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.10">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:38,41</note>
+      </notes>
+      <segment>
+        <source>You agree not to:</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.11">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:42,44</note>
+      </notes>
+      <segment>
+        <source> Use the Service in any unlawful manner. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.12">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:45,48</note>
+      </notes>
+      <segment>
+        <source> Attempt to gain unauthorized access to the Service or other users&apos; accounts. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.13">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:49,51</note>
+      </notes>
+      <segment>
+        <source> Interfere with or disrupt the operation of the Service. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.14">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:52,55</note>
+      </notes>
+      <segment>
+        <source> Use automated tools to scrape or abuse the Service except where explicitly permitted. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.15">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:58,62</note>
+      </notes>
+      <segment>
+        <source> We reserve the right to suspend or terminate accounts that violate these Terms or abuse the Service. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.16">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:62,64</note>
+      </notes>
+      <segment>
+        <source>Accounts</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.17">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:65,69</note>
+      </notes>
+      <segment>
+        <source> You are responsible for maintaining access to the email address associated with your account. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.18">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:70,73</note>
+      </notes>
+      <segment>
+        <source> You are responsible for any activity that occurs under your account. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.19">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:73,75</note>
+      </notes>
+      <segment>
+        <source>Festival Information</source>
+      </segment>
+    </unit>
+    <unit id="terms.accuracy-disclaimer">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:76,84</note>
+      </notes>
+      <segment>
+        <source> While we make reasonable efforts to keep information accurate and up to date, <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong
+        &gt;" dispEnd="&lt;/strong
+      &gt;">show schedules, venues, availability, and other festival information may change without notice.</pc></source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.21">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:85,91</note>
+      </notes>
+      <segment>
+        <source> You are responsible for confirming show times, ticket availability, venue information, and other important details through the official Edmonton International Fringe Theatre Festival website or box office before attending an event. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.22">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:91,93</note>
+      </notes>
+      <segment>
+        <source>No Warranty</source>
+      </segment>
+    </unit>
+    <unit id="terms.as-is">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:94,98</note>
+      </notes>
+      <segment>
+        <source> The Service is provided <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">&quot;as is&quot;</pc> and <pc id="1" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">&quot;as available.&quot;</pc></source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.25">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:99,104</note>
+      </notes>
+      <segment>
+        <source> To the fullest extent permitted by law, we make no warranties or guarantees regarding: </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.26">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:105,107</note>
+      </notes>
+      <segment>
+        <source> Accuracy or completeness of information </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.27">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:107,108</note>
+      </notes>
+      <segment>
+        <source>Availability of the Service</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.28">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:109,111</note>
+      </notes>
+      <segment>
+        <source> Uninterrupted or error-free operation </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.29">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:111,114</note>
+      </notes>
+      <segment>
+        <source>Fitness for any particular purpose</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.30">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:114,116</note>
+      </notes>
+      <segment>
+        <source>Limitation of Liability</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.31">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:117,122</note>
+      </notes>
+      <segment>
+        <source> To the fullest extent permitted by applicable law, FringeQuest and its operator shall not be liable for any indirect, incidental, consequential, special, or punitive damages arising from your use of the Service. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.32">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:122,125</note>
+      </notes>
+      <segment>
+        <source>This includes, but is not limited to:</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.33">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:125,126</note>
+      </notes>
+      <segment>
+        <source>Missed performances</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.34">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:126,127</note>
+      </notes>
+      <segment>
+        <source>Scheduling conflicts</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.35">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:128,130</note>
+      </notes>
+      <segment>
+        <source> Incorrect or outdated event information </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.36">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:130,131</note>
+      </notes>
+      <segment>
+        <source>Loss of data</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.37">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:131,134</note>
+      </notes>
+      <segment>
+        <source>Service interruptions</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.38">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:134,136</note>
+      </notes>
+      <segment>
+        <source>Privacy</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.39">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:137,140</note>
+      </notes>
+      <segment>
+        <source> Your use of the Service is also governed by our Privacy Policy. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.40">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:140,142</note>
+      </notes>
+      <segment>
+        <source>Changes to the Service</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.41">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:143,147</note>
+      </notes>
+      <segment>
+        <source> We may modify, suspend, or discontinue any part of the Service at any time without prior notice. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.42">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:147,149</note>
+      </notes>
+      <segment>
+        <source>Changes to These Terms</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.43">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:150,154</note>
+      </notes>
+      <segment>
+        <source> We may update these Terms of Service from time to time. The &quot;Last updated&quot; date at the top of this page indicates when changes were last made. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.44">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:155,159</note>
+      </notes>
+      <segment>
+        <source> Continued use of the Service after changes become effective constitutes acceptance of the updated Terms. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.45">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:159,161</note>
+      </notes>
+      <segment>
+        <source>Governing Law</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.46">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:162,166</note>
+      </notes>
+      <segment>
+        <source> These Terms are governed by the laws of the Province of Alberta and the applicable federal laws of Canada. </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.47">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:166,168</note>
+      </notes>
+      <segment>
+        <source>Contact</source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.48">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:169,173</note>
+      </notes>
+      <segment>
+        <source> If you have questions about these Terms of Service, please contact: </source>
+      </segment>
+    </unit>
+    <unit id="pages.terms.terms.49">
+      <notes>
+        <note category="location">src/app/pages/terms/terms.html:178,180</note>
+      </notes>
+      <segment>
+        <source> hello@jackschaible.ca </source>
+      </segment>
+    </unit>
+  </file>
+</xliff>

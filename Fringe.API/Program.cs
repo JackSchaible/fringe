@@ -2,6 +2,7 @@ using Amazon.CognitoIdentityProvider;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Fringe.API;
+using Fringe.API.Services;
 using Fringe.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -40,6 +41,9 @@ builder.Services.AddSingleton<IDynamoDBContext>(sp =>
         .WithDynamoDBClient(() => sp.GetRequiredService<IAmazonDynamoDB>())
         .Build());
 builder.Services.AddScoped<FringeRepository>();
+builder.Services.AddSingleton(new TransferPolicyOptions());
+builder.Services.AddScoped<IVenueTransferTimeProvider, VenueTransferTimeProvider>();
+builder.Services.AddScoped<IScheduleBuilder, ScheduleBuilder>();
 
 // Auth: Cognito JWT in production, dev stub locally (pass X-Dev-User-Id header)
 string? userPoolId = Environment.GetEnvironmentVariable("COGNITO_USER_POOL_ID");

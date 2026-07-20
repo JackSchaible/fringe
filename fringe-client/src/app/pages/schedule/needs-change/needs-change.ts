@@ -2,7 +2,7 @@ import { Component, input } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import type { ScheduleItem } from '../../../models';
-import { faCircleInfo } from '@fortawesome/pro-light-svg-icons';
+import { faCircleInfo } from '../../../vendor/fontawesome-icons/light';
 
 const MS_PER_MINUTE = 60_000,
   showEndTime = (item: Readonly<ScheduleItem>): Date =>
