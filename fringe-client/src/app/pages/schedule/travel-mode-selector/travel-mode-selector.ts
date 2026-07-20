@@ -3,7 +3,7 @@ import {
   faCar,
   faPersonBiking,
   faPersonWalking,
-} from '@fortawesome/pro-light-svg-icons';
+} from '../../../vendor/fontawesome-icons/light';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import type { TravelMode } from '../../../models';
 

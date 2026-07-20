@@ -1,5 +1,8 @@
 import { Component, computed, input } from '@angular/core';
-import { faClock, faLocationDot } from '@fortawesome/pro-light-svg-icons';
+import {
+  faClock,
+  faLocationDot,
+} from '../../../vendor/fontawesome-icons/light';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import type { Show } from '../../../models';
 import { venueDisplayName } from '../../../venue-display';

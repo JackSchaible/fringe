@@ -18,8 +18,8 @@ import { FormsModule } from '@angular/forms';
 import { RankedShowItemComponent } from './ranked-show-item/ranked-show-item';
 import { ShowDetailPanelComponent } from './show-detail-panel/show-detail-panel';
 import { ShowsFiltersComponent } from './shows-filters/shows-filters';
-import { faCircleNotch } from '@fortawesome/pro-solid-svg-icons';
-import { faListOl } from '@fortawesome/pro-regular-svg-icons';
+import { faCircleNotch } from '../../vendor/fontawesome-icons/solid';
+import { faListOl } from '../../vendor/fontawesome-icons/regular';
 import { firstValueFrom } from 'rxjs';
 import { venueDisplayName } from '../../venue-display';
 

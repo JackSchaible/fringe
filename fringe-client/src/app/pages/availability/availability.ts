@@ -26,7 +26,7 @@ import { ApiService } from '../../services/api.service';
 import { CalendarMonthComponent } from './calendar-month/calendar-month';
 import type { EventImpl } from '@fullcalendar/core/internal';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faCheck } from '@fortawesome/pro-solid-svg-icons';
+import { faCheck } from '../../vendor/fontawesome-icons/solid';
 import { firstValueFrom } from 'rxjs';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';

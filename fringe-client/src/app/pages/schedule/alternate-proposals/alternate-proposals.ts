@@ -1,10 +1,13 @@
 import type { AlternateProposal, ScheduleItem } from '../../../models';
 import { Component, input, output, signal } from '@angular/core';
-import { faChevronDown, faChevronUp } from '@fortawesome/pro-light-svg-icons';
+import {
+  faChevronDown,
+  faChevronUp,
+} from '../../../vendor/fontawesome-icons/light';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NeedsChangeComponent } from '../needs-change/needs-change';
 import { ProposalScheduleItemComponent } from '../proposal-schedule-item/proposal-schedule-item';
-import { faCheck } from '@fortawesome/pro-solid-svg-icons';
+import { faCheck } from '../../../vendor/fontawesome-icons/solid';
 
 type ReadonlyAlternateProposal = Readonly<{
   description: AlternateProposal['description'];

@@ -1,6 +1,9 @@
 import { Component, computed, input, output, signal } from '@angular/core';
 import { PillGroupComponent, type PillOption } from '../pill-group/pill-group';
-import { faChevronDown, faChevronUp } from '@fortawesome/pro-light-svg-icons';
+import {
+  faChevronDown,
+  faChevronUp,
+} from '../../../vendor/fontawesome-icons/light';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { RangeSliderComponent } from '../range-slider/range-slider';
 import type { Show } from '../../../models';

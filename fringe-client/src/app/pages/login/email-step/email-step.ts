@@ -2,8 +2,8 @@ import { Component, input, model, output } from '@angular/core';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { faEnvelope } from '@fortawesome/pro-regular-svg-icons';
-import { faPaperPlane } from '@fortawesome/pro-solid-svg-icons';
+import { faEnvelope } from '../../../vendor/fontawesome-icons/regular';
+import { faPaperPlane } from '../../../vendor/fontawesome-icons/solid';
 
 @Component({
   imports: [FormsModule, FaIconComponent, RouterLink],

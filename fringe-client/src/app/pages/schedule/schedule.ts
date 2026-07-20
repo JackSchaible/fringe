@@ -11,7 +11,7 @@ import {
   faCalendarClock,
   faCalendarXmark,
   faUserGroup,
-} from '@fortawesome/pro-light-svg-icons';
+} from '../../vendor/fontawesome-icons/light';
 import { AlternateProposalsComponent } from './alternate-proposals/alternate-proposals';
 import { ApiService } from '../../services/api.service';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -20,7 +20,7 @@ import { MissedShowsListComponent } from './missed-shows-list/missed-shows-list'
 import { ScheduleItemRowComponent } from './schedule-item-row/schedule-item-row';
 import { TravelModeAssumptionComponent } from './travel-mode-assumption/travel-mode-assumption';
 import { TravelModeSelectorComponent } from './travel-mode-selector/travel-mode-selector';
-import { faCheck } from '@fortawesome/pro-solid-svg-icons';
+import { faCheck } from '../../vendor/fontawesome-icons/solid';
 
 const HTTP_BAD_REQUEST = 400;
 const DEFAULT_TRAVEL_MODE: TravelMode = 'walking';

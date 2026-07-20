@@ -2,7 +2,7 @@ import { Component, input, model, output } from '@angular/core';
 import {
   faArrowRightToBracket,
   faUser,
-} from '@fortawesome/pro-solid-svg-icons';
+} from '../../../vendor/fontawesome-icons/solid';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { FormsModule } from '@angular/forms';
 

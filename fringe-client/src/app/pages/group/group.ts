@@ -5,7 +5,7 @@ import {
   faTicket,
   faUser,
   faUsers,
-} from '@fortawesome/pro-regular-svg-icons';
+} from '../../vendor/fontawesome-icons/regular';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -13,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 import type { Group } from '../../models';
 import { GroupMembersListComponent } from './group-members-list/group-members-list';
 import type { HttpErrorResponse } from '@angular/common/http';
-import { faCheck } from '@fortawesome/pro-solid-svg-icons';
+import { faCheck } from '../../vendor/fontawesome-icons/solid';
 
 const TOAST_DURATION_MS = 2_000;
 

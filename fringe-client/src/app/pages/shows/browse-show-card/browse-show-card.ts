@@ -1,5 +1,8 @@
 import { Component, input, output } from '@angular/core';
-import { faCircleInfo, faMasksTheater } from '@fortawesome/pro-solid-svg-icons';
+import {
+  faCircleInfo,
+  faMasksTheater,
+} from '../../../vendor/fontawesome-icons/solid';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgOptimizedImage } from '@angular/common';
 import type { Show } from '../../../models';

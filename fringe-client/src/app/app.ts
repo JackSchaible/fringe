@@ -6,7 +6,7 @@ import {
   faClock,
   faFilm,
   faUsers,
-} from '@fortawesome/pro-solid-svg-icons';
+} from './vendor/fontawesome-icons/solid';
 import { AuthService } from './services/auth.service';
 import { CookieConsentDrawerComponent } from './components/cookie-consent-drawer/cookie-consent-drawer';
 import { CookieConsentService } from './services/cookie-consent.service';
