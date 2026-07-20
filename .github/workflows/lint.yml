@@ -26,14 +26,6 @@ jobs:
         with:
           version: 10
 
-      - name: Configure Font Awesome auth
-        run: |
-          cat > fringe-client/.npmrc <<'EOF'
-          @fortawesome:registry=https://npm.fontawesome.com/
-          //npm.fontawesome.com/:_authToken=${{ secrets.FONT_AWESOME_TOKEN }}
-          always-auth=true
-          EOF
-
       - name: Install frontend dependencies
         working-directory: fringe-client
         run: pnpm install --frozen-lockfile
