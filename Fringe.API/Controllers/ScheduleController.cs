@@ -2,6 +2,7 @@ using System.Globalization;
 using Fringe.API.Services;
 using Fringe.Data;
 using Fringe.Data.DynamoRecords;
+using Fringe.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,9 +15,20 @@ namespace Fringe.API.Controllers;
 internal sealed class ScheduleController(FringeRepository repo, IScheduleBuilder scheduleBuilder) : ControllerBase
 {
     /// <summary>Returns the computed schedule for the current user's group.</summary>
+    /// <param name="mode">
+    /// The group travel mode to assume for every transfer check in this schedule — "walking",
+    /// "cycling", or "driving" (case-insensitive). Omitted or empty is treated as "walking".
+    /// The scheduler applies exactly one mode uniformly; it never mixes modes to find a faster
+    /// transition (FA-37).
+    /// </param>
     [HttpGet]
-    public async Task<ActionResult<ScheduleResponseDto>> GetSchedule()
+    public async Task<ActionResult<ScheduleResponseDto>> GetSchedule([FromQuery] string? mode = null)
     {
+        if (!TryParseTravelMode(mode, out TravelMode travelMode))
+        {
+            return BadRequest($"Invalid travel mode '{mode}'. Supported values: walking, cycling, driving.");
+        }
+
         string userId = GetUserId();
         UserRecord? user = await repo.GetUserAsync(userId).ConfigureAwait(false);
         if (user?.GroupId == null)
@@ -56,9 +68,11 @@ internal sealed class ScheduleController(FringeRepository repo, IScheduleBuilder
             }
         }
 
+        string travelModeString = TravelModeToApiString(travelMode);
+
         if (scores.Count == 0)
         {
-            return Ok(new ScheduleResponseDto([], [], [], HasVotes: false));
+            return Ok(new ScheduleResponseDto([], [], [], HasVotes: false, travelModeString));
         }
 
         List<ShowRecord> allShows = await repo.GetAllShowsAsync().ConfigureAwait(false);
@@ -78,7 +92,7 @@ internal sealed class ScheduleController(FringeRepository repo, IScheduleBuilder
 
         var memberNames = members.ToDictionary(m => m.UserId, m => (string?)(m.DisplayName ?? m.Email));
 
-        List<ScheduleItemDto> mainItems = await scheduleBuilder.BuildScheduleAsync(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: null).ConfigureAwait(false);
+        List<ScheduleItemDto> mainItems = await scheduleBuilder.BuildScheduleAsync(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: null, travelMode).ConfigureAwait(false);
 
         var proposals = new List<AlternateProposalDto>();
         foreach (GroupMemberRecord member in members)
@@ -88,7 +102,7 @@ internal sealed class ScheduleController(FringeRepository repo, IScheduleBuilder
                 continue;
             }
 
-            List<ScheduleItemDto> altItems = await scheduleBuilder.BuildScheduleAsync(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: member.UserId).ConfigureAwait(false);
+            List<ScheduleItemDto> altItems = await scheduleBuilder.BuildScheduleAsync(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: member.UserId, travelMode).ConfigureAwait(false);
             int extra = altItems.Count - mainItems.Count;
             if (extra <= 0)
             {
@@ -106,7 +120,39 @@ internal sealed class ScheduleController(FringeRepository repo, IScheduleBuilder
 
         List<MissedShowDto> missedShows = ComputeMissedShows(votedShows, showTimesMap, mainItems, availabilityMap, memberNames);
 
-        return Ok(new ScheduleResponseDto(mainItems, proposals, missedShows, HasVotes: true));
+        return Ok(new ScheduleResponseDto(mainItems, proposals, missedShows, HasVotes: true, travelModeString));
+    }
+
+    private static bool TryParseTravelMode(string? raw, out TravelMode mode)
+    {
+        if (string.IsNullOrEmpty(raw))
+        {
+            mode = TravelMode.Walking;
+            return true;
+        }
+
+        foreach (TravelMode candidate in Enum.GetValues<TravelMode>())
+        {
+            if (string.Equals(raw, candidate.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                mode = candidate;
+                return true;
+            }
+        }
+
+        mode = default;
+        return false;
+    }
+
+    private static string TravelModeToApiString(TravelMode mode)
+    {
+        return mode switch
+        {
+            TravelMode.Walking => "walking",
+            TravelMode.Cycling => "cycling",
+            TravelMode.Driving => "driving",
+            _ => "walking",
+        };
     }
 
     private static List<string> GetBlockingMembers(

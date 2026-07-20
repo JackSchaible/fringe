@@ -1,6 +1,14 @@
 <div class="schedule-page">
   <h1 i18n="@@pages.schedule.schedule.02">Group Schedule</h1>
 
+  @if (!loading() && !noGroup() && hasVotes()) {
+    <fg-travel-mode-selector
+      [mode]="travelMode()"
+      (modeChange)="setTravelMode($event)"
+    />
+    <fg-travel-mode-assumption [mode]="travelMode()" />
+  }
+
   @if (loading()) {
     <p i18n="@@pages.schedule.schedule.03" class="status">
       Computing schedule…

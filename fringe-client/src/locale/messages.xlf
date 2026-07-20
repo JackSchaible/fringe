@@ -1116,7 +1116,7 @@
     </unit>
     <unit id="pages.schedule.schedule.02">
       <notes>
-        <note category="location">src/app/pages/schedule/schedule.html:2,5</note>
+        <note category="location">src/app/pages/schedule/schedule.html:2,4</note>
       </notes>
       <segment>
         <source>Group Schedule</source>
@@ -1124,7 +1124,7 @@
     </unit>
     <unit id="pages.schedule.schedule.03">
       <notes>
-        <note category="location">src/app/pages/schedule/schedule.html:6,8</note>
+        <note category="location">src/app/pages/schedule/schedule.html:14,16</note>
       </notes>
       <segment>
         <source> Computing schedule… </source>
@@ -1132,7 +1132,7 @@
     </unit>
     <unit id="pages.schedule.schedule.04">
       <notes>
-        <note category="location">src/app/pages/schedule/schedule.html:11,13</note>
+        <note category="location">src/app/pages/schedule/schedule.html:19,21</note>
       </notes>
       <segment>
         <source>You&apos;re not in a group yet.</source>
@@ -1140,7 +1140,7 @@
     </unit>
     <unit id="pages.schedule.schedule.05">
       <notes>
-        <note category="location">src/app/pages/schedule/schedule.html:16,19</note>
+        <note category="location">src/app/pages/schedule/schedule.html:24,27</note>
       </notes>
       <segment>
         <source>Create or join a group</source>
@@ -1148,7 +1148,7 @@
     </unit>
     <unit id="pages.schedule.schedule.06">
       <notes>
-        <note category="location">src/app/pages/schedule/schedule.html:23,26</note>
+        <note category="location">src/app/pages/schedule/schedule.html:31,34</note>
       </notes>
       <segment>
         <source> No schedule yet: your group hasn&apos;t ranked any shows. </source>
@@ -1156,7 +1156,7 @@
     </unit>
     <unit id="pages.schedule.schedule.07">
       <notes>
-        <note category="location">src/app/pages/schedule/schedule.html:29,32</note>
+        <note category="location">src/app/pages/schedule/schedule.html:37,40</note>
       </notes>
       <segment>
         <source>Go rate shows</source>
@@ -1164,7 +1164,7 @@
     </unit>
     <unit id="pages.schedule.schedule.08">
       <notes>
-        <note category="location">src/app/pages/schedule/schedule.html:39,41</note>
+        <note category="location">src/app/pages/schedule/schedule.html:47,49</note>
       </notes>
       <segment>
         <source> No shows fit everyone&apos;s availability </source>
@@ -1172,7 +1172,7 @@
     </unit>
     <unit id="schedule.blocked-sub">
       <notes>
-        <note category="location">src/app/pages/schedule/schedule.html:42,46</note>
+        <note category="location">src/app/pages/schedule/schedule.html:50,54</note>
       </notes>
       <segment>
         <source> Your group has rated shows, but no showtimes fall within a window when everyone is free. <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a routerLink=&quot;/availability&quot;&gt;" dispEnd="&lt;/a&gt;">Update your availability</pc> or see the proposals below. </source>
@@ -1180,7 +1180,7 @@
     </unit>
     <unit id="schedule.proposals-subtitle-empty">
       <notes>
-        <note category="location">src/app/pages/schedule/schedule.html:56,57</note>
+        <note category="location">src/app/pages/schedule/schedule.html:64,65</note>
       </notes>
       <segment>
         <source>Here&apos;s what fits if someone adjusts their availability or is excluded from scheduling.</source>
@@ -1188,7 +1188,7 @@
     </unit>
     <unit id="schedule.active-banner">
       <notes>
-        <note category="location">src/app/pages/schedule/schedule.html:67,74</note>
+        <note category="location">src/app/pages/schedule/schedule.html:75,82</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;"></pc> Viewing alternate — <ph id="1" equiv="INTERPOLATION" disp="{{ proposals()[activeIndex].excludedMemberName }}"/>&apos;s constraints removed <pc id="2" equivStart="START_TAG_BUTTON" equivEnd="CLOSE_TAG_BUTTON" type="other" dispStart="&lt;button type=&quot;button&quot; class=&quot;btn-reset&quot; (click)=&quot;resetToMain()&quot;&gt;" dispEnd="&lt;/button&gt;"> Back to main schedule </pc></source>
@@ -1196,7 +1196,7 @@
     </unit>
     <unit id="pages.schedule.schedule.11">
       <notes>
-        <note category="location">src/app/pages/schedule/schedule.html:77,80</note>
+        <note category="location">src/app/pages/schedule/schedule.html:85,88</note>
       </notes>
       <segment>
         <source> <ph id="0" equiv="INTERPOLATION" disp="{{ activeSchedule().length }}"/> shows selected from group votes </source>
@@ -1204,10 +1204,66 @@
     </unit>
     <unit id="schedule.proposals-subtitle-full">
       <notes>
-        <note category="location">src/app/pages/schedule/schedule.html:96,97</note>
+        <note category="location">src/app/pages/schedule/schedule.html:104,105</note>
       </notes>
       <segment>
         <source>More shows could fit if someone adjusts their availability or is excluded from scheduling.</source>
+      </segment>
+    </unit>
+    <unit id="schedule.assumption.walking">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-assumption/travel-mode-assumption.html:5,8</note>
+      </notes>
+      <segment>
+        <source>Schedule generated assuming the group travels by walking.</source>
+      </segment>
+    </unit>
+    <unit id="schedule.assumption.cycling">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-assumption/travel-mode-assumption.html:10,14</note>
+      </notes>
+      <segment>
+        <source>Schedule generated assuming the group travels by bicycle or scooter.</source>
+      </segment>
+    </unit>
+    <unit id="schedule.assumption.driving">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-assumption/travel-mode-assumption.html:16,22</note>
+      </notes>
+      <segment>
+        <source>Schedule generated assuming the group travels by car. Driving time includes an estimate for parking and getting to the venue.</source>
+      </segment>
+    </unit>
+    <unit id="schedule.travel-mode.group-label">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-selector/travel-mode-selector.html:4,5</note>
+      </notes>
+      <segment>
+        <source>Travel mode</source>
+      </segment>
+    </unit>
+    <unit id="schedule.travel-mode.walking">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-selector/travel-mode-selector.html:14,17</note>
+      </notes>
+      <segment>
+        <source>Walking</source>
+      </segment>
+    </unit>
+    <unit id="schedule.travel-mode.cycling">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-selector/travel-mode-selector.html:23,26</note>
+      </notes>
+      <segment>
+        <source>Bicycle or scooter</source>
+      </segment>
+    </unit>
+    <unit id="schedule.travel-mode.driving">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-selector/travel-mode-selector.html:32,35</note>
+      </notes>
+      <segment>
+        <source>Driving</source>
       </segment>
     </unit>
     <unit id="pages.shows.shows.08.rel">

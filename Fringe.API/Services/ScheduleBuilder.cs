@@ -9,15 +9,6 @@ namespace Fringe.API.Services;
 internal sealed class ScheduleBuilder(IVenueTransferTimeProvider transferTimeProvider) : IScheduleBuilder
 {
     /// <summary>
-    /// The group travel mode scheduling uses today. Fixed and explicit rather than picked
-    /// per-request — FA-36 deliberately left "how a group's travel mode is chosen" as its own
-    /// product decision, so this must not silently default to whichever mode is fastest.
-    /// Walking is the most conservative of the three supported modes for typical short,
-    /// pedestrian-scale festival-venue hops, which is why it's the placeholder default.
-    /// </summary>
-    private const TravelMode defaultTravelMode = TravelMode.Walking;
-
-    /// <summary>
     /// Sentinel used when a show has no resolvable venue number (a null embedded <c>Venue</c>,
     /// or — matching <c>DetailScraper</c>'s own convention for an unparsed venue — a
     /// <see cref="VenueData.VenueNumber"/> of -1). Routed through the same
@@ -36,7 +27,8 @@ internal sealed class ScheduleBuilder(IVenueTransferTimeProvider transferTimePro
         Dictionary<int, List<string>> showTimesMap,
         Dictionary<int, int> scores,
         Dictionary<string, List<(DateTime Start, DateTime End)>> availabilityMap,
-        string? excludedUserId)
+        string? excludedUserId,
+        TravelMode travelMode)
     {
         List<ScheduleItemDto> schedule = [];
         List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots = [];
@@ -70,7 +62,7 @@ internal sealed class ScheduleBuilder(IVenueTransferTimeProvider transferTimePro
                     continue;
                 }
 
-                if (!await IsTransferFeasibleAsync(start, end, venueNumber, bookedSlots).ConfigureAwait(false))
+                if (!await IsTransferFeasibleAsync(start, end, venueNumber, bookedSlots, travelMode).ConfigureAwait(false))
                 {
                     continue;
                 }
@@ -94,14 +86,15 @@ internal sealed class ScheduleBuilder(IVenueTransferTimeProvider transferTimePro
         DateTime start,
         DateTime end,
         int venueNumber,
-        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots)
+        List<(DateTime Start, DateTime End, int VenueNumber)> bookedSlots,
+        TravelMode travelMode)
     {
         List<(DateTime Start, DateTime End, int VenueNumber)> before = [.. bookedSlots.Where(s => s.End <= start)];
         if (before.Count > 0)
         {
             (_, DateTime previousEnd, int previousVenueNumber) = before.OrderByDescending(s => s.End).First();
             TransferGapResult required = await transferTimeProvider
-                .GetRequiredGapAsync(previousVenueNumber, venueNumber, defaultTravelMode)
+                .GetRequiredGapAsync(previousVenueNumber, venueNumber, travelMode)
                 .ConfigureAwait(false);
             if (start - previousEnd < required.RequiredGap)
             {
@@ -114,7 +107,7 @@ internal sealed class ScheduleBuilder(IVenueTransferTimeProvider transferTimePro
         {
             (DateTime nextStart, _, int nextVenueNumber) = after.OrderBy(s => s.Start).First();
             TransferGapResult required = await transferTimeProvider
-                .GetRequiredGapAsync(venueNumber, nextVenueNumber, defaultTravelMode)
+                .GetRequiredGapAsync(venueNumber, nextVenueNumber, travelMode)
                 .ConfigureAwait(false);
             if (nextStart - end < required.RequiredGap)
             {

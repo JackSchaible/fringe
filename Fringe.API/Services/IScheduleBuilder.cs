@@ -1,5 +1,6 @@
 using Fringe.API.Controllers;
 using Fringe.Data.DynamoRecords;
+using Fringe.Data.Models;
 
 namespace Fringe.API.Services;
 
@@ -14,11 +15,14 @@ internal interface IScheduleBuilder
     /// <summary>
     /// Returns the accepted schedule items, in show-time order. <paramref name="votedShows"/>
     /// must already be in descending-score order — that's the priority candidates are considered in.
+    /// <paramref name="travelMode"/> is applied uniformly to every transfer check in this build;
+    /// the scheduler never mixes modes to produce a faster transition (FA-37).
     /// </summary>
     Task<List<ScheduleItemDto>> BuildScheduleAsync(
         List<ShowRecord> votedShows,
         Dictionary<int, List<string>> showTimesMap,
         Dictionary<int, int> scores,
         Dictionary<string, List<(DateTime Start, DateTime End)>> availabilityMap,
-        string? excludedUserId);
+        string? excludedUserId,
+        TravelMode travelMode);
 }

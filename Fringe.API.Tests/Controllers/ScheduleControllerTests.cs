@@ -188,6 +188,59 @@ public sealed class ScheduleControllerTests
         Assert.Empty(dto.MissedShows);
     }
 
+    // ── Travel mode (FA-37) ──────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("teleport")]
+    [InlineData("0")]
+    [InlineData(" ")]
+    public async Task GetScheduleInvalidTravelModeReturnsBadRequest(string mode)
+    {
+        Mock<FringeRepository> mockRepo = BuildMockRepo(); // no setups: rejected before any repo access
+        ScheduleController controller = BuildController(mockRepo);
+
+        ActionResult<ScheduleResponseDto> result = await controller.GetSchedule(mode).ConfigureAwait(true);
+
+        _ = Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task GetScheduleOmittedTravelModeDefaultsToWalkingAndIsReflectedInResponse()
+    {
+        Mock<FringeRepository> mockRepo = BuildMockRepo();
+        SetupUserInGroup(mockRepo);
+        _ = mockRepo.Setup(r => r.GetGroupMembersAsync("grp1")).ReturnsAsync([MakeMember(userId)]);
+        _ = mockRepo.Setup(r => r.GetVotesForUserAsync(userId)).ReturnsAsync([]);
+        _ = mockRepo.Setup(r => r.GetAvailabilityAsync(userId)).ReturnsAsync((UserAvailabilityRecord?)null);
+        ScheduleController controller = BuildController(mockRepo);
+
+        ActionResult<ScheduleResponseDto> result = await controller.GetSchedule().ConfigureAwait(true);
+
+        OkObjectResult ok = Assert.IsType<OkObjectResult>(result.Result);
+        ScheduleResponseDto dto = Assert.IsType<ScheduleResponseDto>(ok.Value);
+        Assert.Equal("walking", dto.TravelMode);
+    }
+
+    [Theory]
+    [InlineData("cycling", "cycling")]
+    [InlineData("Driving", "driving")]
+    [InlineData("WALKING", "walking")]
+    public async Task GetScheduleExplicitTravelModeIsCaseInsensitiveAndReflectedInResponse(string requested, string expected)
+    {
+        Mock<FringeRepository> mockRepo = BuildMockRepo();
+        SetupUserInGroup(mockRepo);
+        _ = mockRepo.Setup(r => r.GetGroupMembersAsync("grp1")).ReturnsAsync([MakeMember(userId)]);
+        _ = mockRepo.Setup(r => r.GetVotesForUserAsync(userId)).ReturnsAsync([]);
+        _ = mockRepo.Setup(r => r.GetAvailabilityAsync(userId)).ReturnsAsync((UserAvailabilityRecord?)null);
+        ScheduleController controller = BuildController(mockRepo);
+
+        ActionResult<ScheduleResponseDto> result = await controller.GetSchedule(requested).ConfigureAwait(true);
+
+        OkObjectResult ok = Assert.IsType<OkObjectResult>(result.Result);
+        ScheduleResponseDto dto = Assert.IsType<ScheduleResponseDto>(ok.Value);
+        Assert.Equal(expected, dto.TravelMode);
+    }
+
     // ── Single member, no availability constraints ─────────────────────────────
 
     [Fact]

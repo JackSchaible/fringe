@@ -1,0 +1,34 @@
+<div
+  class="travel-mode-selector"
+  role="group"
+  aria-label="Travel mode"
+  i18n-aria-label="@@schedule.travel-mode.group-label"
+>
+  <button
+    type="button"
+    class="mode-option"
+    [class.active]="mode() === 'walking'"
+    (click)="select('walking')"
+  >
+    <fa-icon [icon]="faPersonWalking" />
+    <span i18n="@@schedule.travel-mode.walking">Walking</span>
+  </button>
+  <button
+    type="button"
+    class="mode-option"
+    [class.active]="mode() === 'cycling'"
+    (click)="select('cycling')"
+  >
+    <fa-icon [icon]="faPersonBiking" />
+    <span i18n="@@schedule.travel-mode.cycling">Bicycle or scooter</span>
+  </button>
+  <button
+    type="button"
+    class="mode-option"
+    [class.active]="mode() === 'driving'"
+    (click)="select('driving')"
+  >
+    <fa-icon [icon]="faCar" />
+    <span i18n="@@schedule.travel-mode.driving">Driving</span>
+  </button>
+</div>

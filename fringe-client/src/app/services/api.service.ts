@@ -1,19 +1,23 @@
-import type {
-  AlternateProposal,
-  Group,
-  MissedShow,
-  ScheduleItem,
-  ScheduleResponse,
-  Show,
-  User,
-  UserAvailability,
-  Vote,
+import {
+  type AlternateProposal,
+  type Group,
+  type MissedShow,
+  type ScheduleItem,
+  type ScheduleResponse,
+  type Show,
+  type TravelMode,
+  type User,
+  type UserAvailability,
+  type Vote,
+  isTravelMode,
 } from '../models';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import type { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { map } from 'rxjs/operators';
+
+const DEFAULT_TRAVEL_MODE: TravelMode = 'walking';
 
 const EMPTY_COUNT = 0;
 
@@ -115,6 +119,13 @@ const getHasVotes = (
   return items.length > EMPTY_COUNT;
 };
 
+const getTravelMode = (raw: Readonly<Record<string, unknown>>): TravelMode => {
+  if (isTravelMode(raw['travelMode'])) {
+    return raw['travelMode'];
+  }
+  return DEFAULT_TRAVEL_MODE;
+};
+
 const parseScheduleResponse = (raw: unknown): ScheduleResponse => {
   // Old backend returned a plain Array<ScheduleItem> — treat it as a partial result with no metadata.
   if (Array.isArray(raw)) {
@@ -124,6 +135,7 @@ const parseScheduleResponse = (raw: unknown): ScheduleResponse => {
       hasVotes: items.length > EMPTY_COUNT,
       items,
       missedShows: [],
+      travelMode: DEFAULT_TRAVEL_MODE,
     };
   }
 
@@ -133,15 +145,17 @@ const parseScheduleResponse = (raw: unknown): ScheduleResponse => {
       hasVotes: false,
       items: [],
       missedShows: [],
+      travelMode: DEFAULT_TRAVEL_MODE,
     };
   }
 
   const items: Array<ScheduleItem> = getItems(raw),
     alternateProposals: Array<AlternateProposal> = getAlternateProposals(raw),
     missedShows: Array<MissedShow> = getMissedShows(raw),
-    hasVotes = getHasVotes(raw, items);
+    hasVotes = getHasVotes(raw, items),
+    travelMode = getTravelMode(raw);
 
-  return { alternateProposals, hasVotes, items, missedShows };
+  return { alternateProposals, hasVotes, items, missedShows, travelMode };
 };
 
 @Injectable({ providedIn: 'root' })
@@ -175,9 +189,13 @@ export class ApiService {
     });
   }
 
-  public getSchedule(): Observable<ScheduleResponse> {
+  public getSchedule(mode?: TravelMode): Observable<ScheduleResponse> {
+    let params = new HttpParams();
+    if (mode) {
+      params = params.set('mode', mode);
+    }
     return this.http
-      .get<unknown>(`${this.base}/api/schedule`)
+      .get<unknown>(`${this.base}/api/schedule`, { params })
       .pipe(map(parseScheduleResponse));
   }
 

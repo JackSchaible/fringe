@@ -1357,6 +1357,33 @@
         <target>Horaire du groupe</target>
       </segment>
     </unit>
+    <unit id="schedule.assumption.walking">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:13,16</note>
+      </notes>
+      <segment>
+        <source>Schedule generated assuming the group travels by walking.</source>
+        <target>Horaire généré en supposant que le groupe se déplace à pied.</target>
+      </segment>
+    </unit>
+    <unit id="schedule.assumption.cycling">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:18,21</note>
+      </notes>
+      <segment>
+        <source>Schedule generated assuming the group travels by bicycle or scooter.</source>
+        <target>Horaire généré en supposant que le groupe se déplace à vélo ou en trottinette.</target>
+      </segment>
+    </unit>
+    <unit id="schedule.assumption.driving">
+      <notes>
+        <note category="location">src/app/pages/schedule/schedule.html:24,27</note>
+      </notes>
+      <segment>
+        <source>Schedule generated assuming the group travels by car. Driving time includes an estimate for parking and getting to the venue.</source>
+        <target>Horaire généré en supposant que le groupe se déplace en voiture. Le temps de trajet en voiture comprend une estimation pour se garer et se rendre à la salle.</target>
+      </segment>
+    </unit>
     <unit id="pages.schedule.schedule.03">
       <notes>
         <note category="location">src/app/pages/schedule/schedule.html:6,8</note>
@@ -1461,6 +1488,42 @@
       <segment>
         <source>More shows could fit if someone adjusts their availability or is excluded from scheduling.</source>
         <target>D’autres spectacles pourraient convenir si quelqu’un modifiait ses disponibilités ou était exclu de la planification.</target>
+      </segment>
+    </unit>
+    <unit id="schedule.travel-mode.group-label">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-selector/travel-mode-selector.html:4,5</note>
+      </notes>
+      <segment>
+        <source>Travel mode</source>
+        <target>Mode de transport</target>
+      </segment>
+    </unit>
+    <unit id="schedule.travel-mode.walking">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-selector/travel-mode-selector.html:14,17</note>
+      </notes>
+      <segment>
+        <source>Walking</source>
+        <target>À pied</target>
+      </segment>
+    </unit>
+    <unit id="schedule.travel-mode.cycling">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-selector/travel-mode-selector.html:23,26</note>
+      </notes>
+      <segment>
+        <source>Bicycle or scooter</source>
+        <target>Vélo ou trottinette</target>
+      </segment>
+    </unit>
+    <unit id="schedule.travel-mode.driving">
+      <notes>
+        <note category="location">src/app/pages/schedule/travel-mode-selector/travel-mode-selector.html:32,35</note>
+      </notes>
+      <segment>
+        <source>Driving</source>
+        <target>En voiture</target>
       </segment>
     </unit>
     <unit id="pages.shows.shows.08.rel">

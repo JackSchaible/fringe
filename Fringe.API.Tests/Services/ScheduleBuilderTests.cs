@@ -36,14 +36,14 @@ public sealed class ScheduleBuilderTests
         return new Mock<IVenueTransferTimeProvider>(MockBehavior.Strict);
     }
 
-    private static void SetupGap(Mock<IVenueTransferTimeProvider> mock, int from, int to, TimeSpan requiredGap)
+    private static void SetupGap(Mock<IVenueTransferTimeProvider> mock, int from, int to, TimeSpan requiredGap, TravelMode mode = TravelMode.Walking)
     {
-        _ = mock.Setup(p => p.GetRequiredGapAsync(from, to, TravelMode.Walking))
+        _ = mock.Setup(p => p.GetRequiredGapAsync(from, to, mode))
                 .ReturnsAsync(new TransferGapResult
                 {
                     FromVenueNumber = from,
                     ToVenueNumber = to,
-                    Mode = TravelMode.Walking,
+                    Mode = mode,
                     AppliedRule = TransferRuleApplied.Matrix,
                     RequiredGap = requiredGap
                 });
@@ -83,7 +83,7 @@ public sealed class ScheduleBuilderTests
         SetupGap(provider, from: 20, to: 10, requiredGap: TimeSpan.FromMinutes(30));
         var builder = new ScheduleBuilder(provider.Object);
 
-        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null).ConfigureAwait(true);
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null, TravelMode.Walking).ConfigureAwait(true);
 
         Assert.Equal(2, result.Count);
         provider.Verify(p => p.GetRequiredGapAsync(20, 10, TravelMode.Walking), Times.Once);
@@ -101,7 +101,7 @@ public sealed class ScheduleBuilderTests
         SetupGap(provider, from: 10, to: 20, requiredGap: TimeSpan.FromMinutes(30));
         var builder = new ScheduleBuilder(provider.Object);
 
-        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null).ConfigureAwait(true);
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null, TravelMode.Walking).ConfigureAwait(true);
 
         Assert.Equal(2, result.Count);
         provider.Verify(p => p.GetRequiredGapAsync(10, 20, TravelMode.Walking), Times.Once);
@@ -126,7 +126,7 @@ public sealed class ScheduleBuilderTests
         SetupGap(provider, from: 20, to: 30, requiredGap: TimeSpan.FromMinutes(30));
         var builder = new ScheduleBuilder(provider.Object);
 
-        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null).ConfigureAwait(true);
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null, TravelMode.Walking).ConfigureAwait(true);
 
         Assert.Equal(3, result.Count);
         provider.Verify(p => p.GetRequiredGapAsync(10, 20, TravelMode.Walking), Times.Once);
@@ -155,7 +155,7 @@ public sealed class ScheduleBuilderTests
         SetupGap(provider, from: 20, to: 30, requiredGap: TimeSpan.FromMinutes(30));
         var builder = new ScheduleBuilder(provider.Object);
 
-        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null).ConfigureAwait(true);
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null, TravelMode.Walking).ConfigureAwait(true);
 
         Assert.Equal(3, result.Count);
         // The wrong-direction pairs (30->20 and 20->10, i.e. treating insertion order as
@@ -187,7 +187,7 @@ public sealed class ScheduleBuilderTests
         // so Strict mode fails the test if ScheduleBuilder calls it anyway.
         var builder = new ScheduleBuilder(provider.Object);
 
-        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null).ConfigureAwait(true);
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null, TravelMode.Walking).ConfigureAwait(true);
 
         Assert.DoesNotContain(result, i => i.Show.ShowId == 2);
         Assert.Equal(2, result.Count); // shows 1 and 3 only
@@ -210,7 +210,7 @@ public sealed class ScheduleBuilderTests
         SetupGap(provider, from: 20, to: 30, requiredGap: TimeSpan.FromHours(1)); // next: infeasible
         var builder = new ScheduleBuilder(provider.Object);
 
-        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null).ConfigureAwait(true);
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null, TravelMode.Walking).ConfigureAwait(true);
 
         Assert.DoesNotContain(result, i => i.Show.ShowId == 2);
         Assert.Equal(2, result.Count); // shows 1 and 3 only
@@ -231,7 +231,7 @@ public sealed class ScheduleBuilderTests
         SetupGap(provider, from: 10, to: 20, requiredGap: TimeSpan.FromMinutes(30));
         var builder = new ScheduleBuilder(provider.Object);
 
-        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null).ConfigureAwait(true);
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null, TravelMode.Walking).ConfigureAwait(true);
 
         Assert.Contains(result, i => i.Show.ShowId == 2);
     }
@@ -248,7 +248,7 @@ public sealed class ScheduleBuilderTests
         SetupGap(provider, from: 10, to: 20, requiredGap: TimeSpan.FromMinutes(30));
         var builder = new ScheduleBuilder(provider.Object);
 
-        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null).ConfigureAwait(true);
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null, TravelMode.Walking).ConfigureAwait(true);
 
         Assert.DoesNotContain(result, i => i.Show.ShowId == 2);
     }
@@ -272,7 +272,7 @@ public sealed class ScheduleBuilderTests
         SetupGap(provider, from: 10, to: 10, requiredGap: TimeSpan.FromMinutes(5));
         var builder = new ScheduleBuilder(provider.Object);
 
-        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null).ConfigureAwait(true);
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null, TravelMode.Walking).ConfigureAwait(true);
 
         Assert.Equal(2, result.Count);
         provider.Verify(p => p.GetRequiredGapAsync(10, 10, TravelMode.Walking), Times.Once);
@@ -298,7 +298,7 @@ public sealed class ScheduleBuilderTests
         SetupGap(provider, from: 20, to: 10, requiredGap: TimeSpan.FromHours(1)); // reverse: stricter, and insufficient here
         var builder = new ScheduleBuilder(provider.Object);
 
-        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null).ConfigureAwait(true);
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null, TravelMode.Walking).ConfigureAwait(true);
 
         // Show 2 is rejected by the reverse (20 -> 10) direction's stricter requirement, even
         // though the forward (10 -> 20) direction was satisfied.
@@ -323,7 +323,7 @@ public sealed class ScheduleBuilderTests
         SetupGap(provider, from: 10, to: -1, requiredGap: TimeSpan.FromMinutes(30));
         var builder = new ScheduleBuilder(provider.Object);
 
-        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null).ConfigureAwait(true);
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null, TravelMode.Walking).ConfigureAwait(true);
 
         Assert.Equal(2, result.Count);
         provider.Verify(p => p.GetRequiredGapAsync(10, -1, TravelMode.Walking), Times.Once);
@@ -343,7 +343,7 @@ public sealed class ScheduleBuilderTests
         SetupGap(provider, from: 10, to: -1, requiredGap: TimeSpan.FromHours(1)); // conservative fallback
         var builder = new ScheduleBuilder(provider.Object);
 
-        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null).ConfigureAwait(true);
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null, TravelMode.Walking).ConfigureAwait(true);
 
         Assert.DoesNotContain(result, i => i.Show.ShowId == 2);
     }
@@ -367,7 +367,7 @@ public sealed class ScheduleBuilderTests
         Mock<IVenueTransferTimeProvider> provider = MockProvider(); // no setups at all
         var builder = new ScheduleBuilder(provider.Object);
 
-        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, unavailable, excludedUserId: null).ConfigureAwait(true);
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, unavailable, excludedUserId: null, TravelMode.Walking).ConfigureAwait(true);
 
         Assert.Empty(result);
     }
@@ -381,9 +381,33 @@ public sealed class ScheduleBuilderTests
         Mock<IVenueTransferTimeProvider> provider = MockProvider(); // single show, no neighbours -> no calls
         var builder = new ScheduleBuilder(provider.Object);
 
-        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null).ConfigureAwait(true);
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null, TravelMode.Walking).ConfigureAwait(true);
 
         _ = Assert.Single(result);
         Assert.Equal(42, result[0].GroupScore);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Travel mode selection (FA-37)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task SelectedTravelModeIsPassedToProviderNotHardcodedToWalking()
+    {
+        // The provider only has a setup for Cycling; a Strict mock proves ScheduleBuilder
+        // queried with the caller-selected mode instead of defaulting to Walking.
+        List<ShowRecord> votedShows = [MakeShow(1, 10), MakeShow(2, 20)];
+        (Dictionary<int, List<string>> times, Dictionary<int, int> scores) = TimesAndScores(
+            (1, "2026-07-10T09:00:00Z"),
+            (2, "2026-07-10T12:00:00Z"));
+
+        Mock<IVenueTransferTimeProvider> provider = MockProvider();
+        SetupGap(provider, from: 10, to: 20, requiredGap: TimeSpan.FromMinutes(30), mode: TravelMode.Cycling);
+        var builder = new ScheduleBuilder(provider.Object);
+
+        List<ScheduleItemDto> result = await builder.BuildScheduleAsync(votedShows, times, scores, noAvailabilityConstraints, excludedUserId: null, TravelMode.Cycling).ConfigureAwait(true);
+
+        Assert.Equal(2, result.Count);
+        provider.Verify(p => p.GetRequiredGapAsync(10, 20, TravelMode.Cycling), Times.Once);
     }
 }

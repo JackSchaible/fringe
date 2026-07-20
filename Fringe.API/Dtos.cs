@@ -11,7 +11,8 @@ internal record ScheduleResponseDto(
     IReadOnlyList<ScheduleItemDto> Items,
     IReadOnlyList<AlternateProposalDto> AlternateProposals,
     IReadOnlyList<MissedShowDto> MissedShows,
-    bool HasVotes
+    bool HasVotes,
+    string TravelMode
 );
 
 /// <summary>DTO for a show that could not be scheduled.</summary>
