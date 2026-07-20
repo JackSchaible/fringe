@@ -1,23 +1,14 @@
 import { Component, input } from '@angular/core';
-import type { Show, TransferConflict } from '../../../models';
-import { MissedShowTagsComponent } from './missed-show-tags/missed-show-tags';
-import { TransferConflictDetailComponent } from './transfer-conflict-detail/transfer-conflict-detail';
+import type { MissedShow } from '../../../models';
+import { MissedShowCardComponent } from './missed-show-card/missed-show-card';
 
 @Component({
-  imports: [MissedShowTagsComponent, TransferConflictDetailComponent],
+  imports: [MissedShowCardComponent],
   selector: 'fg-missed-shows-list',
   styleUrl: './missed-shows-list.scss',
   templateUrl: './missed-shows-list.html',
 })
 export class MissedShowsListComponent {
-  public readonly missedShows = input.required<
-    ReadonlyArray<
-      Readonly<{
-        show: Show;
-        conflictsWithScheduled: boolean;
-        blockedByMembers: ReadonlyArray<string>;
-        transferConflict: Readonly<TransferConflict> | null;
-      }>
-    >
-  >();
+  public readonly missedShows =
+    input.required<ReadonlyArray<Readonly<MissedShow>>>();
 }

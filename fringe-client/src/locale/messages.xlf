@@ -19,7 +19,7 @@
     </unit>
     <unit id="app.nav.shows">
       <notes>
-        <note category="location">src/app/app.html:9,11</note>
+        <note category="location">src/app/app.html:9,12</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faFilm&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faFilm&quot; /&gt;"></pc> Shows </source>
@@ -27,7 +27,7 @@
     </unit>
     <unit id="app.nav.schedule">
       <notes>
-        <note category="location">src/app/app.html:17,19</note>
+        <note category="location">src/app/app.html:17,20</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCalendarDays&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCalendarDays&quot; /&gt;"></pc> Schedule </source>
@@ -35,7 +35,7 @@
     </unit>
     <unit id="app.nav.group">
       <notes>
-        <note category="location">src/app/app.html:21,23</note>
+        <note category="location">src/app/app.html:21,24</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faUsers&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faUsers&quot; /&gt;"></pc> Group </source>
@@ -43,7 +43,7 @@
     </unit>
     <unit id="app.nav.availability">
       <notes>
-        <note category="location">src/app/app.html:29,31</note>
+        <note category="location">src/app/app.html:29,32</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faClock&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faClock&quot; /&gt;"></pc> Availability </source>
@@ -59,7 +59,7 @@
     </unit>
     <unit id="app.03">
       <notes>
-        <note category="location">src/app/app.html:54,56</note>
+        <note category="location">src/app/app.html:54,57</note>
       </notes>
       <segment>
         <source>© <ph id="0" equiv="INTERPOLATION" disp="{{ year }}"/> Cactus Studios. Independent project. Not affiliated with Fringe Theatre Adventures.</source>
@@ -143,7 +143,7 @@
     </unit>
     <unit id="cookie-consent.body">
       <notes>
-        <note category="location">src/app/components/cookie-consent-drawer/cookie-consent-drawer.html:16,19</note>
+        <note category="location">src/app/components/cookie-consent-drawer/cookie-consent-drawer.html:16,20</note>
       </notes>
       <segment>
         <source> Sign-in and security cookies are always active. With your consent we also load Google Fonts and Google Analytics. <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a routerLink=&quot;/privacy&quot;&gt;" dispEnd="&lt;/a&gt;">Privacy policy</pc></source>
@@ -151,7 +151,7 @@
     </unit>
     <unit id="components.cookie_consent_drawer.cookie_consent_drawer.04">
       <notes>
-        <note category="location">src/app/components/cookie-consent-drawer/cookie-consent-drawer.html:28,31</note>
+        <note category="location">src/app/components/cookie-consent-drawer/cookie-consent-drawer.html:28,32</note>
       </notes>
       <segment>
         <source> Reject all </source>
@@ -279,7 +279,7 @@
     </unit>
     <unit id="pages.group.group.04">
       <notes>
-        <note category="location">src/app/pages/group/group.html:20,27</note>
+        <note category="location">src/app/pages/group/group.html:20,28</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_BLOCK_IF" equivEnd="CLOSE_BLOCK_IF" type="other" dispStart="@if (copied()) {" dispEnd="}"><pc id="1" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCopy&quot; /&gt;"></pc> Copied </pc><pc id="2" equivStart="START_BLOCK_ELSE" equivEnd="CLOSE_BLOCK_ELSE" type="other" dispStart="@else {" dispEnd="}"><pc id="3" equivStart="START_TAG_FA_ICON_1" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCopy&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCopy&quot; /&gt;"></pc> Copy code </pc></source>
@@ -345,7 +345,7 @@
     </unit>
     <unit id="pages.group.group.11">
       <notes>
-        <note category="location">src/app/pages/group/group.html:76,78</note>
+        <note category="location">src/app/pages/group/group.html:77,78</note>
       </notes>
       <segment>
         <source>or</source>
@@ -433,7 +433,7 @@
     </unit>
     <unit id="login.email-hint">
       <notes>
-        <note category="location">src/app/pages/login/email-step/email-step.html:3,6</note>
+        <note category="location">src/app/pages/login/email-step/email-step.html:3,7</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon class=&quot;hint-icon&quot; [icon]=&quot;faEnvelope&quot; /&gt;" dispEnd="&lt;fa-icon class=&quot;hint-icon&quot; [icon]=&quot;faEnvelope&quot; /&gt;"></pc> Enter your email to receive a sign-in code. </source>
@@ -461,7 +461,7 @@
     </unit>
     <unit id="pages.login.login.09">
       <notes>
-        <note category="location">src/app/pages/login/email-step/email-step.html:34,41</note>
+        <note category="location">src/app/pages/login/email-step/email-step.html:34,42</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_BLOCK_IF" equivEnd="CLOSE_BLOCK_IF" type="other" dispStart="@if (loading()) {" dispEnd="}"> Sending… </pc><pc id="1" equivStart="START_BLOCK_ELSE" equivEnd="CLOSE_BLOCK_ELSE" type="other" dispStart="@else {" dispEnd="}"><pc id="2" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faPaperPlane&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faPaperPlane&quot; /&gt;"></pc> Send code </pc></source>
@@ -493,7 +493,7 @@
     </unit>
     <unit id="pages.login.login.04.placeholder">
       <notes>
-        <note category="location">src/app/pages/login/login.html:42,43</note>
+        <note category="location">src/app/pages/login/login.html:43</note>
       </notes>
       <segment>
         <source>user-id</source>
@@ -518,7 +518,7 @@
     </unit>
     <unit id="pages.login.login.02.inputmode">
       <notes>
-        <note category="location">src/app/pages/login/otp-step/otp-step.html:10,11</note>
+        <note category="location">src/app/pages/login/otp-step/otp-step.html:11</note>
       </notes>
       <segment>
         <source>numeric</source>
@@ -542,7 +542,7 @@
     </unit>
     <unit id="login.username-hint">
       <notes>
-        <note category="location">src/app/pages/login/username-step/username-step.html:3,6</note>
+        <note category="location">src/app/pages/login/username-step/username-step.html:3,7</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon class=&quot;hint-icon&quot; [icon]=&quot;faUser&quot; /&gt;" dispEnd="&lt;fa-icon class=&quot;hint-icon&quot; [icon]=&quot;faUser&quot; /&gt;"></pc> Choose a display name so your friends know who you are. </source>
@@ -558,7 +558,7 @@
     </unit>
     <unit id="pages.login.login.11">
       <notes>
-        <note category="location">src/app/pages/login/username-step/username-step.html:22,29</note>
+        <note category="location">src/app/pages/login/username-step/username-step.html:22,30</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_BLOCK_IF" equivEnd="CLOSE_BLOCK_IF" type="other" dispStart="@if (loading()) {" dispEnd="}"> Saving… </pc><pc id="1" equivStart="START_BLOCK_ELSE" equivEnd="CLOSE_BLOCK_ELSE" type="other" dispStart="@else {" dispEnd="}"><pc id="2" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faArrowRightToBracket&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faArrowRightToBracket&quot; /&gt;"></pc> <ph id="3" equiv="INTERPOLATION" disp="{{ username().trim() ? &apos;Save &amp; continue&apos; : &apos;Skip&apos; }}"/> </pc></source>
@@ -598,7 +598,7 @@
     </unit>
     <unit id="pages.privacy.privacy.07">
       <notes>
-        <note category="location">src/app/pages/privacy/privacy.html:16,21</note>
+        <note category="location">src/app/pages/privacy/privacy.html:16,22</note>
       </notes>
       <segment>
         <source> FringeQuest (&quot;the Service&quot;) is an independent scheduling tool created to help attendees plan their experience at the 2026 Edmonton International Fringe Festival. FringeQuest is not affiliated with or endorsed by the Edmonton International Fringe Theatre Festival. </source>
@@ -814,7 +814,7 @@
     </unit>
     <unit id="pages.privacy.privacy.34">
       <notes>
-        <note category="location">src/app/pages/privacy/privacy.html:104,109</note>
+        <note category="location">src/app/pages/privacy/privacy.html:104,110</note>
       </notes>
       <segment>
         <source> We use Google Analytics to understand how visitors use the Service. Google Analytics may collect information such as pages visited, device information, browser information, and approximate location derived from IP address. </source>
@@ -852,7 +852,7 @@
     </unit>
     <unit id="pages.privacy.privacy.37">
       <notes>
-        <note category="location">src/app/pages/privacy/privacy.html:124,129</note>
+        <note category="location">src/app/pages/privacy/privacy.html:124,130</note>
       </notes>
       <segment>
         <source> We use Cloudflare Turnstile to help protect the Service from automated abuse and spam. Turnstile may process technical information such as browser characteristics, IP address, and other signals necessary to determine whether a visitor is likely to be human. </source>
@@ -914,7 +914,7 @@
     </unit>
     <unit id="pages.privacy.privacy.43">
       <notes>
-        <note category="location">src/app/pages/privacy/privacy.html:157,162</note>
+        <note category="location">src/app/pages/privacy/privacy.html:157,163</note>
       </notes>
       <segment>
         <source> We take reasonable measures to protect your information from unauthorized access, disclosure, alteration, or destruction. However, no method of storing or transmitting information over the Internet is completely secure, and we cannot guarantee absolute security. </source>
@@ -954,7 +954,7 @@
     </unit>
     <unit id="pages.privacy.privacy.48">
       <notes>
-        <note category="location">src/app/pages/privacy/privacy.html:175,178</note>
+        <note category="location">src/app/pages/privacy/privacy.html:175,180</note>
       </notes>
       <segment>
         <source> Disable cookies through your browser, although doing so may affect some functionality. </source>
@@ -1002,7 +1002,7 @@
     </unit>
     <unit id="pages.privacy.privacy.54">
       <notes>
-        <note category="location">src/app/pages/privacy/privacy.html:197,201</note>
+        <note category="location">src/app/pages/privacy/privacy.html:197,202</note>
       </notes>
       <segment>
         <source> If you have questions about this Privacy Policy, you may contact: </source>
@@ -1038,6 +1038,22 @@
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;"></pc> Accept this scenario </source>
+      </segment>
+    </unit>
+    <unit id="schedule.missed.conflict-detail">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-show-card/missed-show-card.html:22,25</note>
+      </notes>
+      <segment>
+        <source> Overlaps with a show already in your schedule. </source>
+      </segment>
+    </unit>
+    <unit id="schedule.missed.blocked-detail">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-show-card/missed-show-card.html:27,29</note>
+      </notes>
+      <segment>
+        <source> <ph id="0" equiv="INTERPOLATION" disp="{{ name }}"/> isn&apos;t available for any of this show&apos;s times. </source>
       </segment>
     </unit>
     <unit id="pages.schedule.schedule.14">
@@ -1220,7 +1236,7 @@
     </unit>
     <unit id="schedule.active-banner">
       <notes>
-        <note category="location">src/app/pages/schedule/schedule.html:75,82</note>
+        <note category="location">src/app/pages/schedule/schedule.html:75,83</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faCheck&quot; /&gt;"></pc> Viewing alternate — <ph id="1" equiv="INTERPOLATION" disp="{{ proposals()[activeIndex].excludedMemberName }}"/>&apos;s constraints removed <pc id="2" equivStart="START_TAG_BUTTON" equivEnd="CLOSE_TAG_BUTTON" type="other" dispStart="&lt;button type=&quot;button&quot; class=&quot;btn-reset&quot; (click)=&quot;resetToMain()&quot;&gt;" dispEnd="&lt;/button&gt;"> Back to main schedule </pc></source>
@@ -1390,7 +1406,7 @@
     </unit>
     <unit id="shows.duration-stat">
       <notes>
-        <note category="location">src/app/pages/shows/show-detail-stats/show-detail-stats.html:4,7</note>
+        <note category="location">src/app/pages/shows/show-detail-stats/show-detail-stats.html:4,8</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_FA_ICON" equivEnd="CLOSE_TAG_FA_ICON" type="other" dispStart="&lt;fa-icon [icon]=&quot;faClock&quot; /&gt;" dispEnd="&lt;fa-icon [icon]=&quot;faClock&quot; /&gt;"></pc> <ph id="1" equiv="INTERPOLATION" disp="{{ show().lengthInMinutes }}"/> min </source>
@@ -1406,7 +1422,7 @@
     </unit>
     <unit id="pages.shows.shows.20">
       <notes>
-        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:23</note>
+        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:23,24</note>
       </notes>
       <segment>
         <source>Genre</source>
@@ -1454,7 +1470,7 @@
     </unit>
     <unit id="pages.shows.shows.25">
       <notes>
-        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:73,76</note>
+        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:73,77</note>
       </notes>
       <segment>
         <source> Clear filters </source>
@@ -1486,7 +1502,7 @@
     </unit>
     <unit id="pages.shows.shows.02.title">
       <notes>
-        <note category="location">src/app/pages/shows/shows.html:16,17</note>
+        <note category="location">src/app/pages/shows/shows.html:17</note>
       </notes>
       <segment>
         <source>Saving…</source>
@@ -1518,7 +1534,7 @@
     </unit>
     <unit id="pages.shows.shows.07.placeholder">
       <notes>
-        <note category="location">src/app/pages/shows/shows.html:60,61</note>
+        <note category="location">src/app/pages/shows/shows.html:61</note>
       </notes>
       <segment>
         <source>Search…</source>
@@ -1526,7 +1542,7 @@
     </unit>
     <unit id="pages.shows.shows.16">
       <notes>
-        <note category="location">src/app/pages/shows/shows.html:94,95</note>
+        <note category="location">src/app/pages/shows/shows.html:94,96</note>
       </notes>
       <segment>
         <source> No shows yet — the scraper hasn&apos;t run. Check back soon. </source>
@@ -1542,7 +1558,7 @@
     </unit>
     <unit id="pages.shows.shows.18">
       <notes>
-        <note category="location">src/app/pages/shows/shows.html:102,103</note>
+        <note category="location">src/app/pages/shows/shows.html:102,104</note>
       </notes>
       <segment>
         <source> You&apos;ve ranked all the shows! </source>
@@ -1590,7 +1606,7 @@
     </unit>
     <unit id="pages.terms.terms.06">
       <notes>
-        <note category="location">src/app/pages/terms/terms.html:20,23</note>
+        <note category="location">src/app/pages/terms/terms.html:20,24</note>
       </notes>
       <segment>
         <source>FringeQuest is an independent project and is not affiliated with, endorsed by, sponsored by, or operated by the Edmonton International Fringe Theatre Festival.</source>
@@ -1712,7 +1728,7 @@
     </unit>
     <unit id="pages.terms.terms.21">
       <notes>
-        <note category="location">src/app/pages/terms/terms.html:85,89</note>
+        <note category="location">src/app/pages/terms/terms.html:85,91</note>
       </notes>
       <segment>
         <source> You are responsible for confirming show times, ticket availability, venue information, and other important details through the official Edmonton International Fringe Theatre Festival website or box office before attending an event. </source>
@@ -1736,7 +1752,7 @@
     </unit>
     <unit id="pages.terms.terms.25">
       <notes>
-        <note category="location">src/app/pages/terms/terms.html:99,103</note>
+        <note category="location">src/app/pages/terms/terms.html:99,104</note>
       </notes>
       <segment>
         <source> To the fullest extent permitted by law, we make no warranties or guarantees regarding: </source>

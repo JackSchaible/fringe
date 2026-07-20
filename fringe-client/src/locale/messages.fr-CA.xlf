@@ -1284,6 +1284,26 @@
           <ph id="0" equiv="INTERPOLATION" disp="{{ name }}" /> : disponibilités</target>
       </segment>
     </unit>
+    <unit id="schedule.missed.conflict-detail">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-show-card/missed-show-card.html:22,25</note>
+      </notes>
+      <segment>
+        <source> Overlaps with a show already in your schedule. </source>
+        <target> Chevauche un spectacle déjà dans votre horaire. </target>
+      </segment>
+    </unit>
+    <unit id="schedule.missed.blocked-detail">
+      <notes>
+        <note category="location">src/app/pages/schedule/missed-shows-list/missed-show-card/missed-show-card.html:27,29</note>
+      </notes>
+      <segment>
+        <source>
+          <ph id="0" equiv="INTERPOLATION" disp="{{ name }}" /> isn't available for any of this show's times. </source>
+        <target>
+          <ph id="0" equiv="INTERPOLATION" disp="{{ name }}" /> n’est disponible à aucune des heures de ce spectacle. </target>
+      </segment>
+    </unit>
     <unit id="schedule.missed.transfer-tag">
       <notes>
         <note category="location">src/app/pages/schedule/missed-shows-list/missed-shows-list.html:27,30</note>

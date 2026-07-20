@@ -4,21 +4,12 @@
       Didn't Make the Cut
     </h3>
     @for (missed of missedShows(); track missed.show.showId) {
-      <div class="missed-card">
-        <div class="missed-header">
-          <span class="missed-title">{{ missed.show.title }}</span>
-          <div class="missed-tags">
-            <fg-missed-show-tags
-              [conflictsWithScheduled]="missed.conflictsWithScheduled"
-              [blockedByMembers]="missed.blockedByMembers"
-              [hasTransferConflict]="!!missed.transferConflict"
-            />
-          </div>
-        </div>
-        @if (missed.transferConflict; as conflict) {
-          <fg-transfer-conflict-detail [conflict]="conflict" />
-        }
-      </div>
+      <fg-missed-show-card
+        [show]="missed.show"
+        [conflictsWithScheduled]="missed.conflictsWithScheduled"
+        [blockedByMembers]="missed.blockedByMembers"
+        [transferConflict]="missed.transferConflict"
+      />
     }
   </section>
 }

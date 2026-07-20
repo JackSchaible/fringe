@@ -1,5 +1,8 @@
 .missed-section {
   padding-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .missed-heading {
@@ -8,37 +11,5 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-4);
-  margin: 0 0 0.625rem;
-}
-
-.missed-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border-2);
-  border-radius: 0.625rem;
-  padding: 0.7rem 0.875rem;
-  margin-bottom: 0.5rem;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-.missed-header {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: space-between;
-}
-
-.missed-title {
-  font-size: 0.875rem;
-  color: var(--text-2);
-  font-weight: 600;
-}
-
-.missed-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  margin: 0 0 0.125rem;
 }
