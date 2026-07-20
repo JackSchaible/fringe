@@ -43,6 +43,7 @@ builder.Services.AddSingleton<IDynamoDBContext>(sp =>
 builder.Services.AddScoped<FringeRepository>();
 builder.Services.AddSingleton(new TransferPolicyOptions());
 builder.Services.AddScoped<IVenueTransferTimeProvider, VenueTransferTimeProvider>();
+builder.Services.AddScoped<IScheduleBuilder, ScheduleBuilder>();
 
 // Auth: Cognito JWT in production, dev stub locally (pass X-Dev-User-Id header)
 string? userPoolId = Environment.GetEnvironmentVariable("COGNITO_USER_POOL_ID");

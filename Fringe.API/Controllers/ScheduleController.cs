@@ -1,4 +1,5 @@
 using System.Globalization;
+using Fringe.API.Services;
 using Fringe.Data;
 using Fringe.Data.DynamoRecords;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +11,7 @@ namespace Fringe.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-internal sealed class ScheduleController(FringeRepository repo) : ControllerBase
+internal sealed class ScheduleController(FringeRepository repo, IScheduleBuilder scheduleBuilder) : ControllerBase
 {
     /// <summary>Returns the computed schedule for the current user's group.</summary>
     [HttpGet]
@@ -77,7 +78,7 @@ internal sealed class ScheduleController(FringeRepository repo) : ControllerBase
 
         var memberNames = members.ToDictionary(m => m.UserId, m => (string?)(m.DisplayName ?? m.Email));
 
-        List<ScheduleItemDto> mainItems = BuildSchedule(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: null);
+        List<ScheduleItemDto> mainItems = await scheduleBuilder.BuildScheduleAsync(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: null).ConfigureAwait(false);
 
         var proposals = new List<AlternateProposalDto>();
         foreach (GroupMemberRecord member in members)
@@ -87,7 +88,7 @@ internal sealed class ScheduleController(FringeRepository repo) : ControllerBase
                 continue;
             }
 
-            List<ScheduleItemDto> altItems = BuildSchedule(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: member.UserId);
+            List<ScheduleItemDto> altItems = await scheduleBuilder.BuildScheduleAsync(votedShows, showTimesMap, scores, availabilityMap, excludedUserId: member.UserId).ConfigureAwait(false);
             int extra = altItems.Count - mainItems.Count;
             if (extra <= 0)
             {
@@ -106,63 +107,6 @@ internal sealed class ScheduleController(FringeRepository repo) : ControllerBase
         List<MissedShowDto> missedShows = ComputeMissedShows(votedShows, showTimesMap, mainItems, availabilityMap, memberNames);
 
         return Ok(new ScheduleResponseDto(mainItems, proposals, missedShows, HasVotes: true));
-    }
-
-    private static List<ScheduleItemDto> BuildSchedule(
-        List<ShowRecord> votedShows,
-        Dictionary<int, List<string>> showTimesMap,
-        Dictionary<int, int> scores,
-        Dictionary<string, List<(DateTime Start, DateTime End)>> availabilityMap,
-        string? excludedUserId)
-    {
-        var schedule = new List<ScheduleItemDto>();
-        var bookedSlots = new List<(DateTime Start, DateTime End)>();
-
-        var effectiveAvailability = availabilityMap
-            .Where(kvp => kvp.Key != excludedUserId)
-            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-        foreach (ShowRecord show in votedShows)
-        {
-            if (!showTimesMap.TryGetValue(show.ShowId, out List<string>? times))
-            {
-                continue;
-            }
-
-            foreach (string timeStr in times)
-            {
-                var start = DateTime.Parse(timeStr, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-                DateTime end = start.AddMinutes(show.LengthInMinutes);
-
-                bool conflicts = bookedSlots.Any(s => start < s.End && end > s.Start);
-                if (conflicts)
-                {
-                    continue;
-                }
-
-                if (!IsAvailableForAll(start, end, effectiveAvailability))
-                {
-                    continue;
-                }
-
-                schedule.Add(new ScheduleItemDto(ShowsController.ToDto(show, times), timeStr, scores[show.ShowId]));
-                bookedSlots.Add((start, end));
-                break;
-            }
-        }
-
-        return [.. schedule.OrderBy(s => s.ShowTime)];
-    }
-
-    private static bool IsAvailableForAll(
-        DateTime start, DateTime end,
-        Dictionary<string, List<(DateTime Start, DateTime End)>> availabilityMap)
-    {
-        return availabilityMap.All(kvp =>
-        {
-            List<(DateTime Start, DateTime End)> windows = kvp.Value;
-            return windows.Count == 0 || windows.Any(w => w.Start <= start && w.End >= end);
-        });
     }
 
     private static List<string> GetBlockingMembers(

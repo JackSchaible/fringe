@@ -1,7 +1,9 @@
 using Amazon.DynamoDBv2.DataModel;
 using Fringe.API.Controllers;
+using Fringe.API.Services;
 using Fringe.Data;
 using Fringe.Data.DynamoRecords;
+using Fringe.Data.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -12,7 +14,8 @@ namespace Fringe.API.Tests.Controllers;
 /// <summary>
 /// Exhaustive tests for ScheduleController's scheduling algorithm.
 ///
-/// Scheduling algorithm summary (BuildSchedule):
+/// Scheduling algorithm summary (BuildSchedule, now on ScheduleBuilder — see
+/// ScheduleBuilderTests for the venue-transfer-specific matrix):
 /// - Iterates voted shows in descending score order.
 /// - For each show, tries each showtime in chronological order.
 /// - Skips a showtime if it conflicts with an already-booked slot.
@@ -22,8 +25,14 @@ namespace Fringe.API.Tests.Controllers;
 ///   they are treated as never available (blocks everything).
 /// - When NO member has availability (anyoneHasAvailability=false), empty windows
 ///   means unconstrained.
-/// - First non-conflicting, available showtime wins; show is added and we move on.
+/// - First non-conflicting, available, transfer-feasible showtime wins; show is
+///   added and we move on.
 /// - Final list is sorted by ShowTime.
+///
+/// These tests wire in a real ScheduleBuilder backed by a fake IVenueTransferTimeProvider
+/// that always reports a zero required gap — i.e. transfers are always instantly feasible —
+/// so this file continues to exercise (and pin) every non-transfer behaviour unchanged from
+/// before the venue-transfer integration.
 /// </summary>
 public sealed class ScheduleControllerTests
 {
@@ -31,7 +40,7 @@ public sealed class ScheduleControllerTests
 
     private static ScheduleController BuildController(Mock<FringeRepository> mockRepo)
     {
-        return new ScheduleController(mockRepo.Object)
+        return new ScheduleController(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -47,6 +56,21 @@ public sealed class ScheduleControllerTests
     private static Mock<FringeRepository> BuildMockRepo()
     {
         return new Mock<FringeRepository>(MockBehavior.Strict, Mock.Of<IDynamoDBContext>());
+    }
+
+    private static IVenueTransferTimeProvider AlwaysFeasibleTransferProvider()
+    {
+        var mock = new Mock<IVenueTransferTimeProvider>();
+        _ = mock.Setup(p => p.GetRequiredGapAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<TravelMode>()))
+                .ReturnsAsync((int from, int to, TravelMode mode) => new TransferGapResult
+                {
+                    FromVenueNumber = from,
+                    ToVenueNumber = to,
+                    Mode = mode,
+                    AppliedRule = TransferRuleApplied.SameVenue,
+                    RequiredGap = TimeSpan.Zero
+                });
+        return mock.Object;
     }
 
     private static ShowRecord MakeShow(int id, string title, int lengthMinutes = 60)
@@ -464,7 +488,7 @@ public sealed class ScheduleControllerTests
             DisplayName = "U1",
             GroupId = "grp1"
         });
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -515,7 +539,7 @@ public sealed class ScheduleControllerTests
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(1)).ReturnsAsync(
             [MakeShowTime(1, "2025-07-15T10:00:00Z")]);
 
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -578,7 +602,7 @@ public sealed class ScheduleControllerTests
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(2)).ReturnsAsync([MakeShowTime(2, "2025-07-15T12:00:00Z")]);
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(3)).ReturnsAsync([MakeShowTime(3, "2025-07-15T14:00:00Z")]);
 
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -646,7 +670,7 @@ public sealed class ScheduleControllerTests
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(2)).ReturnsAsync(
             [MakeShowTime(2, "2025-07-15T15:00:00Z")]);
 
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -695,7 +719,7 @@ public sealed class ScheduleControllerTests
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(1)).ReturnsAsync(
             [MakeShowTime(1, "2025-07-15T10:00:00Z")]);
 
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -756,7 +780,7 @@ public sealed class ScheduleControllerTests
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(2)).ReturnsAsync([MakeShowTime(2, "2025-07-15T14:00:00Z")]);
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(3)).ReturnsAsync([MakeShowTime(3, "2025-07-15T20:00:00Z")]);
 
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -867,7 +891,7 @@ public sealed class ScheduleControllerTests
         _ = mockRepo.Setup(r => r.GetShowTimesForShowAsync(1)).ReturnsAsync(
             [MakeShowTime(1, "2025-07-15T10:00:00Z")]);
 
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
@@ -930,7 +954,7 @@ public sealed class ScheduleControllerTests
             MakeShowTime(2, "2025-07-15T13:00:00Z"),  // Bob unavailable
         ]);
 
-        ScheduleController controller = new(mockRepo.Object)
+        ScheduleController controller = new(mockRepo.Object, new ScheduleBuilder(AlwaysFeasibleTransferProvider()))
         {
             ControllerContext = new ControllerContext
             {
