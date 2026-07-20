@@ -1,6 +1,6 @@
 # fringe-client
 
-Angular 20 SPA. Talks to `Fringe.API` at `api.fringe.jackschaible.ca`.
+Angular 20 SPA. Talks to `Fringe.API` at `api.fringequest.app`.
 
 ## Dev server
 

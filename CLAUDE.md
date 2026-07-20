@@ -51,7 +51,7 @@ TTL: the table has a `ttl` (epoch-seconds) attribute enabled. Only superseded tr
 
 ## Domain
 
-`fringe.jackschaible.ca` (DNS CNAMEs are added manually after deploy).
+`fringequest.app`. DNS is managed by a CDK-provisioned Route53 hosted zone — see `infra/CLAUDE.md` for the one-time nameserver handoff at the registrar.
 
 ## Verification before finishing a change
 

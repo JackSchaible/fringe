@@ -24,28 +24,34 @@ npx cdk deploy
 
 ## Construct layout
 
-| File                            | What it creates                                                                                                                                                                                                                |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `constructs/dynamo.ts`          | DynamoDB `TableV2` (on-demand) + `entity-type-index` GSI                                                                                                                                                                       |
-| `constructs/api.ts`             | Lambda (Fringe.API) + REST API Gateway + custom domain                                                                                                                                                                         |
-| `constructs/scraper.ts`         | Lambda (Fringe.Scraper) + nightly EventBridge rule                                                                                                                                                                             |
-| `constructs/transfer-matrix.ts` | Lambda (Fringe.TransferMatrix) + nightly EventBridge rule, an hour after the scraper's; `reservedConcurrentExecutions: 1`                                                                                                      |
-| `constructs/frontend.ts`        | S3 bucket + CloudFront OAC distribution + ACM cert + a `BucketDeployment` per locale (en-CA at bucket root, others under `/<url-locale>/`) + a CloudFront Function that routes app requests to the right locale's `index.html` |
-| `lib/fringe-stack.ts`           | Root stack — wires constructs, provisions cert, outputs DNS values                                                                                                                                                             |
+| File                            | What it creates                                                                                                                                                                                                                                        |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `constructs/dynamo.ts`          | DynamoDB `TableV2` (on-demand) + `entity-type-index` GSI                                                                                                                                                                                               |
+| `constructs/api.ts`             | Lambda (Fringe.API) + REST API Gateway + custom domain                                                                                                                                                                                                 |
+| `constructs/scraper.ts`         | Lambda (Fringe.Scraper) + nightly EventBridge rule                                                                                                                                                                                                     |
+| `constructs/transfer-matrix.ts` | Lambda (Fringe.TransferMatrix) + nightly EventBridge rule, an hour after the scraper's; `reservedConcurrentExecutions: 1`                                                                                                                              |
+| `constructs/frontend.ts`        | S3 bucket + CloudFront OAC distribution + ACM cert + Route53 alias records + a `BucketDeployment` per locale (en-CA at bucket root, others under `/<url-locale>/`) + a CloudFront Function that routes app requests to the right locale's `index.html` |
+| `lib/fringe-stack.ts`           | Root stack — wires constructs, provisions cert + hosted zone, outputs DNS values                                                                                                                                                                       |
 
-## ACM certificate
+## ACM certificate & hosted zone
 
-The cert covers `fringe.jackschaible.ca` and `api.fringe.jackschaible.ca`. CloudFront requires ACM certs in `us-east-1`, so the cert lives in a dedicated `FringeCertStack` pinned to `us-east-1`. `FringeStack` receives it via props. Both stacks have `crossRegionReferences: true` so CDK can wire the cross-region reference.
+`FringeCertStack` (pinned to `us-east-1`, since CloudFront requires ACM certs in that region) provisions both:
 
-Validation is DNS-based. After the first deploy, CDK outputs a CNAME record to add at the registrar. The deploy will wait (up to 30 min) until the cert is validated.
+- A Route53 `HostedZone` for `fringequest.app`
+- A `Certificate` covering `fringequest.app` and `api.fringequest.app`, validated via DNS records CDK creates automatically in that hosted zone
 
-## DNS (manual — external registrar)
+`FringeStack` receives both via props (`crossRegionReferences: true` on both stacks wires the cross-region reference). `FringeFrontend` and `FringeApi` each create Route53 alias records (CloudFront apex A/AAAA, API Gateway `api` A record) directly in the hosted zone — no manual CNAMEs needed after the initial nameserver handoff below.
 
-After `cdk deploy`, add these records at the registrar for `jackschaible.ca`:
+## DNS (one-time manual step — external registrar)
 
-1. **ACM validation** — CNAME shown in the CloudFormation console (one-time only)
-2. `CNAME fringe → <value of CloudFrontDomain output>`
-3. `CNAME api.fringe → <value of ApiGatewayDomain output>`
+Route53 can't take over a domain's DNS until the registrar points at its nameservers:
+
+1. `cdk deploy` the `FringeCertStack` (or the full app — order doesn't matter, but the cert stack must synth first to create the hosted zone).
+2. Read the `NameServers` output from `FringeCertStack`.
+3. At fringequest.app's registrar, set those 4 values as the domain's nameservers (this replaces the registrar's default DNS, not just a record — it hands the whole zone to Route53).
+4. Wait for propagation (usually fast, can take up to 48h). Once it resolves, ACM DNS validation, the CloudFront alias, and the API Gateway alias all complete automatically — CDK manages the records, nothing else to add by hand.
+
+`fringequest.app` is an apex/root domain, which is why alias records (not CNAMEs) are used for the CloudFront and API Gateway targets — plain DNS forbids a CNAME at the zone apex, but Route53 ALIAS records work at the apex.
 
 ## Table removal policy
 

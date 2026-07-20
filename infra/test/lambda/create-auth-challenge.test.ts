@@ -85,7 +85,7 @@ const invokeHandler = async (
 describe("create-auth-challenge handler", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.FROM_EMAIL = "info@fringe.jackschaible.ca";
+    process.env.FROM_EMAIL = "info@fringequest.app";
   });
 
   it("generates a 6-digit OTP stored in privateChallengeParameters", async () => {
@@ -114,11 +114,11 @@ describe("create-auth-challenge handler", () => {
   });
 
   it("sends SES email from FROM_EMAIL env variable", async () => {
-    process.env.FROM_EMAIL = "custom@fringe.jackschaible.ca";
+    process.env.FROM_EMAIL = "custom@fringequest.app";
     const event = makeEvent();
     await invokeHandler(event);
     const [[commandArg]] = mockSendEmailCommand.mock.calls;
-    expect(commandArg.Source).toBe("custom@fringe.jackschaible.ca");
+    expect(commandArg.Source).toBe("custom@fringequest.app");
   });
 
   it('sets email subject to "Your Fringe sign-in code"', async () => {

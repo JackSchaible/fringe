@@ -7,6 +7,7 @@ import { Match, Template } from "aws-cdk-lib/assertions";
 import { FringeApi } from "../../lib/constructs/api";
 import { FringeAuth } from "../../lib/constructs/auth";
 import { FringeDynamo } from "../../lib/constructs/dynamo";
+import { HostedZone } from "aws-cdk-lib/aws-route53";
 
 describe("FringeApi", () => {
   let template: Template;
@@ -18,14 +19,18 @@ describe("FringeApi", () => {
     });
     const dynamo = new FringeDynamo(stack, "Dynamo");
     const auth = new FringeAuth(stack, "Auth");
+    const hostedZone = new HostedZone(stack, "Zone", {
+      zoneName: "fringequest.app",
+    });
     const cert = new Certificate(stack, "Cert", {
-      domainName: "fringe.jackschaible.ca",
-      validation: CertificateValidation.fromDns(),
+      domainName: "fringequest.app",
+      validation: CertificateValidation.fromDns(hostedZone),
     });
     new FringeApi(stack, "Api", {
       table: dynamo.table,
       certificate: cert,
       auth,
+      hostedZone,
     });
     template = Template.fromStack(stack);
   });
@@ -145,25 +150,37 @@ describe("FringeApi", () => {
       template.resourceCountIs("AWS::ApiGateway::RestApi", 1);
     });
 
-    it("creates an API Gateway custom domain for api.fringe.jackschaible.ca", () => {
+    it("creates an API Gateway custom domain for api.fringequest.app", () => {
       template.hasResourceProperties("AWS::ApiGateway::DomainName", {
-        DomainName: "api.fringe.jackschaible.ca",
+        DomainName: "api.fringequest.app",
       });
     });
 
     it("uses TLS 1.2 security policy", () => {
       template.hasResourceProperties("AWS::ApiGateway::DomainName", {
-        DomainName: "api.fringe.jackschaible.ca",
+        DomainName: "api.fringequest.app",
         SecurityPolicy: "TLS_1_2",
       });
     });
 
     it("uses EDGE endpoint type", () => {
       template.hasResourceProperties("AWS::ApiGateway::DomainName", {
-        DomainName: "api.fringe.jackschaible.ca",
+        DomainName: "api.fringequest.app",
         EndpointConfiguration: {
           Types: ["EDGE"],
         },
+      });
+    });
+  });
+
+  describe("Route53 alias record", () => {
+    it("creates an A record for api.fringequest.app aliasing to API Gateway", () => {
+      template.hasResourceProperties("AWS::Route53::RecordSet", {
+        Name: "api.fringequest.app.",
+        Type: "A",
+        AliasTarget: Match.objectLike({
+          DNSName: Match.anyValue(),
+        }),
       });
     });
   });

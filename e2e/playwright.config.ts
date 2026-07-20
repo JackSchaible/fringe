@@ -7,7 +7,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? "github" : "list",
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? "https://fringe.jackschaible.ca",
+    baseURL: process.env.E2E_BASE_URL ?? "https://fringequest.app",
     trace: "on-first-retry",
   },
   projects: [

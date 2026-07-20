@@ -5,6 +5,7 @@ import {
 } from "aws-cdk-lib/aws-certificatemanager";
 import { Match, Template } from "aws-cdk-lib/assertions";
 import { FringeFrontend } from "../../lib/constructs/frontend";
+import { HostedZone } from "aws-cdk-lib/aws-route53";
 
 describe("FringeFrontend", () => {
   let template: Template;
@@ -14,11 +15,14 @@ describe("FringeFrontend", () => {
     const stack = new Stack(app, "TestStack", {
       env: { account: "123456789012", region: "us-east-1" },
     });
-    const cert = new Certificate(stack, "Cert", {
-      domainName: "fringe.jackschaible.ca",
-      validation: CertificateValidation.fromDns(),
+    const hostedZone = new HostedZone(stack, "Zone", {
+      zoneName: "fringequest.app",
     });
-    new FringeFrontend(stack, "Frontend", { certificate: cert });
+    const cert = new Certificate(stack, "Cert", {
+      domainName: "fringequest.app",
+      validation: CertificateValidation.fromDns(hostedZone),
+    });
+    new FringeFrontend(stack, "Frontend", { certificate: cert, hostedZone });
     template = Template.fromStack(stack);
   });
 
@@ -51,10 +55,10 @@ describe("FringeFrontend", () => {
       template.resourceCountIs("AWS::CloudFront::Distribution", 1);
     });
 
-    it("has domainNames fringe.jackschaible.ca", () => {
+    it("has domainNames fringequest.app", () => {
       template.hasResourceProperties("AWS::CloudFront::Distribution", {
         DistributionConfig: Match.objectLike({
-          Aliases: ["fringe.jackschaible.ca"],
+          Aliases: ["fringequest.app"],
         }),
       });
     });
@@ -135,6 +139,26 @@ describe("FringeFrontend", () => {
     it("deploys the fr locale under a /fr destination prefix", () => {
       template.hasResourceProperties("Custom::CDKBucketDeployment", {
         DestinationBucketKeyPrefix: "fr",
+      });
+    });
+  });
+
+  describe("Route53 alias records", () => {
+    it("creates an A record aliasing to the CloudFront distribution", () => {
+      template.hasResourceProperties("AWS::Route53::RecordSet", {
+        Type: "A",
+        AliasTarget: Match.objectLike({
+          DNSName: Match.anyValue(),
+        }),
+      });
+    });
+
+    it("creates an AAAA record aliasing to the CloudFront distribution", () => {
+      template.hasResourceProperties("AWS::Route53::RecordSet", {
+        Type: "AAAA",
+        AliasTarget: Match.objectLike({
+          DNSName: Match.anyValue(),
+        }),
       });
     });
   });
