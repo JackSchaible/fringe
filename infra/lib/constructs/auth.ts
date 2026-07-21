@@ -7,7 +7,7 @@ import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 
-const FROM_EMAIL = "info@fringe.jackschaible.ca";
+const FROM_EMAIL = "info@fringequest.app";
 
 interface Bundling {
   externalModules: Array<string>;
@@ -104,7 +104,7 @@ export class FringeAuth extends Construct {
 
   private setUpEmailOtpChallenge(context: Readonly<TriggerContext>): void {
     new EmailIdentity(this, "SesFromIdentity", {
-      identity: Identity.domain("fringe.jackschaible.ca"),
+      identity: Identity.domain("fringequest.app"),
     });
 
     const defineAuthChallenge = this.createTriggerFunction(

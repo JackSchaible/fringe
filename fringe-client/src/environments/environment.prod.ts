@@ -1,5 +1,5 @@
 export const environment = {
-  apiUrl: 'https://api.fringe.jackschaible.ca',
+  apiUrl: 'https://api.fringequest.app',
   // Populated from CDK output at build time
   cognitoClientId: '',
   // Populated from CDK output at build time

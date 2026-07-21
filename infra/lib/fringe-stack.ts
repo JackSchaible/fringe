@@ -7,9 +7,11 @@ import { FringeDynamo } from "./constructs/dynamo";
 import { FringeFrontend } from "./constructs/frontend";
 import { FringeScraper } from "./constructs/scraper";
 import { FringeTransferMatrix } from "./constructs/transfer-matrix";
+import type { IHostedZone } from "aws-cdk-lib/aws-route53";
 
 interface FringeStackProps extends cdk.StackProps {
   certificate: Certificate;
+  hostedZone: IHostedZone;
 }
 
 interface StackConstructs {
@@ -27,21 +29,28 @@ export class FringeStack extends cdk.Stack {
   ) {
     super(scope, id, { ...props, terminationProtection: true });
 
-    const { certificate } = props;
+    const { certificate, hostedZone } = props;
     cdk.Tags.of(this).add("project", "fringe-app");
 
-    const constructs = this.createConstructs(certificate);
+    const constructs = this.createConstructs(certificate, hostedZone);
     this.createOutputs(constructs);
   }
 
-  private createConstructs(certificate: Certificate): StackConstructs {
+  private createConstructs(
+    certificate: Certificate,
+    hostedZone: Readonly<IHostedZone>,
+  ): StackConstructs {
     const dynamo = new FringeDynamo(this, "Dynamo");
     const auth = new FringeAuth(this, "Auth");
-    const frontend = new FringeFrontend(this, "Frontend", { certificate });
+    const frontend = new FringeFrontend(this, "Frontend", {
+      certificate,
+      hostedZone,
+    });
     const api = new FringeApi(this, "Api", {
       table: dynamo.table,
       certificate,
       auth,
+      hostedZone,
     });
     new FringeScraper(this, "Scraper", { table: dynamo.table });
     new FringeTransferMatrix(this, "TransferMatrix", { table: dynamo.table });
@@ -55,20 +64,20 @@ export class FringeStack extends cdk.Stack {
     auth,
   }: Readonly<StackConstructs>): void {
     new cdk.CfnOutput(this, "FrontendUrl", {
-      value: `https://fringe.jackschaible.ca`,
-      description:
-        "Point CNAME fringe.jackschaible.ca to this CloudFront domain",
+      value: `https://fringequest.app`,
     });
     new cdk.CfnOutput(this, "CloudFrontDomain", {
       value: frontend.distributionDomain,
+      description:
+        "Route53 alias target for fringequest.app (managed automatically by this stack)",
     });
     new cdk.CfnOutput(this, "ApiUrl", {
-      value: `https://api.fringe.jackschaible.ca`,
-      description:
-        "Point CNAME api.fringe.jackschaible.ca to the API Gateway domain shown below",
+      value: `https://api.fringequest.app`,
     });
     new cdk.CfnOutput(this, "ApiGatewayDomain", {
       value: api.apiDomainTarget,
+      description:
+        "Route53 alias target for api.fringequest.app (managed automatically by this stack)",
     });
     new cdk.CfnOutput(this, "CognitoUserPoolId", {
       value: auth.userPool.userPoolId,

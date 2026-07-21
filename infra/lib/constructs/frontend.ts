@@ -1,5 +1,11 @@
 import * as cdk from "aws-cdk-lib";
 import {
+  ARecord,
+  AaaaRecord,
+  type IHostedZone,
+  RecordTarget,
+} from "aws-cdk-lib/aws-route53";
+import {
   AllowedMethods,
   CachePolicy,
   Function as CloudFrontFunction,
@@ -12,11 +18,15 @@ import {
 import { BlockPublicAccess, Bucket } from "aws-cdk-lib/aws-s3";
 import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
 import type { Certificate } from "aws-cdk-lib/aws-certificatemanager";
+import { CloudFrontTarget } from "aws-cdk-lib/aws-route53-targets";
 import { Construct } from "constructs";
 import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 
+const DOMAIN_NAME = "fringequest.app";
+
 interface FrontendProps {
   certificate: Certificate;
+  hostedZone: IHostedZone;
 }
 
 const ERROR_RESPONSE_TTL_SECONDS = 0;
@@ -73,6 +83,7 @@ export class FringeFrontend extends Construct {
       props.certificate,
     );
     this.deployLocales(bucket, distribution);
+    this.createAliasRecords(props.hostedZone, distribution);
 
     this.distributionDomain = distribution.distributionDomainName;
   }
@@ -110,7 +121,7 @@ export class FringeFrontend extends Construct {
           },
         ],
       },
-      domainNames: ["fringe.jackschaible.ca"],
+      domainNames: [DOMAIN_NAME],
       certificate,
       defaultRootObject: "index.html",
       errorResponses: [
@@ -155,5 +166,14 @@ export class FringeFrontend extends Construct {
       distribution,
       distributionPaths: ["/fr/*"],
     });
+  }
+
+  private createAliasRecords(
+    hostedZone: Readonly<IHostedZone>,
+    distribution: Readonly<Distribution>,
+  ): void {
+    const target = RecordTarget.fromAlias(new CloudFrontTarget(distribution));
+    new ARecord(this, "AliasRecord", { zone: hostedZone, target });
+    new AaaaRecord(this, "AliasRecordIpv6", { zone: hostedZone, target });
   }
 }

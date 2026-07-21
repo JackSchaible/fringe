@@ -5,6 +5,7 @@ import {
 } from "aws-cdk-lib/aws-certificatemanager";
 import { Match, Template } from "aws-cdk-lib/assertions";
 import { FringeStack } from "../lib/fringe-stack";
+import { HostedZone } from "aws-cdk-lib/aws-route53";
 
 describe("FringeStack", () => {
   let template: Template;
@@ -13,20 +14,24 @@ describe("FringeStack", () => {
   beforeEach(() => {
     const app = new App();
 
-    // CertStack would normally live in us-east-1; for the test we provide a stub certificate
+    // CertStack would normally live in us-east-1; for the test we provide a stub certificate + hosted zone
     const certStack = new Stack(app, "CertStack", {
       env: { account: "123456789012", region: "us-east-1" },
       crossRegionReferences: true,
     });
+    const hostedZone = new HostedZone(certStack, "Zone", {
+      zoneName: "fringequest.app",
+    });
     const certificate = new Certificate(certStack, "Cert", {
-      domainName: "fringe.jackschaible.ca",
-      validation: CertificateValidation.fromDns(),
+      domainName: "fringequest.app",
+      validation: CertificateValidation.fromDns(hostedZone),
     });
 
     stack = new FringeStack(app, "FringeStack", {
       env: { account: "123456789012", region: "ca-central-1" },
       crossRegionReferences: true,
       certificate,
+      hostedZone,
     });
 
     template = Template.fromStack(stack);
@@ -77,9 +82,9 @@ describe("FringeStack", () => {
   });
 
   describe("outputs", () => {
-    it("outputs FrontendUrl with value https://fringe.jackschaible.ca", () => {
+    it("outputs FrontendUrl with value https://fringequest.app", () => {
       template.hasOutput("FrontendUrl", {
-        Value: "https://fringe.jackschaible.ca",
+        Value: "https://fringequest.app",
       });
     });
 
@@ -87,9 +92,9 @@ describe("FringeStack", () => {
       template.hasOutput("CloudFrontDomain", {});
     });
 
-    it("outputs ApiUrl with value https://api.fringe.jackschaible.ca", () => {
+    it("outputs ApiUrl with value https://api.fringequest.app", () => {
       template.hasOutput("ApiUrl", {
-        Value: "https://api.fringe.jackschaible.ca",
+        Value: "https://api.fringequest.app",
       });
     });
 

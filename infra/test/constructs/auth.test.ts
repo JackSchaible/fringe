@@ -100,7 +100,7 @@ describe("FringeAuth", () => {
         Runtime: "nodejs22.x",
         Environment: {
           Variables: Match.objectLike({
-            FROM_EMAIL: "info@fringe.jackschaible.ca",
+            FROM_EMAIL: "info@fringequest.app",
           }),
         },
       });

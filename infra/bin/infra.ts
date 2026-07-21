@@ -21,4 +21,5 @@ new FringeStack(app, "FringeStack", {
   },
   crossRegionReferences: true,
   certificate: certStack.certificate,
+  hostedZone: certStack.hostedZone,
 });

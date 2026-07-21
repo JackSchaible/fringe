@@ -17,15 +17,15 @@ describe("CertStack", () => {
     template.resourceCountIs("AWS::CertificateManager::Certificate", 1);
   });
 
-  it("issues certificate for primary domain fringe.jackschaible.ca", () => {
+  it("issues certificate for primary domain fringequest.app", () => {
     template.hasResourceProperties("AWS::CertificateManager::Certificate", {
-      DomainName: "fringe.jackschaible.ca",
+      DomainName: "fringequest.app",
     });
   });
 
-  it("includes api.fringe.jackschaible.ca as a subject alternative name", () => {
+  it("includes api.fringequest.app as a subject alternative name", () => {
     template.hasResourceProperties("AWS::CertificateManager::Certificate", {
-      SubjectAlternativeNames: Match.arrayWith(["api.fringe.jackschaible.ca"]),
+      SubjectAlternativeNames: Match.arrayWith(["api.fringequest.app"]),
     });
   });
 
@@ -33,5 +33,16 @@ describe("CertStack", () => {
     template.hasResourceProperties("AWS::CertificateManager::Certificate", {
       ValidationMethod: "DNS",
     });
+  });
+
+  it("creates exactly one Route53 HostedZone for fringequest.app", () => {
+    template.resourceCountIs("AWS::Route53::HostedZone", 1);
+    template.hasResourceProperties("AWS::Route53::HostedZone", {
+      Name: "fringequest.app.",
+    });
+  });
+
+  it("outputs the hosted zone name servers", () => {
+    template.hasOutput("NameServers", {});
   });
 });
