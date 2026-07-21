@@ -1,105 +1,121 @@
 @use 'tailwindcss';
 
+// ── Fonts (FringeQuest rebrand — Zilla Slab display + Work Sans body) ────────
+@import url('https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700;800&display=swap');
+
 // ── Design tokens ────────────────────────────────────────────────────────────
 
 :root {
-  // Accent (same in both themes)
-  --accent: #7c3aed;
-  --accent-dark: #6d28d9;
-  --accent-light: #a78bfa;
-  --accent-lighter: #c4b5fd;
-  --accent-pink: #e879f9;
-  --accent-red: #f87171;
+  --font-display: 'Zilla Slab', ui-serif, Georgia, serif;
+  --font-sans:
+    'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  // Accent (same in both themes) — rust/terracotta, replacing the old violet accent
+  --accent: #b5563a;
+  --accent-dark: #9c4530;
+  --accent-light: #d99d77;
+  --accent-lighter: #e9c2a9;
+  --accent-pink: #d9a555;
+  --accent-red: #b3432f;
+
+  // Signal colors (same in both themes)
+  --signal-red: #b3432f;
+  --signal-green: #5f7052;
+  --signal-amber: #b5822c;
 
   // Surfaces
-  --bg: #080812;
+  --bg: #1c1712;
   --bg-gradient: radial-gradient(
     ellipse 90% 50% at 50% -5%,
-    rgba(109, 40, 217, 0.22) 0%,
+    rgba(181, 86, 58, 0.18) 0%,
     transparent 100%
   );
-  --surface-nav: rgba(8, 8, 18, 0.8);
-  --surface-card: rgba(18, 18, 30, 0.8);
-  --surface-raised: rgba(26, 26, 42, 0.8);
-  --surface-input: rgba(0, 0, 0, 0.25);
+  --surface-nav: rgba(28, 23, 18, 0.82);
+  --surface-card: rgba(41, 34, 27, 0.85);
+  --surface-raised: rgba(53, 45, 36, 0.85);
+  --surface-input: rgba(0, 0, 0, 0.22);
   --surface-hover: rgba(255, 255, 255, 0.05);
-  --surface-badge: rgba(255, 255, 255, 0.05);
-  --surface-accent: rgba(109, 40, 217, 0.06);
+  --surface-badge: rgba(255, 255, 255, 0.06);
+  --surface-accent: rgba(201, 138, 44, 0.1);
 
   // Text
-  --text-1: #e2e8f0;
-  --text-2: #94a3b8;
-  --text-3: #64748b;
-  --text-4: #475569;
-  --text-5: #334155;
+  --text-1: #f3ece1;
+  --text-2: #c7bcac;
+  --text-3: #a89d8d;
+  --text-4: #8a8072;
+  --text-5: #6b6153;
 
   // Borders
-  --border-1: rgba(255, 255, 255, 0.05);
-  --border-2: rgba(255, 255, 255, 0.06);
-  --border-3: rgba(255, 255, 255, 0.08);
-  --border-4: rgba(255, 255, 255, 0.1);
-  --border-5: rgba(255, 255, 255, 0.2);
-  --border-accent: rgba(167, 139, 250, 0.15);
+  --border-1: rgba(255, 255, 255, 0.06);
+  --border-2: rgba(255, 255, 255, 0.08);
+  --border-3: rgba(255, 255, 255, 0.1);
+  --border-4: rgba(255, 255, 255, 0.14);
+  --border-5: rgba(255, 255, 255, 0.22);
+  --border-accent: rgba(226, 166, 140, 0.25);
 
   // Shadows
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.32);
   --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
   --shadow-drag:
-    0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(167, 139, 250, 0.4);
+    0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(226, 166, 140, 0.35);
 
-  // Accent text — readable purple on current bg
-  --text-accent: #c4b5fd;
+  // Accent text — readable rust on current bg
+  --text-accent: #e2a68c;
 
   // Heading gradient (light text on dark bg)
-  --gradient-heading: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+  --gradient-heading: linear-gradient(135deg, #f3ece1 0%, #c7bcac 100%);
+
+  // Brand wordmark gradient — rust to ochre
+  --gradient-brand: linear-gradient(135deg, #e2a68c 0%, #d9a555 100%);
 
   // Scrollbar
-  --scrollbar-thumb: #2d2d4a;
-  --scrollbar-thumb-hover: #4c4c7a;
+  --scrollbar-thumb: #4a4136;
+  --scrollbar-thumb-hover: #6b6153;
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    --bg: #f5f3ff;
+    --bg: #f7f2e9;
     --bg-gradient: radial-gradient(
       ellipse 90% 50% at 50% -5%,
-      rgba(109, 40, 217, 0.07) 0%,
+      rgba(181, 86, 58, 0.08) 0%,
       transparent 100%
     );
-    --surface-nav: rgba(255, 255, 255, 0.85);
+    --surface-nav: rgba(250, 247, 240, 0.85);
     --surface-card: rgba(255, 255, 255, 0.9);
-    --surface-raised: rgba(249, 247, 255, 0.95);
-    --surface-input: rgba(0, 0, 0, 0.04);
+    --surface-raised: rgba(250, 245, 235, 0.95);
+    --surface-input: rgba(0, 0, 0, 0.035);
     --surface-hover: rgba(0, 0, 0, 0.04);
     --surface-badge: rgba(0, 0, 0, 0.05);
-    --surface-accent: rgba(109, 40, 217, 0.04);
+    --surface-accent: rgba(181, 86, 58, 0.06);
 
-    --text-1: #1e1b4b;
-    --text-2: #374151;
-    --text-3: #4b5563;
-    --text-4: #6b7280;
-    --text-5: #9ca3af;
+    --text-1: #2a241d;
+    --text-2: #4a4136;
+    --text-3: #6b6153;
+    --text-4: #8a8072;
+    --text-5: #a89d8d;
 
     --border-1: rgba(0, 0, 0, 0.05);
     --border-2: rgba(0, 0, 0, 0.07);
     --border-3: rgba(0, 0, 0, 0.09);
     --border-4: rgba(0, 0, 0, 0.12);
     --border-5: rgba(0, 0, 0, 0.18);
-    --border-accent: rgba(109, 40, 217, 0.15);
+    --border-accent: rgba(156, 69, 48, 0.2);
 
-    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.07);
-    --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.1);
     --shadow-drag:
-      0 12px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(109, 40, 217, 0.3);
+      0 12px 40px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(156, 69, 48, 0.25);
 
-    --text-accent: #6d28d9;
+    --text-accent: #9c4530;
 
-    --gradient-heading: linear-gradient(135deg, #1e1b4b 0%, #5b21b6 100%);
+    --gradient-heading: linear-gradient(135deg, #2a241d 0%, #7d3627 100%);
+    --gradient-brand: linear-gradient(135deg, #9c4530 0%, #a86f22 100%);
 
-    --scrollbar-thumb: #c4b5fd;
-    --scrollbar-thumb-hover: #a78bfa;
+    --scrollbar-thumb: #d9a555;
+    --scrollbar-thumb-hover: #c98a2c;
   }
 }
 
@@ -119,12 +135,7 @@ body {
 
 body {
   margin: 0;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
+  font-family: var(--font-sans);
   background-color: var(--bg);
   background-image: var(--bg-gradient);
   background-attachment: fixed;
@@ -238,7 +249,7 @@ textarea {
 
   // Selection highlight while dragging
   .fc-highlight {
-    background: rgba(124, 58, 237, 0.25) !important;
+    background: rgba(181, 86, 58, 0.25) !important;
     border-radius: 0.25rem !important;
   }
 

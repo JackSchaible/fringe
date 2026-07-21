@@ -18,12 +18,12 @@
   flex-direction: column;
 
   &:hover {
-    border-color: rgba(167, 139, 250, 0.4);
+    border-color: rgba(217, 157, 119, 0.4);
     transform: translateY(-3px);
     box-shadow:
       var(--shadow-md),
-      0 0 0 1px rgba(167, 139, 250, 0.2),
-      0 0 20px rgba(109, 40, 217, 0.1);
+      0 0 0 1px rgba(217, 157, 119, 0.2),
+      0 0 20px rgba(156, 69, 48, 0.1);
   }
 }
 
@@ -36,7 +36,7 @@
 .card-img-placeholder {
   width: 100%;
   aspect-ratio: 16/9;
-  background: linear-gradient(135deg, #0d0d1e 0%, #1a0a2e 100%);
+  background: linear-gradient(135deg, #1c1712 0%, #3e1c16 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -133,6 +133,6 @@
 
 @media (prefers-color-scheme: light) {
   .card-img-placeholder {
-    background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+    background: linear-gradient(135deg, #efe8db 0%, #f5e1d6 100%);
   }
 }

@@ -62,13 +62,13 @@
 
     &:hover {
       background: var(--surface-accent);
-      border-color: rgba(167, 139, 250, 0.4);
+      border-color: rgba(217, 157, 119, 0.4);
       color: var(--text-1);
     }
 
     &.selected {
-      background: rgba(124, 58, 237, 0.2);
-      border-color: rgba(167, 139, 250, 0.6);
+      background: rgba(181, 86, 58, 0.2);
+      border-color: rgba(217, 157, 119, 0.6);
       color: var(--accent-light);
     }
 

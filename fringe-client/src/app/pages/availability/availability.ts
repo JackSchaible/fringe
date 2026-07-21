@@ -57,8 +57,8 @@ export class AvailabilityPage implements OnInit {
       info.event.remove();
       this.syncWindowsFromCalendar();
     },
-    eventColor: '#7c3aed',
-    eventTextColor: '#f3e8ff',
+    eventColor: '#b5563a',
+    eventTextColor: '#f5e1d6',
     events: [],
     expandRows: false,
     headerToolbar: false,

@@ -37,12 +37,12 @@
     color 0.15s;
 
   &:hover {
-    border-color: rgba(167, 139, 250, 0.4);
+    border-color: rgba(217, 157, 119, 0.4);
   }
 
   &.active {
     background: var(--surface-accent);
-    border-color: rgba(167, 139, 250, 0.4);
+    border-color: rgba(217, 157, 119, 0.4);
     color: var(--text-accent);
   }
 }

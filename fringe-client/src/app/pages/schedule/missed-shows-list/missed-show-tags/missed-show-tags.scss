@@ -11,13 +11,13 @@
   white-space: nowrap;
 
   &.conflict {
-    background: rgba(234, 179, 8, 0.12);
-    color: #a16207;
+    background: rgba(181, 130, 44, 0.12);
+    color: var(--signal-amber);
   }
 
   &.blocked {
-    background: rgba(239, 68, 68, 0.1);
-    color: #b91c1c;
+    background: rgba(179, 67, 47, 0.1);
+    color: var(--signal-red);
   }
 
   &.transfer {

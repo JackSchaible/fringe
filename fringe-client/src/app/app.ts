@@ -1,4 +1,11 @@
-import { Component, LOCALE_ID, type OnInit, inject } from '@angular/core';
+import {
+  Component,
+  LOCALE_ID,
+  type OnInit,
+  Renderer2,
+  inject,
+  signal,
+} from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
   faArrowRightFromBracket,
@@ -13,6 +20,8 @@ import { CookieConsentService } from './services/cookie-consent.service';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 const FR_PATH_PREFIX = '/fr';
+const NAV_HIDE_THRESHOLD_PX = 80;
+const SCROLL_TOP_PX = 0;
 
 @Component({
   imports: [
@@ -42,12 +51,19 @@ export class AppComponent implements OnInit {
   protected readonly faArrowRightFromBracket = faArrowRightFromBracket;
   protected readonly faClock = faClock;
 
+  protected readonly navHidden = signal(false);
+  private readonly renderer = inject(Renderer2);
+  private lastScrollY = SCROLL_TOP_PX;
+
   public ngOnInit(): void {
     if (this.auth.devMode) {
       this.auth.initDevSession();
     } else {
       void this.auth.loadUserFromCognito();
     }
+    this.renderer.listen('window', 'scroll', () => {
+      this.onWindowScroll();
+    });
   }
 
   /*
@@ -68,5 +84,16 @@ export class AppComponent implements OnInit {
       return FR_PATH_PREFIX;
     }
     return `${FR_PATH_PREFIX}${pathname}`;
+  }
+
+  /*
+   * Hides the sticky nav on scroll-down and brings it back on scroll-up,
+   * mirroring the common mobile-browser chrome pattern.
+   */
+  private onWindowScroll(): void {
+    const currentY = window.scrollY;
+    const scrolledDown = currentY > this.lastScrollY;
+    this.navHidden.set(scrolledDown && currentY > NAV_HIDE_THRESHOLD_PX);
+    this.lastScrollY = currentY;
   }
 }

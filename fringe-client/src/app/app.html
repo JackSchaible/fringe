@@ -1,5 +1,5 @@
 @if (auth.currentUser()) {
-  <nav class="nav">
+  <nav class="nav" [class.nav-hidden]="navHidden()">
     <a routerLink="/shows" class="nav-brand">
       <span i18n="@@app.02" class="brand-full">FringeQuest</span>
       <span i18n="@@app.07" class="brand-short">FringeQuest</span>
@@ -45,7 +45,7 @@
   </nav>
 }
 
-<main>
+<main [class.with-nav]="auth.currentUser()">
   <router-outlet />
 </main>
 

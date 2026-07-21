@@ -8,6 +8,7 @@
     font-weight: 800;
     letter-spacing: -0.03em;
     margin: 0 0 0.25rem;
+    font-family: var(--font-display);
     background: var(--gradient-heading);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -62,12 +63,12 @@
     opacity 0.15s,
     transform 0.15s,
     box-shadow 0.15s;
-  box-shadow: 0 4px 15px rgba(109, 40, 217, 0.35);
+  box-shadow: 0 4px 15px rgba(156, 69, 48, 0.35);
 
   &:hover {
     opacity: 0.9;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(109, 40, 217, 0.45);
+    box-shadow: 0 6px 20px rgba(156, 69, 48, 0.45);
   }
 }
 
@@ -83,7 +84,7 @@
   gap: 1.25rem;
   background: var(--surface-card);
   border: 1px solid var(--border-2);
-  border-left: 3px solid rgba(167, 139, 250, 0.35);
+  border-left: 3px solid rgba(217, 157, 119, 0.35);
   border-radius: 0.75rem;
   padding: 1rem 1.25rem;
   transition:
@@ -327,13 +328,13 @@
   letter-spacing: 0.02em;
 
   &.conflict {
-    background: rgba(234, 179, 8, 0.12);
-    color: #a16207;
+    background: rgba(181, 130, 44, 0.12);
+    color: var(--signal-amber);
   }
 
   &.blocked {
-    background: rgba(239, 68, 68, 0.1);
-    color: #b91c1c;
+    background: rgba(179, 67, 47, 0.1);
+    color: var(--signal-red);
   }
 }
 
@@ -404,8 +405,8 @@
 }
 
 .needs-change {
-  background: rgba(239, 68, 68, 0.06);
-  border: 1px solid rgba(239, 68, 68, 0.18);
+  background: rgba(179, 67, 47, 0.06);
+  border: 1px solid rgba(179, 67, 47, 0.18);
   border-radius: 0.5rem;
   padding: 0.75rem 0.875rem;
 }
@@ -449,7 +450,7 @@
 }
 
 .proposal-item.is-new {
-  background: rgba(124, 58, 237, 0.07);
+  background: rgba(181, 86, 58, 0.07);
   border-radius: 0.375rem;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
@@ -464,7 +465,7 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--accent-light);
-  background: rgba(124, 58, 237, 0.15);
+  background: rgba(181, 86, 58, 0.15);
   border-radius: 0.25rem;
   padding: 0.1rem 0.35rem;
 }
@@ -532,7 +533,7 @@
   transition:
     opacity 0.15s,
     transform 0.1s;
-  box-shadow: 0 3px 10px rgba(109, 40, 217, 0.3);
+  box-shadow: 0 3px 10px rgba(156, 69, 48, 0.3);
 
   &:hover {
     opacity: 0.9;

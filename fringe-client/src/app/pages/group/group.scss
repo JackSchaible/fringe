@@ -19,6 +19,7 @@
     font-weight: 800;
     letter-spacing: -0.03em;
     margin: 0 0 1.25rem;
+    font-family: var(--font-display);
     color: var(--text-1);
   }
 
@@ -51,7 +52,7 @@
   font-weight: 800;
   letter-spacing: 0.35em;
   font-family: 'SF Mono', 'Fira Code', monospace;
-  background: linear-gradient(135deg, #a78bfa 0%, #e879f9 100%);
+  background: var(--gradient-brand);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -61,8 +62,8 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(167, 139, 250, 0.1);
-  border: 1px solid rgba(167, 139, 250, 0.25);
+  background: rgba(217, 157, 119, 0.1);
+  border: 1px solid rgba(217, 157, 119, 0.25);
   color: var(--accent-light);
   padding: 0.4rem 0.875rem;
   border-radius: 0.5rem;
@@ -75,8 +76,8 @@
     transform 0.1s;
 
   &:hover {
-    background: rgba(167, 139, 250, 0.18);
-    border-color: rgba(167, 139, 250, 0.4);
+    background: rgba(217, 157, 119, 0.18);
+    border-color: rgba(217, 157, 119, 0.4);
     transform: translateY(-1px);
   }
 }
@@ -107,6 +108,7 @@
     font-weight: 800;
     letter-spacing: -0.03em;
     margin: 0 0 0.25rem;
+    font-family: var(--font-display);
     color: var(--text-1);
   }
 
@@ -122,8 +124,8 @@
   color: var(--accent-red);
   font-size: 0.8rem;
   margin-bottom: 1rem;
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.15);
+  background: rgba(179, 67, 47, 0.08);
+  border: 1px solid rgba(179, 67, 47, 0.15);
   border-radius: 0.5rem;
   padding: 0.5rem 0.75rem;
 }
@@ -168,8 +170,8 @@
       box-shadow 0.15s;
 
     &:focus {
-      border-color: rgba(167, 139, 250, 0.4);
-      box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.08);
+      border-color: rgba(217, 157, 119, 0.4);
+      box-shadow: 0 0 0 3px rgba(217, 157, 119, 0.08);
     }
 
     &::placeholder {
@@ -201,12 +203,12 @@
     transform 0.1s,
     box-shadow 0.15s;
   align-self: flex-start;
-  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.3);
+  box-shadow: 0 4px 12px rgba(156, 69, 48, 0.3);
 
   &:hover {
     opacity: 0.9;
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(109, 40, 217, 0.4);
+    box-shadow: 0 6px 18px rgba(156, 69, 48, 0.4);
   }
 }
 
@@ -280,8 +282,8 @@
       box-shadow 0.15s;
 
     &:focus {
-      border-color: rgba(167, 139, 250, 0.4);
-      box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.08);
+      border-color: rgba(217, 157, 119, 0.4);
+      box-shadow: 0 0 0 3px rgba(217, 157, 119, 0.08);
     }
 
     &::placeholder {
@@ -315,7 +317,7 @@
 .danger-zone {
   margin-top: 3rem;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(248, 113, 113, 0.2);
+  border-top: 1px solid rgba(179, 67, 47, 0.2);
 
   h2 {
     font-size: 0.8rem;
@@ -347,14 +349,14 @@
   font-family: inherit;
   cursor: pointer;
   background: transparent;
-  border: 1px solid rgba(248, 113, 113, 0.4);
+  border: 1px solid rgba(179, 67, 47, 0.4);
   color: var(--accent-red);
   transition:
     background 0.15s,
     border-color 0.15s;
 
   &:hover:not(:disabled) {
-    background: rgba(248, 113, 113, 0.1);
+    background: rgba(179, 67, 47, 0.1);
     border-color: var(--accent-red);
   }
 

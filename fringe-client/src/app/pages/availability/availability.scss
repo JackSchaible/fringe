@@ -12,6 +12,7 @@
     font-weight: 800;
     letter-spacing: -0.03em;
     margin: 0 0 0.25rem;
+    font-family: var(--font-display);
     background: var(--gradient-heading);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -103,7 +104,7 @@
 
   &:hover {
     color: var(--accent-red);
-    border-color: rgba(248, 113, 113, 0.4);
+    border-color: rgba(179, 67, 47, 0.4);
   }
 }
 
@@ -150,12 +151,12 @@
     opacity 0.15s,
     transform 0.15s,
     box-shadow 0.15s;
-  box-shadow: 0 4px 15px rgba(109, 40, 217, 0.35);
+  box-shadow: 0 4px 15px rgba(156, 69, 48, 0.35);
 
   &:hover:not(:disabled) {
     opacity: 0.9;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(109, 40, 217, 0.45);
+    box-shadow: 0 6px 20px rgba(156, 69, 48, 0.45);
   }
 
   &:disabled {

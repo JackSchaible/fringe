@@ -21,7 +21,7 @@
   box-shadow:
     0 0 0 1px var(--border-accent),
     var(--shadow-lg),
-    0 0 80px rgba(109, 40, 217, 0.1);
+    0 0 80px rgba(181, 86, 58, 0.1);
 }
 
 .brand {
@@ -30,7 +30,8 @@
   letter-spacing: -0.04em;
   margin: 0;
   text-align: center;
-  background: linear-gradient(135deg, #a78bfa 0%, #e879f9 100%);
+  font-family: var(--font-display);
+  background: var(--gradient-brand);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -61,7 +62,7 @@
     opacity 0.15s,
     transform 0.1s,
     box-shadow 0.15s;
-  box-shadow: 0 4px 15px rgba(109, 40, 217, 0.35);
+  box-shadow: 0 4px 15px rgba(156, 69, 48, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,7 +71,7 @@
   &:hover:not(:disabled) {
     opacity: 0.9;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(109, 40, 217, 0.45);
+    box-shadow: 0 6px 20px rgba(156, 69, 48, 0.45);
   }
 
   &:active:not(:disabled) {
@@ -116,7 +117,7 @@
       outline: none;
 
       &:focus {
-        border-color: rgba(167, 139, 250, 0.4);
+        border-color: rgba(217, 157, 119, 0.4);
       }
     }
 
@@ -143,8 +144,8 @@
   font-size: 0.8rem;
   margin: 0;
   text-align: center;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(179, 67, 47, 0.1);
+  border: 1px solid rgba(179, 67, 47, 0.2);
   border-radius: 0.5rem;
   padding: 0.5rem 0.75rem;
 }
