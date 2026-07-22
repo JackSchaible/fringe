@@ -9,7 +9,7 @@
   align-items: center;
   gap: 1rem;
   padding: 0 1.5rem;
-  height: 52px;
+  height: 64px;
   background: var(--surface-nav);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -27,13 +27,13 @@
   }
 
   .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     flex-shrink: 1;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     font-weight: 800;
-    font-size: 1.2rem;
+    font-size: 1.05rem;
     letter-spacing: -0.03em;
     text-decoration: none;
     margin-right: auto;
@@ -42,6 +42,21 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+
+    .brand-logo {
+      height: 44px;
+      width: 44px;
+      flex-shrink: 0;
+      object-fit: contain;
+    }
+
+    .brand-full,
+    .brand-short {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
     .brand-short {
       display: none;
@@ -133,14 +148,19 @@
 
   @media (max-width: 600px) {
     flex-wrap: wrap;
-    height: 80px;
+    height: 92px;
     gap: 0.5rem;
     row-gap: 0.4rem;
     padding: 0.5rem 0.75rem;
 
     .nav-brand {
       order: 1;
-      font-size: 1rem;
+      font-size: 0.95rem;
+
+      .brand-logo {
+        height: 32px;
+        width: 32px;
+      }
 
       .brand-full {
         display: none;
@@ -174,10 +194,10 @@ main {
   min-width: 0;
 
   &.with-nav {
-    padding-top: 52px;
+    padding-top: 64px;
 
     @media (max-width: 600px) {
-      padding-top: 80px;
+      padding-top: 92px;
     }
   }
 }

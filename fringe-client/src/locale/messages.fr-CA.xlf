@@ -1,6 +1,24 @@
 <?xml version='1.0' encoding='utf-8'?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en-US" trgLang="fr-CA">
   <file id="ngi18n" original="ng.template">
+    <unit id="app.10.alt">
+      <notes>
+        <note category="location">src/app/app.html:8,9</note>
+      </notes>
+      <segment>
+        <source>FringeQuest Logo</source>
+        <target>Logo FringeQuest</target>
+      </segment>
+    </unit>
+    <unit id="app.09.ngSrc">
+      <notes>
+        <note category="location">src/app/app.html:10,11</note>
+      </notes>
+      <segment>
+        <source>/favicon-96x96.png</source>
+        <target>/favicon-96x96.png</target>
+      </segment>
+    </unit>
     <unit id="app.02">
       <notes>
         <note category="location">src/app/app.html:4,5</note>

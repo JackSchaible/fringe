@@ -1,6 +1,6 @@
 {
   "name": "FringeQuest",
-  "short_name": "FringeQuest",
+  "short_name": "FQ",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +15,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#faeed7",
+  "background_color": "#758e6d",
   "display": "standalone"
 }
