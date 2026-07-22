@@ -18,6 +18,7 @@ import { AuthService } from './services/auth.service';
 import { CookieConsentDrawerComponent } from './components/cookie-consent-drawer/cookie-consent-drawer';
 import { CookieConsentService } from './services/cookie-consent.service';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { NgOptimizedImage } from '@angular/common';
 
 const FR_PATH_PREFIX = '/fr';
 const NAV_HIDE_THRESHOLD_PX = 80;
@@ -29,6 +30,7 @@ const SCROLL_TOP_PX = 0;
     RouterLink,
     RouterLinkActive,
     FaIconComponent,
+    NgOptimizedImage,
     CookieConsentDrawerComponent,
   ],
   selector: 'fg-root',
