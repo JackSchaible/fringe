@@ -35,14 +35,15 @@ describe("CertStack", () => {
     });
   });
 
-  it("creates exactly one Route53 HostedZone for fringequest.app", () => {
-    template.resourceCountIs("AWS::Route53::HostedZone", 1);
-    template.hasResourceProperties("AWS::Route53::HostedZone", {
-      Name: "fringequest.app.",
-    });
+  it("does not create a new Route53 HostedZone (imports the existing registrar-created one)", () => {
+    template.resourceCountIs("AWS::Route53::HostedZone", 0);
   });
 
-  it("outputs the hosted zone name servers", () => {
-    template.hasOutput("NameServers", {});
+  it("validates via DNS records in the existing hosted zone", () => {
+    template.hasResourceProperties("AWS::CertificateManager::Certificate", {
+      DomainValidationOptions: Match.arrayWith([
+        Match.objectLike({ HostedZoneId: "Z06094931VR25WTZJNIG3" }),
+      ]),
+    });
   });
 });

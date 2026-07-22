@@ -35,21 +35,14 @@ npx cdk deploy
 
 ## ACM certificate & hosted zone
 
-`FringeCertStack` (pinned to `us-east-1`, since CloudFront requires ACM certs in that region) provisions both:
+`fringequest.app` was registered directly through **Route53 Domains**, which auto-creates a public hosted zone at registration time (`Z06094931VR25WTZJNIG3`) and points the domain's registrar-level nameserver delegation at it — there is no separate "one-time nameserver handoff" step for this domain, and no manual dashboard config outside of the resources CDK creates. That zone also carries live email DNS (Fastmail MX/DKIM, SES DKIM) that isn't managed by CDK.
 
-- A Route53 `HostedZone` for `fringequest.app`
-- A `Certificate` covering `fringequest.app` and `api.fringequest.app`, validated via DNS records CDK creates automatically in that hosted zone
+`FringeCertStack` (pinned to `us-east-1`, since CloudFront requires ACM certs in that region) provisions:
 
-`FringeStack` receives both via props (`crossRegionReferences: true` on both stacks wires the cross-region reference). `FringeFrontend` and `FringeApi` each create Route53 alias records (CloudFront apex A/AAAA, API Gateway `api` A record) directly in the hosted zone — no manual CNAMEs needed after the initial nameserver handoff below.
+- An **imported reference** to that existing hosted zone (`HostedZone.fromHostedZoneAttributes`, keyed by the hardcoded zone ID above) — never `new HostedZone(...)`. Creating a fresh zone produces a second zone with different NS values that the registrar delegation doesn't point at, so anything published into it is unreachable from the public internet. (This happened once, in the `fa-50` domain-change commit — see git history on `cert-stack.ts` if it recurs.)
+- A `Certificate` covering `fringequest.app` and `api.fringequest.app`, validated via DNS — ACM writes its own validation records straight into that hosted zone (via `DomainValidationOptions[].HostedZoneId` on the `AWS::CertificateManager::Certificate` resource), no separate Route53 record-set resource is synthesized for it.
 
-## DNS (one-time manual step — external registrar)
-
-Route53 can't take over a domain's DNS until the registrar points at its nameservers:
-
-1. `cdk deploy` the `FringeCertStack` (or the full app — order doesn't matter, but the cert stack must synth first to create the hosted zone).
-2. Read the `NameServers` output from `FringeCertStack`.
-3. At fringequest.app's registrar, set those 4 values as the domain's nameservers (this replaces the registrar's default DNS, not just a record — it hands the whole zone to Route53).
-4. Wait for propagation (usually fast, can take up to 48h). Once it resolves, ACM DNS validation, the CloudFront alias, and the API Gateway alias all complete automatically — CDK manages the records, nothing else to add by hand.
+`FringeStack` receives both via props (`crossRegionReferences: true` on both stacks wires the cross-region reference). `FringeFrontend` and `FringeApi` each create Route53 alias records (CloudFront apex A/AAAA, API Gateway `api` A record) directly in the hosted zone.
 
 `fringequest.app` is an apex/root domain, which is why alias records (not CNAMEs) are used for the CloudFront and API Gateway targets — plain DNS forbids a CNAME at the zone apex, but Route53 ALIAS records work at the apex.
 
