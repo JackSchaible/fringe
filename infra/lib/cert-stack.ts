@@ -32,7 +32,15 @@ export class CertStack extends cdk.Stack {
       zoneName: DOMAIN_NAME,
     });
 
-    this.certificate = new Certificate(this, "Certificate", {
+    /* Logical id "Certificate2": FringeStack reads this cert's ARN cross-region
+       (crossRegionReferences) via a writer/reader pair of custom resources.
+       The reader's declared properties — and therefore whether CloudFormation
+       ever re-invokes it to pick up a new value — are keyed off this
+       construct's logical id. If this certificate is ever replaced again (id
+       change, domain/SAN change), bump this id once more, or FringeStack's
+       reader will keep serving the previous cert's ARN indefinitely even
+       though the writer side updates correctly. */
+    this.certificate = new Certificate(this, "Certificate2", {
       domainName: DOMAIN_NAME,
       subjectAlternativeNames: [API_DOMAIN_NAME],
       validation: CertificateValidation.fromDns(this.hostedZone),
