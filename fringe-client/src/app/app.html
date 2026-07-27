@@ -1,6 +1,16 @@
 @if (auth.currentUser()) {
   <nav class="nav" [class.nav-hidden]="navHidden()">
     <a routerLink="/shows" class="nav-brand">
+      <img
+        width="96"
+        height="96"
+        priority
+        alt="FringeQuest Logo"
+        i18n-alt="@@app.10.alt"
+        class="brand-logo"
+        ngSrc="/favicon-96x96.png"
+        i18n-ngSrc="@@app.09.ngSrc"
+      />
       <span i18n="@@app.02" class="brand-full">FringeQuest</span>
       <span i18n="@@app.07" class="brand-short">FringeQuest</span>
     </a>
