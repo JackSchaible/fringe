@@ -73,11 +73,14 @@
           [priceBounds]="priceBounds()"
           [durationRange]="durationRange()"
           [durationBounds]="durationBounds()"
+          [showtimeRange]="showtimeRange()"
+          [showtimeBounds]="showtimeBounds()"
           (toggleGenre)="toggleGenre($event)"
           (toggleRating)="toggleRating($event)"
           (toggleLocation)="toggleLocation($event)"
           (priceRangeChange)="setPriceRange($event)"
           (durationRangeChange)="setDurationRange($event)"
+          (showtimeRangeChange)="setShowtimeRange($event)"
           (clear)="clearFilters()"
         />
 

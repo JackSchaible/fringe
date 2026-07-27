@@ -51,6 +51,30 @@ const computeBounds = (
   return [Math.min(...values), Math.max(...values)];
 };
 
+const earlierTime = (first: string, second: string): string => {
+  if (first < second) {
+    return first;
+  }
+  return second;
+};
+
+const laterTime = (first: string, second: string): string => {
+  if (first > second) {
+    return first;
+  }
+  return second;
+};
+
+const computeShowtimeBounds = (
+  shows: ReadonlyArray<Show>,
+): readonly [string, string] => {
+  const allTimes = shows.flatMap((show) => show.showTimes);
+  if (allTimes.length === EMPTY_COUNT) {
+    return ['', ''];
+  }
+  return [allTimes.reduce(earlierTime), allTimes.reduce(laterTime)];
+};
+
 @Component({
   imports: [
     FormsModule,
@@ -93,6 +117,13 @@ export class ShowsPage implements OnInit {
     () => this.durationRangeOverride() ?? this.durationBounds(),
   );
 
+  public readonly showtimeBounds = computed<readonly [string, string]>(() =>
+    computeShowtimeBounds(this.allShows()),
+  );
+  public readonly showtimeRange = computed<readonly [string, string]>(
+    () => this.showtimeRangeOverride() ?? this.showtimeBounds(),
+  );
+
   public readonly filteredUnranked = computed(() => {
     const ranked = new Set(this.rankedShows().map((show) => show.showId)),
       query = this.searchQuery().toLowerCase(),
@@ -100,7 +131,8 @@ export class ShowsPage implements OnInit {
       ratings = this.selectedRatings(),
       locations = this.selectedLocations(),
       [minPrice, maxPrice] = this.priceRange(),
-      [minDuration, maxDuration] = this.durationRange();
+      [minDuration, maxDuration] = this.durationRange(),
+      [startTime, endTime] = this.showtimeRange();
 
     return this.allShows()
       .filter((show) => !ranked.has(show.showId))
@@ -132,6 +164,11 @@ export class ShowsPage implements OnInit {
         (show) =>
           show.lengthInMinutes >= minDuration &&
           show.lengthInMinutes <= maxDuration,
+      )
+      .filter(
+        (show) =>
+          show.showTimes.length === EMPTY_COUNT ||
+          show.showTimes.some((time) => time >= startTime && time <= endTime),
       );
   });
 
@@ -145,6 +182,9 @@ export class ShowsPage implements OnInit {
   >(null);
   private readonly durationRangeOverride = signal<
     readonly [number, number] | null
+  >(null);
+  private readonly showtimeRangeOverride = signal<
+    readonly [string, string] | null
   >(null);
 
   private readonly api = inject(ApiService);
@@ -194,12 +234,17 @@ export class ShowsPage implements OnInit {
     this.durationRangeOverride.set(range);
   }
 
+  public setShowtimeRange(range: readonly [string, string]): void {
+    this.showtimeRangeOverride.set(range);
+  }
+
   public clearFilters(): void {
     this.selectedGenres.set(new Set());
     this.selectedRatings.set(new Set());
     this.selectedLocations.set(new Set());
     this.priceRangeOverride.set(null);
     this.durationRangeOverride.set(null);
+    this.showtimeRangeOverride.set(null);
   }
 
   private async load(): Promise<void> {

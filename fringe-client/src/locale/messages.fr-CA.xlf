@@ -1779,6 +1779,15 @@
         <target> min</target>
       </segment>
     </unit>
+    <unit id="pages.shows.shows.28">
+      <notes>
+        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:66,67</note>
+      </notes>
+      <segment>
+        <source>Showtime</source>
+        <target>Horaire</target>
+      </segment>
+    </unit>
     <unit id="pages.shows.shows.25">
       <notes>
         <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:73,76</note>

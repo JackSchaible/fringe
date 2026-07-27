@@ -1,0 +1,45 @@
+:host {
+  display: block;
+}
+
+.datetime-range {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.datetime-range-label {
+  color: var(--text-3);
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.datetime-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.datetime-range-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.3rem 0.5rem;
+  background: var(--surface-input);
+  border: 1px solid var(--border-2);
+  border-radius: 0.5rem;
+  color: var(--text-1);
+  font-size: 0.75rem;
+  outline: none;
+  // Lets the browser render its native datetime picker popup (calendar
+  // icon flyout) in the OS's preferred palette instead of defaulting to
+  // light — matches the same light/dark switch styles.scss drives off
+  // prefers-color-scheme for the rest of the app.
+  color-scheme: light dark;
+}
+
+.datetime-range-separator {
+  color: var(--text-4);
+  font-size: 0.7rem;
+}

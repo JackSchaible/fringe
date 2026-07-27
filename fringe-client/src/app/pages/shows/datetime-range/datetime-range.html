@@ -1,0 +1,26 @@
+<div class="datetime-range">
+  @if (label()) {
+    <span class="datetime-range-label">{{ label() }}</span>
+  }
+  <div class="datetime-range-inputs">
+    <input
+      #startInput
+      type="datetime-local"
+      class="datetime-range-input"
+      [min]="toLocalInputValue(min())"
+      [max]="toLocalInputValue(max())"
+      [value]="toLocalInputValue(value()[0])"
+      (input)="onMinInput(startInput.value)"
+    />
+    <span class="datetime-range-separator">–</span>
+    <input
+      #endInput
+      type="datetime-local"
+      class="datetime-range-input"
+      [min]="toLocalInputValue(min())"
+      [max]="toLocalInputValue(max())"
+      [value]="toLocalInputValue(value()[1])"
+      (input)="onMaxInput(endInput.value)"
+    />
+  </div>
+</div>

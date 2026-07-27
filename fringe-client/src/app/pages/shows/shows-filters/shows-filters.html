@@ -61,6 +61,14 @@
         [value]="durationRange()"
         (valueChange)="durationRangeChange.emit($event)"
       />
+      <fg-datetime-range
+        i18n-label="@@pages.shows.shows.28"
+        label="Showtime"
+        [min]="showtimeBounds()[0]"
+        [max]="showtimeBounds()[1]"
+        [value]="showtimeRange()"
+        (valueChange)="showtimeRangeChange.emit($event)"
+      />
     </div>
 
     @if (hasActiveFilters()) {

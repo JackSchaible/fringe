@@ -17,7 +17,10 @@ const FILTER_PRICE_LOW = 10,
   ZERO_SIZE = 0,
   ONE_SHOW = 1,
   FILTER_SHOW_ONE_ID = 11,
-  FILTER_SHOW_TWO_ID = 12;
+  FILTER_SHOW_TWO_ID = 12,
+  FILTER_SHOWTIME_ONE = '2026-08-01T18:00:00.000Z',
+  FILTER_SHOWTIME_TWO = '2026-08-05T20:00:00.000Z',
+  NARROW_SHOWTIME_END = '2026-08-02T00:00:00.000Z';
 
 const filterShow1: Show = {
     contentRating: { code: 'PG', name: 'Parental Guidance' },
@@ -25,7 +28,7 @@ const filterShow1: Show = {
     lengthInMinutes: FILTER_DURATION_SHORT,
     price: `${FILTER_PRICE_LOW}.00`,
     showId: FILTER_SHOW_ONE_ID,
-    showTimes: [],
+    showTimes: [FILTER_SHOWTIME_ONE],
     tag: 'Drama',
     title: 'Filter Show One',
     venue: { address: '1 Main St', name: 'Venue A', phone: '555-0100' },
@@ -36,7 +39,7 @@ const filterShow1: Show = {
     lengthInMinutes: FILTER_DURATION_LONG,
     price: `${FILTER_PRICE_HIGH}.00`,
     showId: FILTER_SHOW_TWO_ID,
-    showTimes: [],
+    showTimes: [FILTER_SHOWTIME_TWO],
     tag: 'Comedy',
     title: 'Filter Show Two',
     venue: { address: '2 Side St', name: 'Venue B', phone: '555-0200' },
@@ -154,6 +157,36 @@ describe('ShowsPage duration range', () => {
   });
 });
 
+describe('ShowsPage showtime range', () => {
+  it('computes bounds from the loaded shows', async () => {
+    const { component } = await buildComponent(makeApiSpy());
+    expect(component.showtimeBounds()).toEqual([
+      FILTER_SHOWTIME_ONE,
+      FILTER_SHOWTIME_TWO,
+    ]);
+  });
+
+  it('narrows filteredUnranked when the range is set', async () => {
+    const { component } = await buildComponent(makeApiSpy());
+    component.setShowtimeRange([FILTER_SHOWTIME_ONE, NARROW_SHOWTIME_END]);
+    expect(component.filteredUnranked().map((show) => show.showId)).toEqual([
+      filterShow1.showId,
+    ]);
+  });
+
+  it('does not exclude a show with no known showtimes', async () => {
+    const showWithNoTimes: Show = { ...filterShow1, showTimes: [] },
+      { component } = await buildComponent(
+        makeApiSpy([showWithNoTimes, filterShow2]),
+      );
+    component.setShowtimeRange([FILTER_SHOWTIME_TWO, FILTER_SHOWTIME_TWO]);
+    expect(component.filteredUnranked().map((show) => show.showId)).toEqual([
+      showWithNoTimes.showId,
+      filterShow2.showId,
+    ]);
+  });
+});
+
 describe('ShowsPage clearFilters', () => {
   it('resets pill filters back to empty', async () => {
     const { component } = await buildComponent(makeApiSpy());
@@ -172,10 +205,12 @@ describe('ShowsPage clearFilters', () => {
     const { component } = await buildComponent(makeApiSpy());
     component.setPriceRange([ZERO_SIZE, NARROW_PRICE_MAX]);
     component.setDurationRange([FILTER_DURATION_SHORT, NARROW_DURATION_MIN]);
+    component.setShowtimeRange([FILTER_SHOWTIME_ONE, NARROW_SHOWTIME_END]);
 
     component.clearFilters();
 
     expect(component.priceRange()).toEqual(component.priceBounds());
     expect(component.durationRange()).toEqual(component.durationBounds());
+    expect(component.showtimeRange()).toEqual(component.showtimeBounds());
   });
 });

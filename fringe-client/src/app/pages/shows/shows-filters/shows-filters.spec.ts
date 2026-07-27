@@ -9,7 +9,9 @@ const ZERO_COUNT = 0,
   PRICE_MIN = 0,
   PRICE_MAX = 20,
   DURATION_MIN = 60,
-  DURATION_MAX = 120;
+  DURATION_MAX = 120,
+  SHOWTIME_MIN = '2026-08-01T14:00:00.000Z',
+  SHOWTIME_MAX = '2026-08-10T22:00:00.000Z';
 
 const show1: Show = {
     contentRating: { code: 'PG', name: 'Parental Guidance' },
@@ -77,6 +79,8 @@ const buildCollapsed = async (
     selectedLocations: new Set<string>(),
     selectedRatings: new Set<string>(),
     shows,
+    showtimeBounds: [SHOWTIME_MIN, SHOWTIME_MAX],
+    showtimeRange: [SHOWTIME_MIN, SHOWTIME_MAX],
     ...overrides,
   });
   fixture.detectChanges();
@@ -267,6 +271,24 @@ describe('ShowsFiltersComponent clear button', () => {
     });
     expect(
       getNativeElement(fixture).querySelector('.clear-btn'),
+    ).not.toBeNull();
+  });
+
+  it('appears once the showtime range narrows below its bounds', async () => {
+    const fixture = await build({
+      overrides: { showtimeRange: [SHOWTIME_MIN, SHOWTIME_MIN] },
+    });
+    expect(
+      getNativeElement(fixture).querySelector('.clear-btn'),
+    ).not.toBeNull();
+  });
+});
+
+describe('ShowsFiltersComponent showtime range', () => {
+  it('renders a datetime-range control', async () => {
+    const fixture = await build();
+    expect(
+      getNativeElement(fixture).querySelector('fg-datetime-range'),
     ).not.toBeNull();
   });
 });

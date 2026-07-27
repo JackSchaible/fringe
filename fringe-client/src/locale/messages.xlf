@@ -1484,9 +1484,17 @@
         <source> min</source>
       </segment>
     </unit>
+    <unit id="pages.shows.shows.28">
+      <notes>
+        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:66,67</note>
+      </notes>
+      <segment>
+        <source>Showtime</source>
+      </segment>
+    </unit>
     <unit id="pages.shows.shows.25">
       <notes>
-        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:73,76</note>
+        <note category="location">src/app/pages/shows/shows-filters/shows-filters.html:81,84</note>
       </notes>
       <segment>
         <source> Clear filters </source>
@@ -1558,7 +1566,7 @@
     </unit>
     <unit id="pages.shows.shows.16">
       <notes>
-        <note category="location">src/app/pages/shows/shows.html:94,95</note>
+        <note category="location">src/app/pages/shows/shows.html:97,98</note>
       </notes>
       <segment>
         <source> No shows yet — the scraper hasn&apos;t run. Check back soon. </source>
@@ -1566,7 +1574,7 @@
     </unit>
     <unit id="pages.shows.shows.17">
       <notes>
-        <note category="location">src/app/pages/shows/shows.html:98,99</note>
+        <note category="location">src/app/pages/shows/shows.html:101,102</note>
       </notes>
       <segment>
         <source> No shows match &quot;<ph id="0" equiv="INTERPOLATION" disp="{{ searchQuery() }}"/>&quot;. </source>
@@ -1574,7 +1582,7 @@
     </unit>
     <unit id="pages.shows.shows.18">
       <notes>
-        <note category="location">src/app/pages/shows/shows.html:102,103</note>
+        <note category="location">src/app/pages/shows/shows.html:105,106</note>
       </notes>
       <segment>
         <source> You&apos;ve ranked all the shows! </source>

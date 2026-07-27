@@ -4,6 +4,7 @@ import {
   faChevronDown,
   faChevronUp,
 } from '../../../vendor/fontawesome-icons/light';
+import { DatetimeRangeComponent } from '../datetime-range/datetime-range';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { RangeSliderComponent } from '../range-slider/range-slider';
 import type { Show } from '../../../models';
@@ -16,7 +17,12 @@ const byLocaleCompare = (first: string, second: string): number =>
   first.localeCompare(second);
 
 @Component({
-  imports: [PillGroupComponent, RangeSliderComponent, FaIconComponent],
+  imports: [
+    PillGroupComponent,
+    RangeSliderComponent,
+    DatetimeRangeComponent,
+    FaIconComponent,
+  ],
   selector: 'fg-shows-filters',
   styleUrl: './shows-filters.scss',
   templateUrl: './shows-filters.html',
@@ -30,12 +36,15 @@ export class ShowsFiltersComponent {
   public readonly priceBounds = input.required<readonly [number, number]>();
   public readonly durationRange = input.required<readonly [number, number]>();
   public readonly durationBounds = input.required<readonly [number, number]>();
+  public readonly showtimeRange = input.required<readonly [string, string]>();
+  public readonly showtimeBounds = input.required<readonly [string, string]>();
 
   public readonly toggleGenre = output<string>();
   public readonly toggleRating = output<string>();
   public readonly toggleLocation = output<string>();
   public readonly priceRangeChange = output<readonly [number, number]>();
   public readonly durationRangeChange = output<readonly [number, number]>();
+  public readonly showtimeRangeChange = output<readonly [string, string]>();
   public readonly clear = output();
 
   protected readonly expanded = signal(false);
@@ -88,7 +97,10 @@ export class ShowsFiltersComponent {
       this.priceRange()[ONE_COUNT] !== this.priceBounds()[ONE_COUNT] ||
       this.durationRange()[EMPTY_COUNT] !==
         this.durationBounds()[EMPTY_COUNT] ||
-      this.durationRange()[ONE_COUNT] !== this.durationBounds()[ONE_COUNT],
+      this.durationRange()[ONE_COUNT] !== this.durationBounds()[ONE_COUNT] ||
+      this.showtimeRange()[EMPTY_COUNT] !==
+        this.showtimeBounds()[EMPTY_COUNT] ||
+      this.showtimeRange()[ONE_COUNT] !== this.showtimeBounds()[ONE_COUNT],
   );
 
   protected toggleExpanded(): void {
